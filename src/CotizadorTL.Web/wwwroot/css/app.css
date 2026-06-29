@@ -5,7 +5,7 @@
     --tl-borde: #e2e4e8;
 }
 
-html { font-size: 17px; }   /* base más grande -> todo escala (mínimo ~13px) */
+html { font-size: 21px; }   /* base grande -> toda la letra escala */
 html, body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; color: #222; }
 
 h1 { color: var(--tl-oscuro); }
@@ -37,9 +37,10 @@ a, .btn-link { color: #5a9e1f; }
 .login-card h1 { font-size: 1.4rem; margin: 0; }
 .login-card h1 span { color: var(--tl-verde); }
 .login-card .sub { color: #888; margin: .25rem 0 1.4rem; font-size: .9rem; }
-.login-card label { display: block; font-size: .8rem; color: #555; margin: .6rem 0 .25rem; }
+.login-card label { display: block; font-size: .9rem; color: #555; margin: .6rem 0 .25rem; }
 .login-card input { width: 100%; padding: .6rem .7rem; border: 1px solid var(--tl-borde);
-                    border-radius: 8px; box-sizing: border-box; }
+                    border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+.login-card .sub { font-size: .95rem; }
 .login-card button { width: 100%; margin-top: 1.3rem; padding: .65rem; border: 0; border-radius: 8px;
                      background: var(--tl-verde); color: #fff; font-weight: 600; cursor: pointer; }
 .login-card button:disabled { opacity: .6; cursor: default; }
