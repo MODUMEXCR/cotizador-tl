@@ -8,7 +8,18 @@
 }
 
 .navbar-brand {
-    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    padding: 0.35rem 0;
+}
+
+.brand-logo {
+    height: 2.4rem;
+    width: auto;
+    background: #fff;
+    padding: 5px 9px;
+    border-radius: 8px;
+    display: block;
 }
 
 .bi {
@@ -34,7 +45,7 @@
 }
 
 .nav-item {
-    font-size: 0.9rem;
+    font-size: 1.08rem;
     padding-bottom: 0.5rem;
 }
 
@@ -47,12 +58,14 @@
     }
 
     .nav-item ::deep a {
-        color: #d7d7d7;
+        color: #eaeaea;
         border-radius: 4px;
         height: 3rem;
         display: flex;
         align-items: center;
         line-height: 3rem;
+        text-decoration: none;
+        font-weight: 700;
     }
 
 .nav-item ::deep a.active {
