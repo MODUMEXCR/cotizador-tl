@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CotizadorTL.Core/CotizadorTL.Core.csproj" />
+    <Project Path="src/CotizadorTL.Web/CotizadorTL.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CotizadorTL.Tests/CotizadorTL.Tests.csproj" />
+  </Folder>
+</Solution>

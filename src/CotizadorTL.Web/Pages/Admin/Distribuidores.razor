@@ -1,0 +1,120 @@
+@page "/admin/distribuidores"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject NavigationManager Nav
+
+<PageTitle>Distribuidores</PageTitle>
+
+@if (!Auth.EsAdmin)
+{
+    <p>No tienes acceso a esta sección.</p>
+}
+else if (cargando)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <h1>Distribuidores</h1>
+
+    <section class="card">
+        <h2>@(edit.DistribuidorId == 0 ? "Nuevo distribuidor" : "Editar distribuidor")</h2>
+        <div class="campos">
+            <label>Nombre<input @bind="edit.Nombre" /></label>
+            <label>Contacto<input @bind="edit.Contacto" /></label>
+            <label>Email<input @bind="edit.Email" /></label>
+            <label>Teléfono<input @bind="edit.Telefono" /></label>
+            <label>Ubicación<input @bind="edit.Ubicacion" /></label>
+            <label>Descuento por defecto %<input type="number" step="0.01" @bind="edit.DescuentoPct" /></label>
+        </div>
+        <button class="btn-add" @onclick="Guardar" disabled="@guardando">
+            @(guardando ? "Guardando…" : (edit.DistribuidorId == 0 ? "Agregar" : "Guardar cambios"))
+        </button>
+        @if (edit.DistribuidorId != 0)
+        { <button class="btn-pdf" style="width:auto;margin-left:.5rem" @onclick="NuevoForm">Cancelar edición</button> }
+        @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
+    </section>
+
+    <section class="card">
+        <h2>Distribuidores</h2>
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead><tr><th>Nombre</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Ubicación</th><th class="num">Desc. %</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var d in Catalogo.Distribuidores)
+                    {
+                        <tr>
+                            <td><b>@d.Nombre</b></td><td>@d.Contacto</td><td>@d.Email</td>
+                            <td>@d.Telefono</td><td>@d.Ubicacion</td><td class="num">@d.DescuentoPct.ToString("0.#")</td>
+                            <td class="acciones">
+                                <button class="btn-mini xls" @onclick="() => Editar(d)">Editar</button>
+                                @if (Auth.EsSuper)
+                                { <button class="btn-mini pdf" @onclick="() => Borrar(d)">Borrar</button> }
+                            </td>
+                        </tr>
+                    }
+                    @if (Catalogo.Distribuidores.Count == 0)
+                    { <tr><td colspan="7" class="muted center">Sin distribuidores.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@code {
+    private bool cargando = true, guardando;
+    private string? msg; private bool ok;
+    private PDistribuidor edit = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
+        await Catalogo.CargarAsync();
+        cargando = false;
+    }
+
+    private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
+
+    private void Editar(PDistribuidor d)
+    {
+        edit = new PDistribuidor
+        {
+            DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Contacto = d.Contacto,
+            Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion,
+            DescuentoPct = d.DescuentoPct, Activo = d.Activo,
+        };
+        msg = null;
+    }
+
+    private async Task Guardar()
+    {
+        msg = null;
+        if (string.IsNullOrWhiteSpace(edit.Nombre)) { ok = false; msg = "El nombre es obligatorio."; return; }
+        guardando = true;
+        try
+        {
+            if (edit.DistribuidorId == 0)
+                await Supa.From<PDistribuidor>().Insert(edit);
+            else
+                await Supa.From<PDistribuidor>().Update(edit);
+            await Catalogo.CargarAsync(forzar: true);
+            ok = true; msg = "Distribuidor guardado.";
+            NuevoForm();
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
+        finally { guardando = false; }
+    }
+
+    private async Task Borrar(PDistribuidor d)
+    {
+        msg = null;
+        try
+        {
+            await Supa.From<PDistribuidor>().Where(x => x.DistribuidorId == d.DistribuidorId).Delete();
+            await Catalogo.CargarAsync(forzar: true);
+            ok = true; msg = $"{d.Nombre} eliminado.";
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo borrar (¿tiene cotizaciones?): " + ex.Message; }
+    }
+}

@@ -1,0 +1,37 @@
+@inject AuthService Auth
+
+<div class="login-wrap">
+    <div class="login-card">
+        <h1>Cotizador <span>Thin Laminates</span></h1>
+        <p class="sub">Acceso para distribuidores</p>
+
+        <EditForm Model="@this" OnValidSubmit="Entrar">
+            <label>Correo</label>
+            <InputText @bind-Value="email" type="email" autocomplete="username" />
+
+            <label>Contraseña</label>
+            <InputText @bind-Value="password" type="password" autocomplete="current-password" />
+
+            @if (error is not null)
+            {
+                <div class="error">@error</div>
+            }
+
+            <button type="submit" disabled="@cargando">@(cargando ? "Entrando..." : "Entrar")</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private string? error;
+    private bool cargando;
+
+    private async Task Entrar()
+    {
+        cargando = true; error = null;
+        error = await Auth.IniciarSesion(email, password);
+        cargando = false;
+    }
+}

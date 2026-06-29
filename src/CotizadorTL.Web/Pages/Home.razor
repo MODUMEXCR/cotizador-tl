@@ -1,0 +1,424 @@
+@page "/"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject IJSRuntime JS
+
+<PageTitle>Cotizar · Thin Laminates</PageTitle>
+
+<h1>Cotizar</h1>
+
+@if (cargando)
+{
+    <p>Cargando catálogo…</p>
+}
+else
+{
+    <div class="cot-grid">
+        <!-- ============ ENCABEZADO ============ -->
+        <section class="card">
+            <h2>Datos de la cotización</h2>
+            <div class="campos">
+                <label>Folio (ID cotización)
+                    <input @bind="cot.Folio" /></label>
+                <label>Vigencia
+                    <input type="date" @bind="vigencia" /></label>
+                <label>Distribuidor
+                    @if (Auth.EsAdmin)
+                    {
+                        <select @bind="distribuidorId" @bind:after="OnDistribuidorChanged">
+                            <option value="0">— Selecciona —</option>
+                            @foreach (var d in Catalogo.Distribuidores)
+                            {
+                                <option value="@d.DistribuidorId">@d.Nombre (@d.DescuentoPct.ToString("0.#")%)</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <input value="@nombreDistribuidorActual" disabled />
+                    }
+                </label>
+                <label>Razón social
+                    <input @bind="cot.RazonSocial" /></label>
+                <label>Proyecto
+                    <input @bind="cot.Proyecto" /></label>
+                <label>Título (barra verde)
+                    <input @bind="cot.Titulo" placeholder="Ej. CUBIERTA PARA EXTERIOR" /></label>
+                <label>Cliente
+                    <input @bind="cot.Cliente" /></label>
+                <label>Atención a
+                    <input @bind="cot.AtencionA" /></label>
+                <label>Teléfono
+                    <input @bind="cot.Telefono" /></label>
+                <label>Ciudad
+                    <input @bind="cot.Ciudad" /></label>
+                <label>Cotizado por
+                    <input @bind="cot.CotizadoPor" /></label>
+            </div>
+            <div class="campos">
+                <label>Descuento distribuidor %
+                    <input type="number" step="0.01" @bind="cot.DescuentoPct" /></label>
+                <label>IVA %
+                    <input type="number" step="0.01" @bind="cot.IvaPct" /></label>
+                <label>Anticipo %
+                    <input type="number" step="0.01" @bind="cot.AnticipoPct" /></label>
+            </div>
+            <label>Comentarios o instrucciones especiales
+                <textarea @bind="cot.Comentarios" rows="2"></textarea></label>
+        </section>
+
+        <!-- ============ RENGLONES ============ -->
+        <section class="card">
+            <h2>Renglones <button class="btn-add" @onclick="AgregarLinea">+ Agregar renglón</button></h2>
+
+            <div class="tabla-wrap">
+                <table class="renglones">
+                    <thead>
+                        <tr>
+                            <th>Familia</th><th>Producto</th><th>Grupo/Tier</th>
+                            <th>Medidas (cm)</th><th>Cant.</th><th>Desc.%</th>
+                            <th>P. unitario</th><th>Importe</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var l in lineas)
+                        {
+                            var prod = ProdDe(l);
+                            <tr>
+                                <td>
+                                    <select @bind="l.FamiliaCodigo" @bind:after="() => OnFamiliaChanged(l)">
+                                        <option value="">—</option>
+                                        @foreach (var f in Catalogo.Familias)
+                                        {
+                                            <option value="@f.Codigo">@f.Nombre</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <select @bind="l.ProductoIdStr" @bind:after="() => OnProductoChanged(l)">
+                                        <option value="">—</option>
+                                        @foreach (var p in Catalogo.PorFamilia(l.FamiliaCodigo ?? ""))
+                                        {
+                                            <option value="@p.ProductoId">@p.CodigoSap · @p.Nombre</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    @if (prod is not null && prod.Precios.Count > 1)
+                                    {
+                                        <select @bind="l.Grupo" @bind:after="StateHasChanged">
+                                            @foreach (var g in prod.Precios.Keys)
+                                            {
+                                                <option value="@g">@GrupoLabel(g)</option>
+                                            }
+                                        </select>
+                                    }
+                                    else if (prod is not null)
+                                    {
+                                        <span class="muted">@GrupoLabel(l.Grupo)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (prod is { RequiereMedidas: true })
+                                    {
+                                        <div class="medidas">
+                                            <input type="number" step="0.1" placeholder="largo" @bind="l.LargoCm" @bind:after="StateHasChanged" />
+                                            <span>×</span>
+                                            <input type="number" step="0.1" placeholder="ancho" @bind="l.AnchoCm" @bind:after="StateHasChanged" />
+                                        </div>
+                                    }
+                                    else { <span class="muted">—</span> }
+                                </td>
+                                <td><input class="mini" type="number" step="1" min="1" @bind="l.Cantidad" @bind:after="StateHasChanged" /></td>
+                                <td>
+                                    <input class="mini" type="number" step="0.01" min="0" max="100"
+                                           @bind="l.DescuentoPct" @bind:after="StateHasChanged"
+                                           disabled="@(prod is { AplicaDescuento: false })" />
+                                </td>
+                                <td class="num">@Money(PrecioUnit(l))</td>
+                                <td class="num">@Money(Importe(l))</td>
+                                <td><button class="btn-del" @onclick="() => QuitarLinea(l)" title="Quitar">✕</button></td>
+                            </tr>
+                            <tr class="fila-desc">
+                                <td colspan="2">
+                                    <input placeholder="Color" @bind="l.Color" />
+                                </td>
+                                <td colspan="7">
+                                    <textarea rows="2" placeholder="Descripción (va al PDF)" @bind="l.Descripcion"></textarea>
+                                </td>
+                            </tr>
+                        }
+                        @if (lineas.Count == 0)
+                        {
+                            <tr><td colspan="9" class="muted center">Sin renglones. Agrega el primero con “+ Agregar renglón”.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============ TOTALES ============ -->
+        <section class="card totales">
+            <h2>Totales</h2>
+            @{ var t = MotorPrecios.Calcular(ArmarCotizacion()); }
+            <table class="tot">
+                <tr><td>Subtotal público</td><td class="num">@Money(t.Subtotal)</td></tr>
+                <tr><td>Descuento distribuidor (@cot.DescuentoPct.ToString("0.#")%)</td><td class="num desc">-@Money(t.DescuentoMonto)</td></tr>
+                <tr><td>Subtotal con descuento</td><td class="num">@Money(t.SubtotalDesc)</td></tr>
+                <tr><td>IVA (@cot.IvaPct.ToString("0.#")%)</td><td class="num">@Money(t.IvaMonto)</td></tr>
+                <tr class="gran"><td>GRAN TOTAL</td><td class="num">@Money(t.GranTotal)</td></tr>
+                <tr><td>Anticipo (@cot.AnticipoPct.ToString("0.#")%)</td><td class="num">@Money(t.Anticipo)</td></tr>
+                <tr><td>Saldo</td><td class="num">@Money(t.Saldo)</td></tr>
+            </table>
+
+            @if (mensaje is not null)
+            {
+                <div class="aviso @(mensajeOk ? "ok" : "err")">@mensaje</div>
+            }
+            <button class="btn-guardar" @onclick="Guardar" disabled="@guardando">
+                @(guardando ? "Guardando…" : "Guardar y descargar PDF")
+            </button>
+            <button class="btn-pdf" @onclick="DescargarPdf">Descargar PDF (sin guardar)</button>
+            <p class="muted small">El Excel se descarga desde “Mis Proyectos” (siguiente fase).</p>
+        </section>
+    </div>
+}
+
+@code {
+    private bool cargando = true;
+    private bool guardando;
+    private string? mensaje;
+    private bool mensajeOk;
+
+    private Cotizacion cot = new();
+    private DateTime? vigencia;
+    private long distribuidorId;
+    private readonly List<LineaUI> lineas = new();
+
+    private string nombreDistribuidorActual =>
+        Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId)?.Nombre ?? "(sin asignar)";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Catalogo.CargarAsync();
+
+        cot.Folio = "COT-" + DateTime.Now.ToString("yyMMdd-HHmm");
+        cot.CotizadoPor = Auth.Perfil?.Nombre;
+        cot.IvaPct = 16m; cot.AnticipoPct = 60m;
+
+        // Distribuidor: el distribuidor sólo cotiza para el suyo; admin elige.
+        if (!Auth.EsAdmin && Auth.Perfil?.DistribuidorId is long d)
+        {
+            distribuidorId = d;
+            OnDistribuidorChanged();
+        }
+
+        AgregarLinea();
+        cargando = false;
+    }
+
+    // ---------- helpers de catálogo ----------
+    private Producto? ProdDe(LineaUI l) => l.ProductoId is long id ? Catalogo.Buscar(id) : null;
+
+    private decimal PrecioUnit(LineaUI l)
+    {
+        var p = ProdDe(l);
+        if (p is null) return 0m;
+        try { return MotorPrecios.PrecioUnitario(p, l.Grupo, cot.TipoCambio, l.LargoCm, l.AnchoCm); }
+        catch { return 0m; }
+    }
+
+    private decimal Importe(LineaUI l) => l.Cantidad * PrecioUnit(l);
+
+    // ---------- eventos de UI ----------
+    private void AgregarLinea() => lineas.Add(new LineaUI());
+    private void QuitarLinea(LineaUI l) { lineas.Remove(l); StateHasChanged(); }
+
+    private void OnFamiliaChanged(LineaUI l)
+    {
+        l.ProductoId = null; l.Grupo = ""; l.Descripcion = ""; l.LargoCm = l.AnchoCm = null;
+        StateHasChanged();
+    }
+
+    private void OnProductoChanged(LineaUI l)
+    {
+        var p = ProdDe(l);
+        if (p is not null)
+        {
+            l.Grupo = p.Precios.Keys.FirstOrDefault() ?? "UNICO";
+            l.Descripcion = p.Descripcion;
+        }
+        StateHasChanged();
+    }
+
+    private void OnDistribuidorChanged()
+    {
+        var d = Catalogo.Distribuidores.FirstOrDefault(x => x.DistribuidorId == distribuidorId);
+        if (d is not null) cot.DescuentoPct = d.DescuentoPct;
+        StateHasChanged();
+    }
+
+    // ---------- armar modelo Core para el motor ----------
+    private Cotizacion ArmarCotizacion()
+    {
+        cot.Lineas = lineas.Select(l =>
+        {
+            var p = ProdDe(l);
+            return new LineaCotizacion
+            {
+                ProductoId = l.ProductoId,
+                Cantidad = l.Cantidad,
+                CodigoSap = p?.CodigoSap ?? "",
+                Descripcion = l.Descripcion,
+                Color = l.Color,
+                LargoCm = l.LargoCm,
+                AnchoCm = l.AnchoCm,
+                PrecioUnitario = PrecioUnit(l),
+                DescuentoPct = l.DescuentoPct,
+                AplicaDescuento = p?.AplicaDescuento ?? true,
+            };
+        }).ToList();
+        return cot;
+    }
+
+    // ---------- guardar ----------
+    private async Task Guardar()
+    {
+        mensaje = null;
+        var conProducto = lineas.Where(l => l.ProductoId is not null).ToList();
+        if (distribuidorId == 0) { Aviso("Selecciona un distribuidor.", false); return; }
+        if (conProducto.Count == 0) { Aviso("Agrega al menos un renglón con producto.", false); return; }
+
+        guardando = true;
+        try
+        {
+            ArmarCotizacion();
+            var t = MotorPrecios.Calcular(cot);
+
+            var pcot = new PCotizacion
+            {
+                Folio = string.IsNullOrWhiteSpace(cot.Folio) ? "COT-" + DateTime.Now.ToString("yyMMddHHmmss") : cot.Folio,
+                Vigencia = vigencia,
+                RazonSocial = cot.RazonSocial, Proyecto = cot.Proyecto, Titulo = cot.Titulo,
+                Cliente = cot.Cliente, AtencionA = cot.AtencionA, Telefono = cot.Telefono,
+                Ciudad = cot.Ciudad, CotizadoPor = cot.CotizadoPor,
+                DistribuidorId = distribuidorId,
+                CreadoPor = Auth.Perfil?.Id,
+                Estado = "borrador", Moneda = "MXN", TipoCambio = cot.TipoCambio,
+                DescuentoPct = cot.DescuentoPct, IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct,
+                Comentarios = cot.Comentarios,
+                Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
+                IvaMonto = t.IvaMonto, GranTotal = t.GranTotal,
+                AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
+            };
+
+            var resp = await Supa.From<PCotizacion>().Insert(pcot);
+            var nuevo = resp.Models.First();
+
+            var filas = new List<PCotizacionLinea>();
+            int orden = 1;
+            foreach (var l in conProducto)
+            {
+                var p = ProdDe(l)!;
+                filas.Add(new PCotizacionLinea
+                {
+                    CotizacionId = nuevo.CotizacionId, Orden = orden++,
+                    ProductoId = l.ProductoId, Cantidad = l.Cantidad,
+                    CodigoSap = p.CodigoSap, Descripcion = l.Descripcion, Color = l.Color,
+                    LargoCm = l.LargoCm, AnchoCm = l.AnchoCm,
+                    PrecioUnitario = PrecioUnit(l), DescuentoPct = l.DescuentoPct,
+                    AplicaDescuento = p.AplicaDescuento, Subtotal = MotorPrecios.R(Importe(l)),
+                });
+            }
+            await Supa.From<PCotizacionLinea>().Insert(filas);
+
+            await DescargarPdf();   // descarga automática del PDF al guardar
+            Aviso($"Cotización {nuevo.Folio} guardada y PDF descargado. La verás en Mis Proyectos.", true);
+        }
+        catch (Exception ex)
+        {
+            Aviso("No se pudo guardar: " + ex.Message, false);
+        }
+        finally { guardando = false; }
+    }
+
+    private void Aviso(string m, bool ok) { mensaje = m; mensajeOk = ok; }
+
+    // ---------- PDF (jsPDF vía interop) ----------
+    private async Task DescargarPdf()
+    {
+        ArmarCotizacion();
+        var t = MotorPrecios.Calcular(cot);
+        var dto = new
+        {
+            folio = cot.Folio,
+            vigencia = vigencia?.ToString("dd/MM/yyyy") ?? "",
+            razonSocial = cot.RazonSocial,
+            proyecto = cot.Proyecto,
+            titulo = cot.Titulo,
+            cliente = cot.Cliente,
+            atencionA = cot.AtencionA,
+            telefono = cot.Telefono,
+            ciudad = cot.Ciudad,
+            cotizadoPor = cot.CotizadoPor,
+            comentarios = cot.Comentarios,
+            descuentoPct = cot.DescuentoPct.ToString("0.#"),
+            ivaPct = cot.IvaPct.ToString("0.#"),
+            anticipoPct = (double)cot.AnticipoPct,
+            totales = new
+            {
+                subtotal = (double)t.Subtotal,
+                descuentoMonto = (double)t.DescuentoMonto,
+                subtotalDesc = (double)t.SubtotalDesc,
+                ivaMonto = (double)t.IvaMonto,
+                granTotal = (double)t.GranTotal,
+                anticipo = (double)t.Anticipo,
+                saldo = (double)t.Saldo,
+            },
+            lineas = lineas.Where(l => l.ProductoId is not null).Select(l => new
+            {
+                cantidad = (double)l.Cantidad,
+                codigoSap = ProdDe(l)?.CodigoSap ?? "",
+                descripcion = l.Descripcion,
+                color = l.Color,
+                precioUnitario = (double)PrecioUnit(l),
+                importe = (double)Importe(l),
+            }).ToArray(),
+        };
+        await JS.InvokeVoidAsync("cotizadorPdf.generar", dto);
+    }
+
+    // ---------- formato ----------
+    private static string Money(decimal v) => "$" + v.ToString("#,##0.00");
+
+    private static string GrupoLabel(string g) => g switch
+    {
+        "UNICO" => "Único",
+        "G1" => "Grupo 1", "G2" => "Grupo 2",
+        "G3" => "Grupo 3 (core blanco)", "G4" => "Grupo 4 (UV)",
+        "ESP_INT" => "Especial interior (+20%)", "ESP_EXT" => "Especial exterior (+20%)",
+        "PRO" => "PRO", "SMART" => "SMART",
+        "MT" => "Mate", "SM" => "Semimate", "BR" => "Brillante",
+        _ => g
+    };
+
+    // estado por renglón de la UI
+    private sealed class LineaUI
+    {
+        public string? FamiliaCodigo { get; set; }
+        public long? ProductoId { get; set; }
+        public string ProductoIdStr
+        {
+            get => ProductoId?.ToString() ?? "";
+            set => ProductoId = long.TryParse(value, out var v) ? v : null;
+        }
+        public string Grupo { get; set; } = "";
+        public decimal Cantidad { get; set; } = 1;
+        public decimal? LargoCm { get; set; }
+        public decimal? AnchoCm { get; set; }
+        public decimal DescuentoPct { get; set; }
+        public string? Color { get; set; }
+        public string Descripcion { get; set; } = "";
+    }
+}

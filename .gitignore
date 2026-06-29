@@ -1,0 +1,12 @@
+# .NET
+bin/
+obj/
+publish/
+*.user
+
+# Datos fuente (no se versionan; viven en OneDrive)
+catalogo/raw_dump.json
+
+# Sistema
+.DS_Store
+Thumbs.db

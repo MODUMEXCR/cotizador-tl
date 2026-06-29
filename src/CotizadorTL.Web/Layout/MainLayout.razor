@@ -1,0 +1,34 @@
+@inherits LayoutComponentBase
+@inject AuthService Auth
+@implements IDisposable
+
+@if (!Auth.Autenticado)
+{
+    <Login />
+}
+else
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4">
+                <span class="usuario">@Auth.Perfil?.Nombre · <b>@Auth.Rol</b></span>
+                <button class="logout" @onclick="Salir">Salir</button>
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Auth.Cambio += OnCambio;
+    private void OnCambio() => InvokeAsync(StateHasChanged);
+    private async Task Salir() => await Auth.CerrarSesion();
+    public void Dispose() => Auth.Cambio -= OnCambio;
+}

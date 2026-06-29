@@ -1,0 +1,53 @@
+@inject AuthService Auth
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Thin Laminates</a>
+        <button title="Menú" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span aria-hidden="true">🧮</span> Cotizar
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="mis-proyectos">
+                <span aria-hidden="true">📁</span> Mis Proyectos
+            </NavLink>
+        </div>
+
+        @if (Auth.EsAdmin)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin/precios">
+                    <span aria-hidden="true">🏷️</span> Precios
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin/distribuidores">
+                    <span aria-hidden="true">🏢</span> Distribuidores
+                </NavLink>
+            </div>
+        }
+        @if (Auth.EsSuper)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin/usuarios">
+                    <span aria-hidden="true">👤</span> Usuarios
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+}

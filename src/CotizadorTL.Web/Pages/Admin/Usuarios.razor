@@ -1,0 +1,107 @@
+@page "/admin/usuarios"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject NavigationManager Nav
+
+<PageTitle>Usuarios</PageTitle>
+
+@if (!Auth.EsSuper)
+{
+    <p>No tienes acceso a esta sección.</p>
+}
+else if (cargando)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <h1>Usuarios</h1>
+    <p class="muted small">
+        El alta del <b>login</b> (correo + contraseña) se hace en Supabase → Authentication → Users, o por
+        auto-registro; aquí asignas su <b>rol</b>, <b>distribuidor</b> y <b>activación</b>.
+    </p>
+
+    <section class="card">
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Distribuidor</th><th>Activo</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var u in usuarios)
+                    {
+                        <tr>
+                            <td>@u.Nombre</td>
+                            <td>@u.Email</td>
+                            <td>
+                                <select @bind="u.Rol">
+                                    <option>Distribuidor</option>
+                                    <option>Administrador</option>
+                                    <option>Super Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select @bind="u.DistribuidorIdStr">
+                                    <option value="">—</option>
+                                    @foreach (var d in Catalogo.Distribuidores)
+                                    { <option value="@d.DistribuidorId">@d.Nombre</option> }
+                                </select>
+                            </td>
+                            <td><input type="checkbox" @bind="u.Activo" /></td>
+                            <td><button class="btn-mini xls" @onclick="() => Guardar(u)">Guardar</button></td>
+                        </tr>
+                    }
+                    @if (usuarios.Count == 0)
+                    { <tr><td colspan="6" class="muted center">Sin usuarios.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
+    </section>
+}
+
+@code {
+    private bool cargando = true;
+    private string? msg; private bool ok;
+    private readonly List<UsuarioVM> usuarios = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.EsSuper) { Nav.NavigateTo(""); return; }
+        await Catalogo.CargarAsync();
+        var resp = await Supa.From<Profile>().Order("nombre", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
+        foreach (var p in resp.Models)
+            usuarios.Add(new UsuarioVM { Id = p.Id, Nombre = p.Nombre, Email = p.Email, Rol = p.Rol, DistribuidorId = p.DistribuidorId, Activo = p.Activo });
+        cargando = false;
+    }
+
+    private async Task Guardar(UsuarioVM u)
+    {
+        msg = null;
+        try
+        {
+            var p = new Profile
+            {
+                Id = u.Id, Nombre = u.Nombre, Email = u.Email,
+                Rol = u.Rol, DistribuidorId = u.DistribuidorId, Activo = u.Activo,
+            };
+            await Supa.From<Profile>().Update(p);
+            ok = true; msg = $"Usuario {u.Email} actualizado.";
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
+    }
+
+    private sealed class UsuarioVM
+    {
+        public string Id { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string? Email { get; set; }
+        public string Rol { get; set; } = "Distribuidor";
+        public long? DistribuidorId { get; set; }
+        public bool Activo { get; set; } = true;
+        public string DistribuidorIdStr
+        {
+            get => DistribuidorId?.ToString() ?? "";
+            set => DistribuidorId = long.TryParse(value, out var v) ? v : null;
+        }
+    }
+}

@@ -1,0 +1,2721 @@
+{
+ "familias": [
+  [
+   "CUBIERTAS",
+   "Cubiertas",
+   true,
+   10
+  ],
+  [
+   "LOCKERS",
+   "Lockers",
+   true,
+   20
+  ],
+  [
+   "VESTIDORES",
+   "Vestidores",
+   true,
+   30
+  ],
+  [
+   "BANCAS",
+   "Bancas y paletas",
+   true,
+   40
+  ],
+  [
+   "GRADO_LAB",
+   "Grado laboratorio",
+   true,
+   50
+  ],
+  [
+   "PANELEX",
+   "Panelex",
+   true,
+   60
+  ],
+  [
+   "PLACAS",
+   "Placas (Lamitech/Ralph)",
+   true,
+   70
+  ],
+  [
+   "ACCESORIOS",
+   "Accesorios y herrajes",
+   true,
+   80
+  ],
+  [
+   "ADHESIVOS",
+   "Adhesivos y perfiles",
+   true,
+   90
+  ],
+  [
+   "SERVICIOS",
+   "Servicios (instalación/flete)",
+   false,
+   100
+  ]
+ ],
+ "productos": [
+  {
+   "codigo_sap": "CR-ESP",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda medida especial",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: __ CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "G1": 4170.9866,
+    "G2": 4484.9319,
+    "G3": 4823.6808,
+    "G4": 5520.6402,
+    "ESP_INT": 5005.184,
+    "ESP_EXT": 6624.7683
+   }
+  },
+  {
+   "codigo_sap": "CT-ESP",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular medida especial",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: __ CM X __ CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "G1": 4170.9866,
+    "G2": 4484.9319,
+    "G3": 4823.6808,
+    "G4": 5520.6402,
+    "ESP_INT": 5005.184,
+    "ESP_EXT": 6624.7683
+   }
+  },
+  {
+   "codigo_sap": "CU-ESP",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta forma irregular medida especial",
+   "descripcion": "SUMINISTRO DE CUBIERTA FORMA IRREGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: __ CM X __ CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "G1": 4170.9866,
+    "G2": 4484.9319,
+    "G3": 4823.6808,
+    "G4": 5520.6402,
+    "ESP_INT": 5005.184,
+    "ESP_EXT": 6624.7683
+   }
+  },
+  {
+   "codigo_sap": "CUB-9MM",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta 9 mm (blanco/alumina/negro)",
+   "descripcion": "CUBIERTA LAMINADO COMPACTO 9 MM (BLANCO/ALUMINA/NEGRO). MEDIDA FINAL: __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "9 mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "UNICO": 2807.63
+   }
+  },
+  {
+   "codigo_sap": "CR-50",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 50 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 50 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 10,
+   "precios": {
+    "G1": 1042.7467,
+    "G2": 1121.233,
+    "G3": 1205.9202,
+    "G4": 1380.1601
+   }
+  },
+  {
+   "codigo_sap": "CC-5050",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 50x50 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 50 CM X 50 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 11,
+   "precios": {
+    "G1": 1042.7467,
+    "G2": 1121.233,
+    "G3": 1205.9202,
+    "G4": 1380.1601
+   }
+  },
+  {
+   "codigo_sap": "CR-60",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 60 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 12,
+   "precios": {
+    "G1": 1501.5552,
+    "G2": 1614.5755,
+    "G3": 1736.5251,
+    "G4": 1987.4305
+   }
+  },
+  {
+   "codigo_sap": "CC-6060",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 60x60 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 60 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 13,
+   "precios": {
+    "G1": 1501.5552,
+    "G2": 1614.5755,
+    "G3": 1736.5251,
+    "G4": 1987.4305
+   }
+  },
+  {
+   "codigo_sap": "CR-70",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 70 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 14,
+   "precios": {
+    "G1": 2043.7835,
+    "G2": 2197.6166,
+    "G3": 2363.6036,
+    "G4": 2705.1137
+   }
+  },
+  {
+   "codigo_sap": "CC-7070",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 70x70 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 70 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 15,
+   "precios": {
+    "G1": 2043.7835,
+    "G2": 2197.6166,
+    "G3": 2363.6036,
+    "G4": 2705.1137
+   }
+  },
+  {
+   "codigo_sap": "CR-75",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 75 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 75 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 16,
+   "precios": {
+    "G1": 2346.18,
+    "G2": 2522.7742,
+    "G3": 2713.3205,
+    "G4": 3105.3601
+   }
+  },
+  {
+   "codigo_sap": "CC-7575",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 75x75 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 75 CM X 75 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 17,
+   "precios": {
+    "G1": 2346.18,
+    "G2": 2522.7742,
+    "G3": 2713.3205,
+    "G4": 3105.3601
+   }
+  },
+  {
+   "codigo_sap": "CR-80",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 80 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 18,
+   "precios": {
+    "G1": 2669.4314,
+    "G2": 2870.3564,
+    "G3": 3087.1557,
+    "G4": 3533.2097
+   }
+  },
+  {
+   "codigo_sap": "CC-8080",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 80x80 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 80 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 19,
+   "precios": {
+    "G1": 2669.4314,
+    "G2": 2870.3564,
+    "G3": 3087.1557,
+    "G4": 3533.2097
+   }
+  },
+  {
+   "codigo_sap": "CR-90",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 90 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 20,
+   "precios": {
+    "G1": 3378.4992,
+    "G2": 3632.7948,
+    "G3": 3907.1815,
+    "G4": 4471.7186
+   }
+  },
+  {
+   "codigo_sap": "CC-9090",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 90x90 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM X 90 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 21,
+   "precios": {
+    "G1": 3378.4992,
+    "G2": 3632.7948,
+    "G3": 3907.1815,
+    "G4": 4471.7186
+   }
+  },
+  {
+   "codigo_sap": "CR-100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 100 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 100 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 22,
+   "precios": {
+    "G1": 4170.9866,
+    "G2": 4484.9319,
+    "G3": 4823.6808,
+    "G4": 5520.6402
+   }
+  },
+  {
+   "codigo_sap": "CC-100100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 100x100 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 100 CM X 100 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 23,
+   "precios": {
+    "G1": 4170.9866,
+    "G2": 4484.9319,
+    "G3": 4823.6808,
+    "G4": 5520.6402
+   }
+  },
+  {
+   "codigo_sap": "CR-120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 120 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 120 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 24,
+   "precios": {
+    "G1": 6006.2208,
+    "G2": 6458.3019,
+    "G3": 6946.1004,
+    "G4": 7949.7219
+   }
+  },
+  {
+   "codigo_sap": "CC-120120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 120x120 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 120 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 25,
+   "precios": {
+    "G1": 6006.2208,
+    "G2": 6458.3019,
+    "G3": 6946.1004,
+    "G4": 7949.7219
+   }
+  },
+  {
+   "codigo_sap": "CR-150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta redonda 150 cm Ø",
+   "descripcion": "SUMINISTRO DE CUBIERTA REDONDA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 150 CM DIÁMETRO. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 26,
+   "precios": {
+    "G1": 9384.7199,
+    "G2": 10091.0967
+   }
+  },
+  {
+   "codigo_sap": "CC-150150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta cuadrada 150x150 cm",
+   "descripcion": "SUMINISTRO DE CUBIERTA CUADRADA DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 150 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 27,
+   "precios": {
+    "G1": 9384.7199,
+    "G2": 10091.0967
+   }
+  },
+  {
+   "codigo_sap": "CT-6070",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 70 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 70 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 28,
+   "precios": {
+    "G1": 1751.8144,
+    "G2": 1883.6714,
+    "G3": 2025.9459,
+    "G4": 2318.6689
+   }
+  },
+  {
+   "codigo_sap": "CT-6080",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 80 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 80 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 29,
+   "precios": {
+    "G1": 2002.0736,
+    "G2": 2152.7673,
+    "G3": 2315.3668,
+    "G4": 2649.9073
+   }
+  },
+  {
+   "codigo_sap": "CT-6090",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 90 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 90 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 30,
+   "precios": {
+    "G1": 2252.3328,
+    "G2": 2421.8632,
+    "G3": 2604.7876,
+    "G4": 2981.1457
+   }
+  },
+  {
+   "codigo_sap": "CT-60100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 100 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 100 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 31,
+   "precios": {
+    "G1": 2502.592,
+    "G2": 2690.9591,
+    "G3": 2894.2085,
+    "G4": 3312.3841
+   }
+  },
+  {
+   "codigo_sap": "CT-60120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 120 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 32,
+   "precios": {
+    "G1": 3003.1104,
+    "G2": 3229.1509,
+    "G3": 3473.0502,
+    "G4": 3974.861
+   }
+  },
+  {
+   "codigo_sap": "CT-60150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 33,
+   "precios": {
+    "G1": 3753.888,
+    "G2": 4036.4387,
+    "G3": 4341.3127,
+    "G4": 4968.5762
+   }
+  },
+  {
+   "codigo_sap": "CT-60180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 60 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 60 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 34,
+   "precios": {
+    "G1": 4504.6656,
+    "G2": 4843.7264,
+    "G3": 5209.5753,
+    "G4": 5962.2914
+   }
+  },
+  {
+   "codigo_sap": "CT-7080",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 80 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 80 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 35,
+   "precios": {
+    "G1": 2335.7525,
+    "G2": 2511.5618,
+    "G3": 2701.2613,
+    "G4": 3091.5585
+   }
+  },
+  {
+   "codigo_sap": "CT-7090",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 90 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 90 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 36,
+   "precios": {
+    "G1": 2627.7216,
+    "G2": 2825.5071,
+    "G3": 3038.9189,
+    "G4": 3478.0033
+   }
+  },
+  {
+   "codigo_sap": "CT-70100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 100 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 100 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 37,
+   "precios": {
+    "G1": 2919.6906,
+    "G2": 3139.4523,
+    "G3": 3376.5766,
+    "G4": 3864.4481
+   }
+  },
+  {
+   "codigo_sap": "CT-70120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 120 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 38,
+   "precios": {
+    "G1": 3503.6288,
+    "G2": 3767.3428,
+    "G3": 4051.8919,
+    "G4": 4637.3378
+   }
+  },
+  {
+   "codigo_sap": "CT-70150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 39,
+   "precios": {
+    "G1": 4379.536,
+    "G2": 4709.1785,
+    "G3": 5064.8649,
+    "G4": 5796.6722
+   }
+  },
+  {
+   "codigo_sap": "CT-70180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 70 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 70 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 40,
+   "precios": {
+    "G1": 5255.4432,
+    "G2": 5651.0142,
+    "G3": 6077.8378,
+    "G4": 6956.0067
+   }
+  },
+  {
+   "codigo_sap": "CT-7590",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 75 CM X 90 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 75 CM X 90 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 41,
+   "precios": {
+    "G1": 2815.416,
+    "G2": 3027.329,
+    "G3": 3255.9846,
+    "G4": 3726.4321
+   }
+  },
+  {
+   "codigo_sap": "CT-8090",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 80 CM X 90 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 90 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 42,
+   "precios": {
+    "G1": 3003.1104,
+    "G2": 3229.1509,
+    "G3": 3473.0502,
+    "G4": 3974.861
+   }
+  },
+  {
+   "codigo_sap": "CT-80100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 80 CM X 100 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 100 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 43,
+   "precios": {
+    "G1": 3336.7893,
+    "G2": 3587.9455,
+    "G3": 3858.9447,
+    "G4": 4416.5122
+   }
+  },
+  {
+   "codigo_sap": "CT-80120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 80 CM X 120 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 44,
+   "precios": {
+    "G1": 4004.1472,
+    "G2": 4305.5346,
+    "G3": 4630.7336,
+    "G4": 5299.8146
+   }
+  },
+  {
+   "codigo_sap": "CT-80150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 80 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 45,
+   "precios": {
+    "G1": 5005.184,
+    "G2": 5381.9182,
+    "G3": 5788.417,
+    "G4": 6624.7683
+   }
+  },
+  {
+   "codigo_sap": "CT-80180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 80 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 80 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 46,
+   "precios": {
+    "G1": 6006.2208,
+    "G2": 6458.3019,
+    "G3": 6946.1004,
+    "G4": 7949.7219
+   }
+  },
+  {
+   "codigo_sap": "CT-90100",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 90 CM X 100 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM X 100 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 47,
+   "precios": {
+    "G1": 3753.888,
+    "G2": 4036.4387,
+    "G3": 4341.3127,
+    "G4": 4968.5762
+   }
+  },
+  {
+   "codigo_sap": "CT-90120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 90 CM X 120 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 48,
+   "precios": {
+    "G1": 4504.6656,
+    "G2": 4843.7264,
+    "G3": 5209.5753,
+    "G4": 5962.2914
+   }
+  },
+  {
+   "codigo_sap": "CT-90150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 90 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 49,
+   "precios": {
+    "G1": 5630.832,
+    "G2": 6054.658,
+    "G3": 6511.9691,
+    "G4": 7452.8643
+   }
+  },
+  {
+   "codigo_sap": "CT-90180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 90 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 90 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 50,
+   "precios": {
+    "G1": 6756.9984,
+    "G2": 7265.5896,
+    "G3": 7814.3629,
+    "G4": 8943.4371
+   }
+  },
+  {
+   "codigo_sap": "CT-100120",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 100 CM X 120 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 100 CM X 120 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 51,
+   "precios": {
+    "G1": 5005.184,
+    "G2": 5381.9182,
+    "G3": 5788.417,
+    "G4": 6624.7683
+   }
+  },
+  {
+   "codigo_sap": "CT-100150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 100 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 100 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 52,
+   "precios": {
+    "G1": 6256.48,
+    "G2": 6727.3978,
+    "G3": 7235.5212,
+    "G4": 8280.9603
+   }
+  },
+  {
+   "codigo_sap": "CT-100180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 100 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 100 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 53,
+   "precios": {
+    "G1": 7507.776,
+    "G2": 8072.8774,
+    "G3": 8682.6255,
+    "G4": 9937.1524
+   }
+  },
+  {
+   "codigo_sap": "CT-120150",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 120 CM X 150 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 120 CM X 150 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 54,
+   "precios": {
+    "G1": 7507.776,
+    "G2": 8072.8774,
+    "G3": 8682.6255,
+    "G4": 9937.1524
+   }
+  },
+  {
+   "codigo_sap": "CT-120180",
+   "familia": "CUBIERTAS",
+   "nombre": "Cubierta rectangular 120 CM X 180 CM",
+   "descripcion": "SUMINISTRO DE CUBIERTA RECTANGULAR DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: 120 CM X 180 CM. GARANTÍA EN LAMINADO COMPACTO. CANTO __",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 55,
+   "precios": {
+    "G1": 9009.3311,
+    "G2": 9687.4528,
+    "G3": 10419.1506,
+    "G4": 11924.5829
+   }
+  },
+  {
+   "codigo_sap": "LOQUADST",
+   "familia": "LOCKERS",
+   "nombre": "Torre Locker Quad L.C. 4 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "L.C.",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 13210.32
+   }
+  },
+  {
+   "codigo_sap": "LOTRIPLEST",
+   "familia": "LOCKERS",
+   "nombre": "Torre Locker Triple L.C. 3 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "L.C.",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "UNICO": 13210.32
+   }
+  },
+  {
+   "codigo_sap": "LOEJECST",
+   "familia": "LOCKERS",
+   "nombre": "Torre Locker Ejecutivo L.C. 2 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "L.C.",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "UNICO": 13210.32
+   }
+  },
+  {
+   "codigo_sap": "LODOBLEST",
+   "familia": "LOCKERS",
+   "nombre": "Torre Locker Doble L.C. 2 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "L.C.",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "UNICO": 13210.32
+   }
+  },
+  {
+   "codigo_sap": "L-100-Q",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Quad aluminio 4 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 10,
+   "precios": {
+    "UNICO": 11776.7885
+   }
+  },
+  {
+   "codigo_sap": "L-100-T",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Triple aluminio 3 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 11,
+   "precios": {
+    "UNICO": 11776.7885
+   }
+  },
+  {
+   "codigo_sap": "L-100-D",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Doble aluminio 2 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 12,
+   "precios": {
+    "UNICO": 11776.7885
+   }
+  },
+  {
+   "codigo_sap": "L-100-E",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Ejecutivo aluminio 2 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 13,
+   "precios": {
+    "UNICO": 11776.7885
+   }
+  },
+  {
+   "codigo_sap": "L-200-Q",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Quad aluminio 8 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 14,
+   "precios": {
+    "UNICO": 22375.8982
+   }
+  },
+  {
+   "codigo_sap": "L-200-T",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Triple aluminio 6 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 15,
+   "precios": {
+    "UNICO": 22375.8982
+   }
+  },
+  {
+   "codigo_sap": "L-200-E",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Ejecutivo aluminio 4 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 16,
+   "precios": {
+    "UNICO": 22375.8982
+   }
+  },
+  {
+   "codigo_sap": "L-300-Q",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Quad aluminio 12 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 17,
+   "precios": {
+    "UNICO": 31796.1513
+   }
+  },
+  {
+   "codigo_sap": "L-300-T",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Triple aluminio 9 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 18,
+   "precios": {
+    "UNICO": 31796.1513
+   }
+  },
+  {
+   "codigo_sap": "L-300-D",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Doble aluminio 6 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 19,
+   "precios": {
+    "UNICO": 31796.1513
+   }
+  },
+  {
+   "codigo_sap": "L-300-E",
+   "familia": "LOCKERS",
+   "nombre": "Locker SMART Ejecutivo aluminio 6 puertas",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "Aluminio",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 20,
+   "precios": {
+    "UNICO": 31796.1513
+   }
+  },
+  {
+   "codigo_sap": "LO-ESP-SMART",
+   "familia": "LOCKERS",
+   "nombre": "Locker especial SMART (por m²)",
+   "descripcion": "LOCKER ESPECIAL SMART FABRICADO EN LAMINADO COMPACTO. MEDIDA FINAL: __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 30,
+   "precios": {
+    "3mm": 2447.1633,
+    "6mm": 2885.0999,
+    "9mm": 3542.9793,
+    "12mm": 3892.9209
+   }
+  },
+  {
+   "codigo_sap": "LO-ESP-PRO",
+   "familia": "LOCKERS",
+   "nombre": "Locker especial PRO (por m²)",
+   "descripcion": "LOCKER ESPECIAL PRO FABRICADO EN LAMINADO COMPACTO. MEDIDA FINAL: __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 31,
+   "precios": {
+    "3mm": 2796.758,
+    "12mm": 4170.9866
+   }
+  },
+  {
+   "codigo_sap": "LOESPECIAL",
+   "familia": "VESTIDORES",
+   "nombre": "Vestidor de línea (PRO)",
+   "descripcion": "VESTIDOR MARCA THIN LAMINATES FABRICADO DE LAMINADO COMPACTO.",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "L.C.",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 18287.94
+   }
+  },
+  {
+   "codigo_sap": "VEST-ESP",
+   "familia": "VESTIDORES",
+   "nombre": "Vestidor especial (por m²)",
+   "descripcion": "VESTIDOR ESPECIAL FABRICADO EN LAMINADO COMPACTO. MEDIDA FINAL: __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "12mm": 4170.9866
+   }
+  },
+  {
+   "codigo_sap": "CP-001",
+   "familia": "BANCAS",
+   "nombre": "Paleta de pupitre CP-001 (negro/blanco/alumina)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "9 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 1090.99
+   }
+  },
+  {
+   "codigo_sap": "CP-002",
+   "familia": "BANCAS",
+   "nombre": "Paleta de pupitre CP-002 (negro/blanco/alumina)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "9 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "UNICO": 1097.94
+   }
+  },
+  {
+   "codigo_sap": "CP-003",
+   "familia": "BANCAS",
+   "nombre": "Paleta de pupitre CP-003 (negro/blanco/alumina)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "9 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "UNICO": 947.43
+   }
+  },
+  {
+   "codigo_sap": "BAR-76",
+   "familia": "BANCAS",
+   "nombre": "Banca 76 cm (G1)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "G1": 2423.3432
+   }
+  },
+  {
+   "codigo_sap": "BAR-90",
+   "familia": "BANCAS",
+   "nombre": "Banca 90 cm (G1)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "G1": 2627.7216
+   }
+  },
+  {
+   "codigo_sap": "BAR-114",
+   "familia": "BANCAS",
+   "nombre": "Banca 114 cm (G1)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "G1": 2978.0845
+   }
+  },
+  {
+   "codigo_sap": "BAR-152",
+   "familia": "BANCAS",
+   "nombre": "Banca 152 cm (G1)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "G1": 3532.8257
+   }
+  },
+  {
+   "codigo_sap": "BAR-ESP",
+   "familia": "BANCAS",
+   "nombre": "Banca especial (por m² G1)",
+   "descripcion": "BANCA ESPECIAL LAMINADO COMPACTO. MEDIDA FINAL: __",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 8,
+   "precios": {
+    "G1": 4170.9866
+   }
+  },
+  {
+   "codigo_sap": "EB10396-25",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 25mm 5x12 lab BLANCO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "G1": 31076
+   }
+  },
+  {
+   "codigo_sap": "EB10296-25",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 25mm 5x12 lab GRIS Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "G1": 31076
+   }
+  },
+  {
+   "codigo_sap": "EB10196-25",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 25mm 5x12 lab NEGRO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "G1": 31076
+   }
+  },
+  {
+   "codigo_sap": "EB10396-19",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 19mm 5x12 lab BLANCO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "G1": 18280
+   }
+  },
+  {
+   "codigo_sap": "EB10296-19",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 19mm 5x12 lab GRIS Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "G1": 18280
+   }
+  },
+  {
+   "codigo_sap": "EB10196-19",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 19mm 5x12 lab NEGRO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "G1": 18280
+   }
+  },
+  {
+   "codigo_sap": "EB10196-12",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 12mm 5x12 lab NEGRO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "G1": 15158
+   }
+  },
+  {
+   "codigo_sap": "EB10396-12",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 12mm 5x12 lab BLANCO Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 8,
+   "precios": {
+    "G1": 15158
+   }
+  },
+  {
+   "codigo_sap": "EB10296-12",
+   "familia": "GRADO_LAB",
+   "nombre": "Sólido fenólico 12mm 5x12 lab GRIS Wilsonart",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 9,
+   "precios": {
+    "G1": 15158
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-UNIC-4mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex UNICOLORES 4mm 2 caras",
+   "descripcion": "PANEL PANELEX UNICOLORES 4mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "4mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "MT": 65.4286,
+    "SM": 73.1429,
+    "BR": 73.1429
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-UNIC-6mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex UNICOLORES 6mm 1 cara",
+   "descripcion": "PANEL PANELEX UNICOLORES 6mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "MT": 77.2,
+    "SM": 94.3571,
+    "BR": 94.3571
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-UNIC-6mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex UNICOLORES 6mm 2 caras",
+   "descripcion": "PANEL PANELEX UNICOLORES 6mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "MT": 70.8143,
+    "SM": 81.9429,
+    "BR": 81.9429
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-UNIC-8mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex UNICOLORES 8mm 1 cara",
+   "descripcion": "PANEL PANELEX UNICOLORES 8mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "MT": 78.7429,
+    "SM": 105.9286,
+    "BR": 105.9286
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-UNIC-8mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex UNICOLORES 8mm 2 caras",
+   "descripcion": "PANEL PANELEX UNICOLORES 8mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "MT": 86.9857,
+    "SM": 98.1143,
+    "BR": 98.1143
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-MADE-4mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex MADERA 4mm 2 caras",
+   "descripcion": "PANEL PANELEX MADERA 4mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "4mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "MT": 68.7,
+    "SM": 76.3,
+    "BR": 76.3
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-MADE-6mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex MADERA 6mm 1 cara",
+   "descripcion": "PANEL PANELEX MADERA 6mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "MT": 81.0714,
+    "SM": 98.4286,
+    "BR": 98.4286
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-MADE-6mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex MADERA 6mm 2 caras",
+   "descripcion": "PANEL PANELEX MADERA 6mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 8,
+   "precios": {
+    "MT": 74.3714,
+    "SM": 85.5,
+    "BR": 85.5
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-MADE-8mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex MADERA 8mm 1 cara",
+   "descripcion": "PANEL PANELEX MADERA 8mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 9,
+   "precios": {
+    "MT": 82.6857,
+    "SM": 110.1143,
+    "BR": 110.1143
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-MADE-8mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex MADERA 8mm 2 caras",
+   "descripcion": "PANEL PANELEX MADERA 8mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 10,
+   "precios": {
+    "MT": 91.3429,
+    "SM": 102.4714,
+    "BR": 102.4714
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-DISE-4mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 4mm 2 caras",
+   "descripcion": "PANEL PANELEX DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 4mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "4mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 11,
+   "precios": {
+    "MT": 68.7,
+    "SM": 76.3,
+    "BR": 76.3
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-DISE-6mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 6mm 1 cara",
+   "descripcion": "PANEL PANELEX DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 6mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 12,
+   "precios": {
+    "MT": 81.0714,
+    "SM": 98.4286,
+    "BR": 98.4286
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-DISE-6mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 6mm 2 caras",
+   "descripcion": "PANEL PANELEX DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 6mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 13,
+   "precios": {
+    "MT": 74.3571,
+    "SM": 85.5,
+    "BR": 85.5
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-DISE-8mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 8mm 1 cara",
+   "descripcion": "PANEL PANELEX DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 8mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 14,
+   "precios": {
+    "MT": 87.8429,
+    "SM": 110.1143,
+    "BR": 110.1143
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-DISE-8mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 8mm 2 caras",
+   "descripcion": "PANEL PANELEX DISEÑOS EXCLUSIVOS / GRANITOS Y MÁRMOLES / METALIZADOS 8mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 15,
+   "precios": {
+    "MT": 91.3429,
+    "SM": 102.4714,
+    "BR": 102.4714
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-YOUL-4mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex YOULAB / IMPRESIÓN DIGITAL 4mm 2 caras",
+   "descripcion": "PANEL PANELEX YOULAB / IMPRESIÓN DIGITAL 4mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "4mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 16,
+   "precios": {
+    "MT": 94.8714,
+    "SM": 100.3429,
+    "BR": 100.3429
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-YOUL-6mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex YOULAB / IMPRESIÓN DIGITAL 6mm 1 cara",
+   "descripcion": "PANEL PANELEX YOULAB / IMPRESIÓN DIGITAL 6mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 17,
+   "precios": {
+    "MT": 136.6143,
+    "SM": 149.5143,
+    "BR": 149.5143
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-YOUL-6mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex YOULAB / IMPRESIÓN DIGITAL 6mm 2 caras",
+   "descripcion": "PANEL PANELEX YOULAB / IMPRESIÓN DIGITAL 6mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "6mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 18,
+   "precios": {
+    "MT": 102.6143,
+    "SM": 113.7429,
+    "BR": 113.7429
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-YOUL-8mm-UF",
+   "familia": "PANELEX",
+   "nombre": "Panelex YOULAB / IMPRESIÓN DIGITAL 8mm 1 cara",
+   "descripcion": "PANEL PANELEX YOULAB / IMPRESIÓN DIGITAL 8mm (1 cara). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 19,
+   "precios": {
+    "MT": 147.2714,
+    "SM": 169.5286,
+    "BR": 169.5286
+   }
+  },
+  {
+   "codigo_sap": "PANELEX-YOUL-8mm-DB",
+   "familia": "PANELEX",
+   "nombre": "Panelex YOULAB / IMPRESIÓN DIGITAL 8mm 2 caras",
+   "descripcion": "PANEL PANELEX YOULAB / IMPRESIÓN DIGITAL 8mm (2 caras). PRECIO POR m².",
+   "tipo_precio": "m2",
+   "unidad": "m2",
+   "moneda": "MXN",
+   "espesor": "8mm",
+   "requiere_medidas": true,
+   "aplica_descuento": true,
+   "orden": 20,
+   "precios": {
+    "MT": 118.7857,
+    "SM": 129.9143,
+    "BR": 129.9143
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-ROBLE-48",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Roble Lineal/Italian Walnut 4x8 12.5mm UV",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 7775.52
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-ATENAS-48",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Atenas/Tizano/Concrete 4x8 12.5mm UV",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "UNICO": 8572.5
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-ATENAS-410",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Atenas/Tizano/Concrete 4x10 12.5mm UV",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "UNICO": 10750.77
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-ROBLE-410",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Roble Lineal/Italian Walnut 4x10 12.5mm UV",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "UNICO": 9751.26
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-DIG-410-C",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Digital 1 cara negro core café 4x10 12.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "UNICO": 11858.07
+   }
+  },
+  {
+   "codigo_sap": "PLACA-LAM-DIG-410-N",
+   "familia": "PLACAS",
+   "nombre": "Lamitech Digital 1 cara negro core negro 4x10 12.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "UNICO": 13073.57
+   }
+  },
+  {
+   "codigo_sap": "PLACA-RALPH-6MM",
+   "familia": "PLACAS",
+   "nombre": "Ralph 6mm negro 5x12",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": "12.5 mm",
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "UNICO": 6607.66
+   }
+  },
+  {
+   "codigo_sap": "G-LOCKER",
+   "familia": "ACCESORIOS",
+   "nombre": "Grabado a láser por número/diseño 30x30cm máx",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 120
+   }
+  },
+  {
+   "codigo_sap": "FE4161",
+   "familia": "ACCESORIOS",
+   "nombre": "Pata niveladora locker aluminio 10cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "UNICO": 60
+   }
+  },
+  {
+   "codigo_sap": "RP-LOCKER",
+   "familia": "ACCESORIOS",
+   "nombre": "Ranura tradicional (L:15cm x A:1.1cm x pieza)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "UNICO": 50
+   }
+  },
+  {
+   "codigo_sap": "GANCHO",
+   "familia": "ACCESORIOS",
+   "nombre": "Gancho para colgar",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "UNICO": 97.5
+   }
+  },
+  {
+   "codigo_sap": "TO0021",
+   "familia": "ACCESORIOS",
+   "nombre": "Tubo para colgar",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "UNICO": 209
+   }
+  },
+  {
+   "codigo_sap": "ZOCLO-127",
+   "familia": "ACCESORIOS",
+   "nombre": "Zoclo lateral 12.7mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "UNICO": 170
+   }
+  },
+  {
+   "codigo_sap": "HERRAJES",
+   "familia": "ACCESORIOS",
+   "nombre": "Herrajes por puerta",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "UNICO": 150
+   }
+  },
+  {
+   "codigo_sap": "C-HEFELE",
+   "familia": "ACCESORIOS",
+   "nombre": "Cerradura Hafele 22mm para locker",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 8,
+   "precios": {
+    "UNICO": 265.78
+   }
+  },
+  {
+   "codigo_sap": "C-RIVEN",
+   "familia": "ACCESORIOS",
+   "nombre": "Cerradura horizontal Riven 4 dígitos con llave maestra",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 9,
+   "precios": {
+    "UNICO": 235
+   }
+  },
+  {
+   "codigo_sap": "KPC",
+   "familia": "ACCESORIOS",
+   "nombre": "Kit de portacandado para locker",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 10,
+   "precios": {
+    "UNICO": 78.38
+   }
+  },
+  {
+   "codigo_sap": "KJL81",
+   "familia": "ACCESORIOS",
+   "nombre": "Kit de jaladera aluminio para locker",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 11,
+   "precios": {
+    "UNICO": 25
+   }
+  },
+  {
+   "codigo_sap": "KEB",
+   "familia": "ACCESORIOS",
+   "nombre": "Kit de 1 escuadra con 2 tornillos T4",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 12,
+   "precios": {
+    "UNICO": 50
+   }
+  },
+  {
+   "codigo_sap": "T4",
+   "familia": "ACCESORIOS",
+   "nombre": "Tornillo T4",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 13,
+   "precios": {
+    "UNICO": 6.39
+   }
+  },
+  {
+   "codigo_sap": "C-GL7P",
+   "familia": "ACCESORIOS",
+   "nombre": "Cerradura electrónica con teclado Gatner GL7P para locker",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 14,
+   "precios": {
+    "UNICO": 170.35
+   }
+  },
+  {
+   "codigo_sap": "G-921727",
+   "familia": "ACCESORIOS",
+   "nombre": "Cerradura electrónica Gatner GAT ECO 7100 NW BA",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 15,
+   "precios": {
+    "UNICO": 141.4
+   }
+  },
+  {
+   "codigo_sap": "GAT-BAT",
+   "familia": "ACCESORIOS",
+   "nombre": "Batería 3.6V Lithium SL-860/S (requerida Gatner)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 16,
+   "precios": {
+    "UNICO": 16.3
+   }
+  },
+  {
+   "codigo_sap": "GAT-CARD",
+   "familia": "ACCESORIOS",
+   "nombre": "Set tarjetas configuración Gatner GL7P / GAT ECO",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 17,
+   "precios": {
+    "UNICO": 410.5
+   }
+  },
+  {
+   "codigo_sap": "FILLER-08-10",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 8-10 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 50,
+   "precios": {
+    "PRO": 531.384,
+    "SMART": 464.961
+   }
+  },
+  {
+   "codigo_sap": "FILLER-11-15",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 11-15 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 51,
+   "precios": {
+    "PRO": 797.076,
+    "SMART": 697.4415
+   }
+  },
+  {
+   "codigo_sap": "FILLER-16-20",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 16-20 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 52,
+   "precios": {
+    "PRO": 1062.768,
+    "SMART": 929.922
+   }
+  },
+  {
+   "codigo_sap": "FILLER-21-25",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 21-25 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 53,
+   "precios": {
+    "PRO": 1328.4601,
+    "SMART": 1162.4026
+   }
+  },
+  {
+   "codigo_sap": "FILLER-26-30",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 26-30 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 54,
+   "precios": {
+    "PRO": 1594.1521,
+    "SMART": 1394.8831
+   }
+  },
+  {
+   "codigo_sap": "FILLER-31-37",
+   "familia": "ACCESORIOS",
+   "nombre": "Filler 31-37 cm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 55,
+   "precios": {
+    "PRO": 1966.1209,
+    "SMART": 1720.3558
+   }
+  },
+  {
+   "codigo_sap": "7510",
+   "familia": "ADHESIVOS",
+   "nombre": "Panel-Fix adhesivo blanco o negro 600ml (salchicha)",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 1,
+   "precios": {
+    "UNICO": 35
+   }
+  },
+  {
+   "codigo_sap": "1522",
+   "familia": "ADHESIVOS",
+   "nombre": "Panel-Fix promotor P202",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 2,
+   "precios": {
+    "UNICO": 95
+   }
+  },
+  {
+   "codigo_sap": "15126",
+   "familia": "ADHESIVOS",
+   "nombre": "Panel-Fix primer 4515W",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 3,
+   "precios": {
+    "UNICO": 140
+   }
+  },
+  {
+   "codigo_sap": "1589",
+   "familia": "ADHESIVOS",
+   "nombre": "Cinta Panel-Fix",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 4,
+   "precios": {
+    "UNICO": 20
+   }
+  },
+  {
+   "codigo_sap": "W101-610",
+   "familia": "ADHESIVOS",
+   "nombre": "Perfil L ángulo 40x80x2.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 5,
+   "precios": {
+    "UNICO": 100
+   }
+  },
+  {
+   "codigo_sap": "W102",
+   "familia": "ADHESIVOS",
+   "nombre": "Perfil T chica 40x80x2.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 6,
+   "precios": {
+    "UNICO": 100
+   }
+  },
+  {
+   "codigo_sap": "W103-610",
+   "familia": "ADHESIVOS",
+   "nombre": "Perfil T grande 80x80x2.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 7,
+   "precios": {
+    "UNICO": 135
+   }
+  },
+  {
+   "codigo_sap": "W101-90",
+   "familia": "ADHESIVOS",
+   "nombre": "Bracket sencillo 40x80x90 2.5mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 8,
+   "precios": {
+    "UNICO": 2
+   }
+  },
+  {
+   "codigo_sap": "W101-180",
+   "familia": "ADHESIVOS",
+   "nombre": "Bracket doble 40x80x180mm",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": true,
+   "orden": 9,
+   "precios": {
+    "UNICO": 3
+   }
+  },
+  {
+   "codigo_sap": "INST-CUB",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación por cubierta",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 1,
+   "precios": {
+    "UNICO": 250
+   }
+  },
+  {
+   "codigo_sap": "INST-FILLER",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación por filler",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 2,
+   "precios": {
+    "UNICO": 450
+   }
+  },
+  {
+   "codigo_sap": "INST-L100",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación locker SMART L-100",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 3,
+   "precios": {
+    "UNICO": 450
+   }
+  },
+  {
+   "codigo_sap": "INST-L200",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación locker SMART L-200",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 4,
+   "precios": {
+    "UNICO": 800
+   }
+  },
+  {
+   "codigo_sap": "INST-L300",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación locker SMART L-300",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 5,
+   "precios": {
+    "UNICO": 1100
+   }
+  },
+  {
+   "codigo_sap": "INST-BANCA",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación por banca",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 6,
+   "precios": {
+    "UNICO": 300
+   }
+  },
+  {
+   "codigo_sap": "INST-TORRE-PRO",
+   "familia": "SERVICIOS",
+   "nombre": "Instalación por torre de locker PRO",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 7,
+   "precios": {
+    "UNICO": 450
+   }
+  },
+  {
+   "codigo_sap": "FLETE-LOCAL",
+   "familia": "SERVICIOS",
+   "nombre": "Flete local menor a 60 km",
+   "descripcion": "",
+   "tipo_precio": "fijo",
+   "unidad": "pieza",
+   "moneda": "MXN",
+   "espesor": null,
+   "requiere_medidas": false,
+   "aplica_descuento": false,
+   "orden": 8,
+   "precios": {
+    "UNICO": 1500
+   }
+  }
+ ],
+ "tarifas_m2_cubiertas": {
+  "G1": 4170.9866,
+  "G2": 4484.9319,
+  "G3": 4823.6808,
+  "G4": 5520.6402,
+  "ESP_INT": 5005.184,
+  "ESP_EXT": 6624.7683
+ }
+}

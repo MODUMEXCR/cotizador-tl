@@ -1,0 +1,155 @@
+@page "/mis-proyectos"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject IJSRuntime JS
+
+<PageTitle>Mis Proyectos</PageTitle>
+
+<h1>Mis Proyectos</h1>
+<p class="lead">
+    @(Auth.EsAdmin ? "Todas las cotizaciones." : "Tus cotizaciones.") Filtra por fecha@(Auth.EsAdmin ? " o distribuidor" : "") y descarga el PDF o el Excel.
+</p>
+
+@if (cargando)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <section class="card">
+        <div class="filtros">
+            <label>Desde<input type="date" @bind="desde" /></label>
+            <label>Hasta<input type="date" @bind="hasta" /></label>
+            @if (Auth.EsAdmin)
+            {
+                <label>Distribuidor
+                    <select @bind="filtroDistribuidor">
+                        <option value="0">Todos</option>
+                        @foreach (var d in Catalogo.Distribuidores)
+                        {
+                            <option value="@d.DistribuidorId">@d.Nombre</option>
+                        }
+                    </select>
+                </label>
+            }
+            <button class="btn-add" @onclick="LimpiarFiltros">Limpiar</button>
+        </div>
+
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead>
+                    <tr>
+                        <th>Folio</th><th>Fecha</th>
+                        @if (Auth.EsAdmin) { <th>Distribuidor</th> }
+                        <th>Cliente</th><th>Proyecto</th><th class="num">Gran total</th>
+                        <th>Estado</th><th>Descargas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Filtradas)
+                    {
+                        <tr>
+                            <td><b>@c.Folio</b></td>
+                            <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            @if (Auth.EsAdmin) { <td>@NombreDist(c.DistribuidorId)</td> }
+                            <td>@c.Cliente</td>
+                            <td>@c.Proyecto</td>
+                            <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
+                            <td><span class="estado">@c.Estado</span></td>
+                            <td class="acciones">
+                                <button class="btn-mini pdf" @onclick="() => DescargarPdf(c)">PDF</button>
+                                <button class="btn-mini xls" @onclick="() => DescargarExcel(c)">Excel</button>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Filtradas.Any())
+                    {
+                        <tr><td colspan="@(Auth.EsAdmin ? 8 : 7)" class="muted center">No hay cotizaciones con esos filtros.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (mensaje is not null) { <div class="aviso err">@mensaje</div> }
+    </section>
+}
+
+@code {
+    private bool cargando = true;
+    private List<PCotizacion> todas = new();
+    private DateTime? desde, hasta;
+    private long filtroDistribuidor;
+    private string? mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Catalogo.CargarAsync();
+        // RLS limita automáticamente: el distribuidor solo ve las suyas.
+        var resp = await Supa.From<PCotizacion>()
+                             .Order("fecha", Supabase.Postgrest.Constants.Ordering.Descending).Get();
+        todas = resp.Models;
+        cargando = false;
+    }
+
+    private IEnumerable<PCotizacion> Filtradas => todas.Where(c =>
+        (desde is null || c.Fecha.ToLocalTime().Date >= desde.Value.Date) &&
+        (hasta is null || c.Fecha.ToLocalTime().Date <= hasta.Value.Date) &&
+        (filtroDistribuidor == 0 || c.DistribuidorId == filtroDistribuidor));
+
+    private void LimpiarFiltros() { desde = hasta = null; filtroDistribuidor = 0; }
+
+    private string NombreDist(long? id) =>
+        Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == id)?.Nombre ?? "—";
+
+    private async Task<List<PCotizacionLinea>> CargarLineas(long cotId) =>
+        (await Supa.From<PCotizacionLinea>().Where(l => l.CotizacionId == cotId)
+                   .Order("orden", Supabase.Postgrest.Constants.Ordering.Ascending).Get()).Models;
+
+    private async Task DescargarPdf(PCotizacion c)
+    {
+        try
+        {
+            var ls = await CargarLineas(c.CotizacionId);
+            var dto = new
+            {
+                folio = c.Folio,
+                vigencia = c.Vigencia?.ToString("dd/MM/yyyy") ?? "",
+                razonSocial = c.RazonSocial, proyecto = c.Proyecto, titulo = c.Titulo,
+                cliente = c.Cliente, atencionA = c.AtencionA, telefono = c.Telefono,
+                ciudad = c.Ciudad, cotizadoPor = c.CotizadoPor, comentarios = c.Comentarios,
+                descuentoPct = c.DescuentoPct.ToString("0.#"), ivaPct = c.IvaPct.ToString("0.#"),
+                anticipoPct = (double)c.AnticipoPct,
+                totales = new
+                {
+                    subtotal = (double)c.Subtotal, descuentoMonto = (double)c.DescuentoMonto,
+                    subtotalDesc = (double)c.SubtotalDesc, ivaMonto = (double)c.IvaMonto,
+                    granTotal = (double)c.GranTotal, anticipo = (double)c.AnticipoMonto, saldo = (double)c.SaldoMonto,
+                },
+                lineas = ls.Select(l => new
+                {
+                    cantidad = (double)l.Cantidad, codigoSap = l.CodigoSap, descripcion = l.Descripcion,
+                    color = l.Color, precioUnitario = (double)l.PrecioUnitario, importe = (double)l.Subtotal,
+                }).ToArray(),
+            };
+            await JS.InvokeVoidAsync("cotizadorPdf.generar", dto);
+        }
+        catch (Exception ex) { mensaje = "No se pudo generar el PDF: " + ex.Message; }
+    }
+
+    private async Task DescargarExcel(PCotizacion c)
+    {
+        try
+        {
+            var ls = await CargarLineas(c.CotizacionId);
+            var rows = ls.Select(l => new
+            {
+                codigoSap = l.CodigoSap, descripcion = l.Descripcion, textoLibre = l.TextoLibre,
+                cantidad = (double)l.Cantidad, precioUnitario = (double)l.PrecioUnitario,
+                desc1 = (double)l.DescuentoPct,        // Descuento de renglón
+                desc2 = (double)c.DescuentoPct,        // Descuento distribuidor (global)
+            }).ToArray();
+            await JS.InvokeVoidAsync("cotizadorExcel.generar", c.Folio, rows);
+        }
+        catch (Exception ex) { mensaje = "No se pudo generar el Excel: " + ex.Message; }
+    }
+}

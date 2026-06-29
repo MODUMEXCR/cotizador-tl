@@ -1,0 +1,181 @@
+@page "/admin/precios"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject NavigationManager Nav
+
+<PageTitle>Precios</PageTitle>
+
+@if (!Auth.EsAdmin)
+{
+    <p>No tienes acceso a esta sección.</p>
+}
+else if (cargando)
+{
+    <p>Cargando catálogo…</p>
+}
+else
+{
+    <h1>Precios</h1>
+
+    <!-- ===== Ajuste grupal ===== -->
+    <section class="card">
+        <h2>Ajuste grupal (por familia / tier)</h2>
+        <p class="muted small">Sube o baja en bloque. Ej.: solo Cubiertas, o solo Lockers grupo PRO. Cada cambio queda en la bitácora.</p>
+        <div class="filtros">
+            <label>Familia
+                <select @bind="gFamilia" @bind:after="StateHasChanged">
+                    <option value="">Todas</option>
+                    @foreach (var f in Catalogo.Familias)
+                    { <option value="@f.Codigo">@f.Nombre</option> }
+                </select>
+            </label>
+            <label>Grupo/Tier
+                <select @bind="gGrupo">
+                    <option value="">Todos</option>
+                    @foreach (var g in GruposDe(gFamilia))
+                    { <option value="@g">@GrupoLabel(g)</option> }
+                </select>
+            </label>
+            <label>Cambio %
+                <input type="number" step="0.01" @bind="gPct" placeholder="ej. 10 = +10, -5 = baja 5" />
+            </label>
+            <button class="btn-add" @onclick="AplicarGrupal" disabled="@aplicando">
+                @(aplicando ? "Aplicando…" : "Aplicar")
+            </button>
+        </div>
+        @if (msgG is not null) { <div class="aviso @(okG ? "ok" : "err")">@msgG</div> }
+    </section>
+
+    <!-- ===== Edición individual ===== -->
+    <section class="card">
+        <h2>Edición individual</h2>
+        <label class="sel-familia">Familia
+            <select @bind="iFamilia" @bind:after="CargarFilas">
+                <option value="">— Selecciona una familia —</option>
+                @foreach (var f in Catalogo.Familias)
+                { <option value="@f.Codigo">@f.Nombre</option> }
+            </select>
+        </label>
+
+        @if (filas.Count > 0)
+        {
+            <div class="tabla-wrap">
+                <table class="proyectos">
+                    <thead><tr><th>Código SAP</th><th>Producto</th><th>Grupo/Tier</th><th class="num">Precio (MXN)</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var fila in filas)
+                        {
+                            <tr>
+                                <td><b>@fila.Codigo</b></td>
+                                <td>@fila.Nombre</td>
+                                <td>@GrupoLabel(fila.Grupo)</td>
+                                <td class="num"><input class="precio-in" type="number" step="0.0001" @bind="fila.Precio" /></td>
+                                <td><button class="btn-mini xls" @onclick="() => GuardarFila(fila)">Guardar</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (msgI is not null) { <div class="aviso @(okI ? "ok" : "err")">@msgI</div> }
+        }
+        else if (!string.IsNullOrEmpty(iFamilia))
+        {
+            <p class="muted">Sin productos en esta familia.</p>
+        }
+    </section>
+}
+
+@code {
+    private bool cargando = true, aplicando;
+    private string gFamilia = "", gGrupo = "", iFamilia = "";
+    private decimal? gPct;
+    private string? msgG, msgI;
+    private bool okG, okI;
+    private readonly List<FilaPrecio> filas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
+        await Catalogo.CargarAsync();
+        cargando = false;
+    }
+
+    private IEnumerable<string> GruposDe(string familia)
+    {
+        var prods = string.IsNullOrEmpty(familia) ? Catalogo.Productos : Catalogo.PorFamilia(familia);
+        return prods.SelectMany(p => p.Precios.Keys).Distinct().OrderBy(g => g);
+    }
+
+    private void CargarFilas()
+    {
+        filas.Clear();
+        if (string.IsNullOrEmpty(iFamilia)) return;
+        foreach (var p in Catalogo.PorFamilia(iFamilia).OrderBy(p => p.Orden))
+            foreach (var kv in p.Precios.OrderBy(k => k.Key))
+                filas.Add(new FilaPrecio { ProductoId = p.ProductoId, Codigo = p.CodigoSap, Nombre = p.Nombre, Grupo = kv.Key, Precio = kv.Value });
+        StateHasChanged();
+    }
+
+    private async Task GuardarFila(FilaPrecio f)
+    {
+        msgI = null;
+        try
+        {
+            await Supa.From<PProductoPrecio>()
+                      .Where(x => x.ProductoId == f.ProductoId)
+                      .Filter("grupo", Supabase.Postgrest.Constants.Operator.Equals, f.Grupo)
+                      .Set(x => x.Precio, f.Precio)
+                      .Update();
+            // refrescar caché
+            var prod = Catalogo.Buscar(f.ProductoId);
+            if (prod is not null) prod.Precios[f.Grupo] = f.Precio;
+            okI = true; msgI = $"Precio de {f.Codigo} ({GrupoLabel(f.Grupo)}) actualizado.";
+        }
+        catch (Exception ex) { okI = false; msgI = "No se pudo guardar: " + ex.Message; }
+    }
+
+    private async Task AplicarGrupal()
+    {
+        msgG = null;
+        if (gPct is null || gPct == 0) { okG = false; msgG = "Indica un cambio % distinto de 0."; return; }
+        aplicando = true;
+        try
+        {
+            decimal factor = 1 + gPct.Value / 100m;
+            var pars = new Dictionary<string, object?>
+            {
+                ["p_familia"] = string.IsNullOrEmpty(gFamilia) ? null : gFamilia,
+                ["p_grupo"]   = string.IsNullOrEmpty(gGrupo) ? null : gGrupo,
+                ["p_factor"]  = factor,
+            };
+            await Supa.Rpc("ajustar_precios", pars);
+            await Catalogo.CargarAsync(forzar: true);
+            if (!string.IsNullOrEmpty(iFamilia)) CargarFilas();
+            okG = true;
+            var ambito = string.IsNullOrEmpty(gFamilia) ? "todas las familias" : Catalogo.Familias.First(f => f.Codigo == gFamilia).Nombre;
+            var tier = string.IsNullOrEmpty(gGrupo) ? "" : $" · {GrupoLabel(gGrupo)}";
+            msgG = $"Aplicado {(gPct > 0 ? "+" : "")}{gPct}% a {ambito}{tier}.";
+        }
+        catch (Exception ex) { okG = false; msgG = "No se pudo aplicar: " + ex.Message; }
+        finally { aplicando = false; }
+    }
+
+    private static string GrupoLabel(string g) => g switch
+    {
+        "UNICO" => "Único", "G1" => "Grupo 1", "G2" => "Grupo 2",
+        "G3" => "Grupo 3 (core blanco)", "G4" => "Grupo 4 (UV)",
+        "ESP_INT" => "Especial interior", "ESP_EXT" => "Especial exterior",
+        "PRO" => "PRO", "SMART" => "SMART", "MT" => "Mate", "SM" => "Semimate", "BR" => "Brillante",
+        _ => g
+    };
+
+    private sealed class FilaPrecio
+    {
+        public long ProductoId { get; set; }
+        public string Codigo { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string Grupo { get; set; } = "";
+        public decimal Precio { get; set; }
+    }
+}

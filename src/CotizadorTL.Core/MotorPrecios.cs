@@ -1,0 +1,79 @@
+namespace CotizadorTL.Core;
+
+/// <summary>
+/// Motor de cálculo de cotizaciones. Lógica pura y determinista (sin dependencias),
+/// para poder auditarla con pruebas unitarias.
+///
+/// Regla de redondeo (validada contra los PDFs reales de Thin Laminates):
+///   se trabaja en PRECISIÓN COMPLETA y se redondea SOLO para mostrar; el GRAN TOTAL
+///   sale del subtotal-con-descuento sin redondear, por eso casa al centavo con los PDFs.
+///
+/// Interacción de descuentos:
+///   · Líneas con AplicaDescuento=false (Servicios/Flete) NO reciben ningún descuento.
+///   · A las demás se les aplica el descuento de renglón y luego el global, de forma
+///     multiplicativa:  neto = bruto * (1 - renglon%) * (1 - global%).
+/// </summary>
+public static class MotorPrecios
+{
+    public static decimal R(decimal v) => Math.Round(v, 2, MidpointRounding.AwayFromZero);
+
+    /// <summary>Precio unitario del producto para un grupo, en MXN.
+    /// Para productos "m2" multiplica por el área (largo*ancho en m²).</summary>
+    public static decimal PrecioUnitario(Producto p, string grupo, decimal tipoCambio,
+                                         decimal? largoCm = null, decimal? anchoCm = null)
+    {
+        if (!p.Precios.TryGetValue(grupo, out var precio))
+        {
+            // fallback: si solo hay un precio, úsalo (UNICO)
+            if (p.Precios.Count == 1) precio = p.Precios.Values.First();
+            else throw new ArgumentException($"El producto {p.CodigoSap} no tiene precio para el grupo '{grupo}'.");
+        }
+
+        if (p.TipoPrecio == "m2")
+        {
+            decimal m2 = (largoCm ?? 0) / 100m * (anchoCm ?? 0) / 100m;
+            precio *= m2;
+        }
+
+        if (p.Moneda == "USD") precio *= tipoCambio;   // convertir a MXN
+        return precio;
+    }
+
+    /// <summary>Subtotal bruto de un renglón (cantidad * precio unitario), sin descuento.</summary>
+    public static decimal SubtotalLinea(LineaCotizacion l) => l.Cantidad * l.PrecioUnitario;
+
+    /// <summary>Neto de un renglón aplicando descuento de renglón + global (si corresponde).</summary>
+    public static decimal NetoLinea(LineaCotizacion l, decimal descuentoGlobalPct)
+    {
+        decimal bruto = SubtotalLinea(l);
+        if (!l.AplicaDescuento) return bruto;
+        decimal factor = (1 - l.DescuentoPct / 100m) * (1 - descuentoGlobalPct / 100m);
+        return bruto * factor;
+    }
+
+    /// <summary>Calcula todos los totales de la cotización (en precisión completa, redondeando para mostrar).</summary>
+    public static Totales Calcular(Cotizacion c)
+    {
+        decimal subtotal = 0m;     // público (antes de descuento)
+        decimal subtotalDesc = 0m; // después de descuentos
+        foreach (var l in c.Lineas)
+        {
+            subtotal     += SubtotalLinea(l);
+            subtotalDesc += NetoLinea(l, c.DescuentoPct);
+        }
+        decimal descuentoMonto = subtotal - subtotalDesc;
+        decimal ivaMonto  = subtotalDesc * (c.IvaPct / 100m);
+        decimal granTotal = subtotalDesc + ivaMonto;
+        decimal anticipo  = granTotal * (c.AnticipoPct / 100m);
+        decimal saldo     = granTotal - anticipo;
+
+        return new Totales(
+            Subtotal:       R(subtotal),
+            DescuentoMonto: R(descuentoMonto),
+            SubtotalDesc:   R(subtotalDesc),
+            IvaMonto:       R(ivaMonto),
+            GranTotal:      R(granTotal),
+            Anticipo:       R(anticipo),
+            Saldo:          R(saldo));
+    }
+}
