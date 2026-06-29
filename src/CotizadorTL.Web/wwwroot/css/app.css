@@ -5,6 +5,7 @@
     --tl-borde: #e2e4e8;
 }
 
+html { font-size: 17px; }   /* base más grande -> todo escala (mínimo ~13px) */
 html, body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; color: #222; }
 
 h1 { color: var(--tl-oscuro); }
@@ -49,14 +50,14 @@ a, .btn-link { color: #5a9e1f; }
 .card { background: #fff; border: 1px solid var(--tl-borde); border-radius: 10px; padding: 1rem 1.2rem; }
 .card h2 { font-size: 1.05rem; margin: 0 0 .8rem; color: var(--tl-oscuro); }
 .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .6rem 1rem; margin-bottom: .6rem; }
-.campos label, .card > label { display: flex; flex-direction: column; font-size: .78rem; color: #555; gap: .2rem; }
+.campos label, .card > label { display: flex; flex-direction: column; font-size: .85rem; color: #555; gap: .2rem; }
 .campos input, .campos select, .card textarea, .card > label input {
-    padding: .4rem .5rem; border: 1px solid var(--tl-borde); border-radius: 6px; font-size: .9rem; }
+    padding: .45rem .55rem; border: 1px solid var(--tl-borde); border-radius: 6px; font-size: .98rem; }
 
 .btn-add { float: right; background: var(--tl-verde); color: #fff; border: 0; border-radius: 6px;
            padding: .3rem .7rem; font-size: .85rem; cursor: pointer; }
 .tabla-wrap { overflow-x: auto; }
-table.renglones { width: 100%; border-collapse: collapse; font-size: .85rem; }
+table.renglones { width: 100%; border-collapse: collapse; font-size: .95rem; }
 table.renglones th { text-align: left; color: #777; font-weight: 600; padding: .35rem .4rem; border-bottom: 2px solid var(--tl-borde); white-space: nowrap; }
 table.renglones td { padding: .3rem .4rem; vertical-align: top; }
 table.renglones select, table.renglones input, table.renglones textarea {
@@ -67,7 +68,7 @@ table.renglones .mini { width: 5rem; }
 .fila-desc td { padding-top: 0; padding-bottom: .6rem; border-bottom: 1px solid #f0f1f3; }
 .btn-del { background: #f7eaea; color: #b03030; border: 0; border-radius: 6px; padding: .25rem .5rem; cursor: pointer; }
 td.num, .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.muted { color: #999; } .center { text-align: center; } .small { font-size: .8rem; }
+.muted { color: #999; } .center { text-align: center; } .small { font-size: .85rem; }
 
 .totales { max-width: 420px; align-self: flex-end; }
 table.tot { width: 100%; border-collapse: collapse; }
@@ -87,7 +88,7 @@ table.tot .gran td { border-top: 2px solid var(--tl-borde); font-weight: 700; fo
 .filtros { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
 .filtros label { display: flex; flex-direction: column; font-size: .78rem; color: #555; gap: .2rem; }
 .filtros input, .filtros select { padding: .4rem .5rem; border: 1px solid var(--tl-borde); border-radius: 6px; }
-table.proyectos { width: 100%; border-collapse: collapse; font-size: .88rem; }
+table.proyectos { width: 100%; border-collapse: collapse; font-size: .96rem; }
 table.proyectos th { text-align: left; color: #777; font-weight: 600; padding: .5rem .5rem; border-bottom: 2px solid var(--tl-borde); white-space: nowrap; }
 table.proyectos td { padding: .5rem .5rem; border-bottom: 1px solid #f0f1f3; }
 .estado { background: var(--tl-gris); border-radius: 20px; padding: .12rem .55rem; font-size: .75rem; color: #555; }
