@@ -66,9 +66,10 @@ create policy profiles_update on public.profiles for update
                or id = auth.uid()
                or (public.es_admin() and rol = 'Distribuidor') );
 
--- Borrar usuarios: solo Super Admin.
+-- Borrar usuarios: Super Admin cualquiera; Administrador solo cuentas de rol 'Distribuidor'
+-- (para rechazar un auto-registro que no se autoriza).
 create policy profiles_delete on public.profiles for delete
-  using ( public.es_super() );
+  using ( public.es_super() or (public.es_admin() and rol = 'Distribuidor') );
 
 -- Evitar que un usuario no-super se auto-escale rol o cambie su distribuidor.
 create or replace function public.proteger_profile() returns trigger

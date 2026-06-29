@@ -42,7 +42,10 @@ else
                                 @if (u.Activo) { <span class="estado" style="background:#eaf6e0;color:#3a6b14">Activo</span> }
                                 else { <span class="estado" style="background:#fdecea;color:#b03030">Pendiente</span> }
                             </td>
-                            <td><button class="btn-mini xls" @onclick="() => GuardarCuenta(u)">@(u.Activo ? "Guardar" : "Autorizar")</button></td>
+                            <td class="acciones">
+                                <button class="btn-mini xls" @onclick="() => GuardarCuenta(u)">@(u.Activo ? "Guardar" : "Autorizar")</button>
+                                <button class="btn-mini pdf" @onclick="() => EliminarCuenta(u)">Eliminar</button>
+                            </td>
                         </tr>
                     }
                     @if (cuentas.Count == 0)
@@ -58,7 +61,6 @@ else
         <h2>@(edit.DistribuidorId == 0 ? "Nueva empresa distribuidora" : "Editar empresa")</h2>
         <div class="campos">
             <label>Nombre<input @bind="edit.Nombre" /></label>
-            <label>Email<input @bind="edit.Email" /></label>
             <label>Teléfono<input @bind="edit.Telefono" /></label>
             <label>Ubicación<input @bind="edit.Ubicacion" /></label>
             <label>Descuento por defecto %<input type="number" step="0.01" @bind="edit.DescuentoPct" /></label>
@@ -75,12 +77,12 @@ else
         <h2>Empresas</h2>
         <div class="tabla-wrap">
             <table class="proyectos">
-                <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Ubicación</th><th class="num">Desc. %</th><th></th></tr></thead>
+                <thead><tr><th>Nombre</th><th>Teléfono</th><th>Ubicación</th><th class="num">Desc. %</th><th></th></tr></thead>
                 <tbody>
                     @foreach (var d in Catalogo.Distribuidores)
                     {
                         <tr>
-                            <td><b>@d.Nombre</b></td><td>@d.Email</td><td>@d.Telefono</td><td>@d.Ubicacion</td>
+                            <td><b>@d.Nombre</b></td><td>@d.Telefono</td><td>@d.Ubicacion</td>
                             <td class="num">@d.DescuentoPct.ToString("0.#")</td>
                             <td class="acciones">
                                 <button class="btn-mini xls" @onclick="() => Editar(d)">Editar</button>
@@ -90,7 +92,7 @@ else
                         </tr>
                     }
                     @if (Catalogo.Distribuidores.Count == 0)
-                    { <tr><td colspan="6" class="muted center">Sin empresas.</td></tr> }
+                    { <tr><td colspan="5" class="muted center">Sin empresas.</td></tr> }
                 </tbody>
             </table>
         </div>
@@ -131,6 +133,18 @@ else
             okU = true; msgU = $"{u.Email} autorizado y asignado a su empresa.";
         }
         catch (Exception ex) { okU = false; msgU = "No se pudo guardar: " + ex.Message; }
+    }
+
+    private async Task EliminarCuenta(CuentaVM u)
+    {
+        msgU = null;
+        try
+        {
+            await Supa.From<Profile>().Where(x => x.Id == u.Id).Delete();
+            cuentas.Remove(u);
+            okU = true; msgU = $"Cuenta de {u.Email} eliminada.";
+        }
+        catch (Exception ex) { okU = false; msgU = "No se pudo eliminar (¿tiene cotizaciones?): " + ex.Message; }
     }
 
     private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
