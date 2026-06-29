@@ -3,35 +3,84 @@
 <div class="login-wrap">
     <div class="login-card">
         <h1>Cotizador <span>Thin Laminates</span></h1>
-        <p class="sub">Acceso para distribuidores</p>
+        <p class="sub">@(registro ? "Crear cuenta de distribuidor" : "Acceso para distribuidores")</p>
 
-        <EditForm Model="@this" OnValidSubmit="Entrar">
+        <EditForm Model="@this" OnValidSubmit="Enviar">
+            @if (registro)
+            {
+                <label>Nombre / Empresa</label>
+                <InputText @bind-Value="nombre" autocomplete="name" />
+            }
+
             <label>Correo</label>
             <InputText @bind-Value="email" type="email" autocomplete="username" />
 
             <label>Contraseña</label>
-            <InputText @bind-Value="password" type="password" autocomplete="current-password" />
+            <InputText @bind-Value="password" type="password"
+                       autocomplete="@(registro ? "new-password" : "current-password")" />
 
             @if (error is not null)
             {
                 <div class="error">@error</div>
             }
+            @if (ok is not null)
+            {
+                <div class="aviso ok" style="margin-top:.8rem">@ok</div>
+            }
 
-            <button type="submit" disabled="@cargando">@(cargando ? "Entrando..." : "Entrar")</button>
+            <button type="submit" disabled="@cargando">
+                @(cargando ? "Procesando…" : (registro ? "Crear cuenta" : "Entrar"))
+            </button>
         </EditForm>
+
+        <p class="cambiar-modo">
+            @if (registro)
+            {
+                <span>¿Ya tienes cuenta?</span> <a href="#" @onclick="ToggleModo" @onclick:preventDefault>Iniciar sesión</a>
+            }
+            else
+            {
+                <span>¿Eres un distribuidor nuevo?</span> <a href="#" @onclick="ToggleModo" @onclick:preventDefault>Crear cuenta</a>
+            }
+        </p>
     </div>
 </div>
 
 @code {
+    private bool registro;
+    private string nombre = "";
     private string email = "";
     private string password = "";
     private string? error;
+    private string? ok;
     private bool cargando;
 
-    private async Task Entrar()
+    private void ToggleModo()
     {
-        cargando = true; error = null;
-        error = await Auth.IniciarSesion(email, password);
+        registro = !registro;
+        error = ok = null;
+    }
+
+    private async Task Enviar()
+    {
+        cargando = true; error = ok = null;
+
+        if (registro)
+        {
+            if (string.IsNullOrWhiteSpace(nombre)) { error = "Escribe tu nombre o empresa."; cargando = false; return; }
+            error = await Auth.Registrar(nombre, email, password);
+            if (error is null)
+            {
+                ok = "¡Cuenta creada! Un administrador debe activarla y asignarte tu distribuidor antes de que puedas entrar.";
+                registro = false;
+                nombre = password = "";
+            }
+        }
+        else
+        {
+            error = await Auth.IniciarSesion(email, password);
+        }
+
         cargando = false;
     }
 }

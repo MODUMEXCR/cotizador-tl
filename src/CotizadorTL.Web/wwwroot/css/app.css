@@ -45,6 +45,8 @@ a, .btn-link { color: #5a9e1f; }
                      background: var(--tl-verde); color: #fff; font-weight: 600; cursor: pointer; }
 .login-card button:disabled { opacity: .6; cursor: default; }
 .login-card .error { color: #c0392b; font-size: .85rem; margin-top: .8rem; }
+.login-card .cambiar-modo { margin: 1.1rem 0 0; font-size: .9rem; color: #777; text-align: center; }
+.login-card .cambiar-modo a { color: #5a9e1f; font-weight: 600; }
 
 /* ---------- Cotizar ---------- */
 .cot-grid { display: flex; flex-direction: column; gap: 1rem; max-width: 100%; }

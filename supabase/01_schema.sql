@@ -162,8 +162,9 @@ create or replace function public.handle_new_user() returns trigger
   language plpgsql security definer set search_path = public as
 $$
 begin
-  insert into public.profiles (id, nombre, email, rol)
-  values (new.id, coalesce(new.raw_user_meta_data->>'nombre',''), new.email, 'Distribuidor')
+  -- Auto-registro: nace como Distribuidor INACTIVO (pendiente de aprobación de un Admin/Super).
+  insert into public.profiles (id, nombre, email, rol, activo)
+  values (new.id, coalesce(new.raw_user_meta_data->>'nombre',''), new.email, 'Distribuidor', false)
   on conflict (id) do nothing;
   return new;
 end $$;

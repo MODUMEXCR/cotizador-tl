@@ -50,6 +50,29 @@ public class AuthService
         }
     }
 
+    /// <summary>Auto-registro de un distribuidor. Queda inactivo hasta que un Admin/Super lo apruebe.
+    /// Devuelve null si todo bien, o un mensaje de error.</summary>
+    public async Task<string?> Registrar(string nombre, string email, string password)
+    {
+        try
+        {
+            var opciones = new Supabase.Gotrue.SignUpOptions
+            {
+                Data = new Dictionary<string, object> { ["nombre"] = nombre }
+            };
+            await _supa.Auth.SignUp(email, password, opciones);
+            // No lo dejamos entrar: queda pendiente de aprobación.
+            await _supa.Auth.SignOut();
+            Perfil = null;
+            Cambio?.Invoke();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return "No se pudo crear la cuenta: " + ex.Message;
+        }
+    }
+
     public async Task CerrarSesion()
     {
         await _supa.Auth.SignOut();
