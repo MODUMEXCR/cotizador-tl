@@ -12,6 +12,10 @@ h1 { color: var(--tl-oscuro); }
 
 a, .btn-link { color: #5a9e1f; }
 
+/* Menú lateral: enlaces en negrita, sin subrayado (respaldo global) */
+.nav-scrollable .nav-link { text-decoration: none !important; font-weight: 700; }
+.nav-scrollable .nav-link:hover, .nav-scrollable .nav-link:focus { text-decoration: none !important; }
+
 /* Barra superior */
 .top-row { display: flex; align-items: center; justify-content: flex-end; gap: 1rem;
            height: 3.5rem; background: #fff; border-bottom: 1px solid var(--tl-borde); }
