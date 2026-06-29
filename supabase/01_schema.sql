@@ -70,7 +70,6 @@ create index ix_precio_log_prod on public.precio_log(producto_id);
 create table public.distribuidor (
   distribuidor_id  bigint generated always as identity primary key,
   nombre           text not null,
-  contacto         text,
   email            text,
   telefono         text,
   ubicacion        text,

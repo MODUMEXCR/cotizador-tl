@@ -1,6 +1,5 @@
 @page "/admin/usuarios"
 @inject AuthService Auth
-@inject CatalogoService Catalogo
 @inject Supabase.Client Supa
 @inject NavigationManager Nav
 
@@ -18,14 +17,15 @@ else
 {
     <h1>Usuarios</h1>
     <p class="muted small">
-        El alta del <b>login</b> (correo + contraseña) se hace en Supabase → Authentication → Users, o por
-        auto-registro; aquí asignas su <b>rol</b>, <b>distribuidor</b> y <b>activación</b>.
+        Solo <b>Administradores</b> y <b>Super Admin</b>. Los distribuidores se gestionan en la pestaña
+        <b>Distribuidores</b>. El alta del login se hace en Supabase → Authentication, o por auto-registro
+        (el usuario se registra y aquí lo promueves a Administrador).
     </p>
 
     <section class="card">
         <div class="tabla-wrap">
             <table class="proyectos">
-                <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Distribuidor</th><th>Activo</th><th></th></tr></thead>
+                <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th><th></th></tr></thead>
                 <tbody>
                     @foreach (var u in usuarios)
                     {
@@ -39,22 +39,16 @@ else
                                     <option>Super Admin</option>
                                 </select>
                             </td>
-                            <td>
-                                <select @bind="u.DistribuidorIdStr">
-                                    <option value="">—</option>
-                                    @foreach (var d in Catalogo.Distribuidores)
-                                    { <option value="@d.DistribuidorId">@d.Nombre</option> }
-                                </select>
-                            </td>
                             <td><input type="checkbox" @bind="u.Activo" /></td>
                             <td><button class="btn-mini xls" @onclick="() => Guardar(u)">Guardar</button></td>
                         </tr>
                     }
                     @if (usuarios.Count == 0)
-                    { <tr><td colspan="6" class="muted center">Sin usuarios.</td></tr> }
+                    { <tr><td colspan="5" class="muted center">Sin administradores.</td></tr> }
                 </tbody>
             </table>
         </div>
+        <p class="muted small">Tip: para crear un Administrador, que la persona se registre y luego cámbiale el rol a “Administrador” aquí (al guardar, pasa a esta lista).</p>
         @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
     </section>
 }
@@ -67,9 +61,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         if (!Auth.EsSuper) { Nav.NavigateTo(""); return; }
-        await Catalogo.CargarAsync();
-        var resp = await Supa.From<Profile>().Order("nombre", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
-        foreach (var p in resp.Models)
+        var resp = await Supa.From<Profile>()
+                             .Order("nombre", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
+        foreach (var p in resp.Models.Where(p => p.Rol is "Administrador" or "Super Admin"))
             usuarios.Add(new UsuarioVM { Id = p.Id, Nombre = p.Nombre, Email = p.Email, Rol = p.Rol, DistribuidorId = p.DistribuidorId, Activo = p.Activo });
         cargando = false;
     }
@@ -79,13 +73,10 @@ else
         msg = null;
         try
         {
-            var p = new Profile
-            {
-                Id = u.Id, Nombre = u.Nombre, Email = u.Email,
-                Rol = u.Rol, DistribuidorId = u.DistribuidorId, Activo = u.Activo,
-            };
+            var p = new Profile { Id = u.Id, Nombre = u.Nombre, Email = u.Email, Rol = u.Rol, DistribuidorId = u.DistribuidorId, Activo = u.Activo };
             await Supa.From<Profile>().Update(p);
             ok = true; msg = $"Usuario {u.Email} actualizado.";
+            if (u.Rol == "Distribuidor") usuarios.Remove(u); // ya no es administrativo
         }
         catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
     }
@@ -95,13 +86,8 @@ else
         public string Id { get; set; } = "";
         public string Nombre { get; set; } = "";
         public string? Email { get; set; }
-        public string Rol { get; set; } = "Distribuidor";
+        public string Rol { get; set; } = "Administrador";
         public long? DistribuidorId { get; set; }
         public bool Activo { get; set; } = true;
-        public string DistribuidorIdStr
-        {
-            get => DistribuidorId?.ToString() ?? "";
-            set => DistribuidorId = long.TryParse(value, out var v) ? v : null;
-        }
     }
 }

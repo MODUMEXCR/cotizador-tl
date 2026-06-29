@@ -18,17 +18,52 @@ else
 {
     <h1>Distribuidores</h1>
 
+    <!-- ===== Cuentas de distribuidores (auto-registro) ===== -->
     <section class="card">
-        <h2>@(edit.DistribuidorId == 0 ? "Nuevo distribuidor" : "Editar distribuidor")</h2>
+        <h2>Cuentas de distribuidores</h2>
+        <p class="muted small">Los distribuidores se inscriben solos. Asígnales su <b>empresa</b> y <b>actívalos</b> para que puedan entrar.</p>
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead><tr><th>Nombre</th><th>Email</th><th>Empresa</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var u in cuentas)
+                    {
+                        <tr>
+                            <td>@u.Nombre</td>
+                            <td>@u.Email</td>
+                            <td>
+                                <select @bind="u.DistribuidorIdStr">
+                                    <option value="">— Asignar empresa —</option>
+                                    @foreach (var d in Catalogo.Distribuidores)
+                                    { <option value="@d.DistribuidorId">@d.Nombre</option> }
+                                </select>
+                            </td>
+                            <td>
+                                @if (u.Activo) { <span class="estado" style="background:#eaf6e0;color:#3a6b14">Activo</span> }
+                                else { <span class="estado" style="background:#fdecea;color:#b03030">Pendiente</span> }
+                            </td>
+                            <td><button class="btn-mini xls" @onclick="() => GuardarCuenta(u)">@(u.Activo ? "Guardar" : "Autorizar")</button></td>
+                        </tr>
+                    }
+                    @if (cuentas.Count == 0)
+                    { <tr><td colspan="5" class="muted center">No hay cuentas de distribuidores todavía.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        @if (msgU is not null) { <div class="aviso @(okU ? "ok" : "err")">@msgU</div> }
+    </section>
+
+    <!-- ===== Empresas distribuidoras ===== -->
+    <section class="card">
+        <h2>@(edit.DistribuidorId == 0 ? "Nueva empresa distribuidora" : "Editar empresa")</h2>
         <div class="campos">
             <label>Nombre<input @bind="edit.Nombre" /></label>
-            <label>Contacto<input @bind="edit.Contacto" /></label>
             <label>Email<input @bind="edit.Email" /></label>
             <label>Teléfono<input @bind="edit.Telefono" /></label>
             <label>Ubicación<input @bind="edit.Ubicacion" /></label>
             <label>Descuento por defecto %<input type="number" step="0.01" @bind="edit.DescuentoPct" /></label>
         </div>
-        <button class="btn-add" @onclick="Guardar" disabled="@guardando">
+        <button class="btn-add" @onclick="GuardarEmpresa" disabled="@guardando">
             @(guardando ? "Guardando…" : (edit.DistribuidorId == 0 ? "Agregar" : "Guardar cambios"))
         </button>
         @if (edit.DistribuidorId != 0)
@@ -37,16 +72,16 @@ else
     </section>
 
     <section class="card">
-        <h2>Distribuidores</h2>
+        <h2>Empresas</h2>
         <div class="tabla-wrap">
             <table class="proyectos">
-                <thead><tr><th>Nombre</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Ubicación</th><th class="num">Desc. %</th><th></th></tr></thead>
+                <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Ubicación</th><th class="num">Desc. %</th><th></th></tr></thead>
                 <tbody>
                     @foreach (var d in Catalogo.Distribuidores)
                     {
                         <tr>
-                            <td><b>@d.Nombre</b></td><td>@d.Contacto</td><td>@d.Email</td>
-                            <td>@d.Telefono</td><td>@d.Ubicacion</td><td class="num">@d.DescuentoPct.ToString("0.#")</td>
+                            <td><b>@d.Nombre</b></td><td>@d.Email</td><td>@d.Telefono</td><td>@d.Ubicacion</td>
+                            <td class="num">@d.DescuentoPct.ToString("0.#")</td>
                             <td class="acciones">
                                 <button class="btn-mini xls" @onclick="() => Editar(d)">Editar</button>
                                 @if (Auth.EsSuper)
@@ -55,7 +90,7 @@ else
                         </tr>
                     }
                     @if (Catalogo.Distribuidores.Count == 0)
-                    { <tr><td colspan="7" class="muted center">Sin distribuidores.</td></tr> }
+                    { <tr><td colspan="6" class="muted center">Sin empresas.</td></tr> }
                 </tbody>
             </table>
         </div>
@@ -64,43 +99,59 @@ else
 
 @code {
     private bool cargando = true, guardando;
-    private string? msg; private bool ok;
+    private string? msg, msgU; private bool ok, okU;
     private PDistribuidor edit = new();
+    private readonly List<CuentaVM> cuentas = new();
 
     protected override async Task OnInitializedAsync()
     {
         if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
         await Catalogo.CargarAsync();
+        await CargarCuentas();
         cargando = false;
+    }
+
+    private async Task CargarCuentas()
+    {
+        cuentas.Clear();
+        var resp = await Supa.From<Profile>().Order("nombre", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
+        foreach (var p in resp.Models.Where(p => p.Rol == "Distribuidor"))
+            cuentas.Add(new CuentaVM { Id = p.Id, Nombre = p.Nombre, Email = p.Email, DistribuidorId = p.DistribuidorId, Activo = p.Activo });
+    }
+
+    private async Task GuardarCuenta(CuentaVM u)
+    {
+        msgU = null;
+        if (u.DistribuidorId is null) { okU = false; msgU = "Primero asigna una empresa al distribuidor."; return; }
+        try
+        {
+            var p = new Profile { Id = u.Id, Nombre = u.Nombre, Email = u.Email, Rol = "Distribuidor", DistribuidorId = u.DistribuidorId, Activo = true };
+            await Supa.From<Profile>().Update(p);
+            u.Activo = true;
+            okU = true; msgU = $"{u.Email} autorizado y asignado a su empresa.";
+        }
+        catch (Exception ex) { okU = false; msgU = "No se pudo guardar: " + ex.Message; }
     }
 
     private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
 
     private void Editar(PDistribuidor d)
     {
-        edit = new PDistribuidor
-        {
-            DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Contacto = d.Contacto,
-            Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion,
-            DescuentoPct = d.DescuentoPct, Activo = d.Activo,
-        };
+        edit = new PDistribuidor { DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion, DescuentoPct = d.DescuentoPct, Activo = d.Activo };
         msg = null;
     }
 
-    private async Task Guardar()
+    private async Task GuardarEmpresa()
     {
         msg = null;
         if (string.IsNullOrWhiteSpace(edit.Nombre)) { ok = false; msg = "El nombre es obligatorio."; return; }
         guardando = true;
         try
         {
-            if (edit.DistribuidorId == 0)
-                await Supa.From<PDistribuidor>().Insert(edit);
-            else
-                await Supa.From<PDistribuidor>().Update(edit);
+            if (edit.DistribuidorId == 0) await Supa.From<PDistribuidor>().Insert(edit);
+            else await Supa.From<PDistribuidor>().Update(edit);
             await Catalogo.CargarAsync(forzar: true);
-            ok = true; msg = "Distribuidor guardado.";
-            NuevoForm();
+            ok = true; msg = "Empresa guardada."; NuevoForm();
         }
         catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
         finally { guardando = false; }
@@ -113,8 +164,22 @@ else
         {
             await Supa.From<PDistribuidor>().Where(x => x.DistribuidorId == d.DistribuidorId).Delete();
             await Catalogo.CargarAsync(forzar: true);
-            ok = true; msg = $"{d.Nombre} eliminado.";
+            ok = true; msg = $"{d.Nombre} eliminada.";
         }
-        catch (Exception ex) { ok = false; msg = "No se pudo borrar (¿tiene cotizaciones?): " + ex.Message; }
+        catch (Exception ex) { ok = false; msg = "No se pudo borrar (¿tiene cotizaciones o usuarios?): " + ex.Message; }
+    }
+
+    private sealed class CuentaVM
+    {
+        public string Id { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string? Email { get; set; }
+        public long? DistribuidorId { get; set; }
+        public bool Activo { get; set; }
+        public string DistribuidorIdStr
+        {
+            get => DistribuidorId?.ToString() ?? "";
+            set => DistribuidorId = long.TryParse(value, out var v) ? v : null;
+        }
     }
 }

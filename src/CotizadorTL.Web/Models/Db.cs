@@ -47,7 +47,6 @@ public class PDistribuidor : BaseModel
 {
     [PrimaryKey("distribuidor_id", false)] public long DistribuidorId { get; set; }
     [Column("nombre")]        public string Nombre { get; set; } = "";
-    [Column("contacto")]      public string? Contacto { get; set; }
     [Column("email")]         public string? Email { get; set; }
     [Column("telefono")]      public string? Telefono { get; set; }
     [Column("ubicacion")]     public string? Ubicacion { get; set; }

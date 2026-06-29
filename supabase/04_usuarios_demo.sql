@@ -4,10 +4,10 @@
 -- =====================================================================
 
 -- 1) Distribuidores de ejemplo (el % es el descuento por defecto del distribuidor).
-insert into public.distribuidor (nombre, contacto, email, telefono, ubicacion, descuento_pct) values
-  ('REQUIEZ',  'Guadalupe Murillo', null, null, 'México', 30),
-  ('RATTAN',   'Roberto',           null, null, 'México', 20),
-  ('SOLARE',   'Mayra Mancia',      null, null, 'México', 50)
+insert into public.distribuidor (nombre, email, telefono, ubicacion, descuento_pct) values
+  ('REQUIEZ', null, null, 'México', 30),
+  ('RATTAN',  null, null, 'México', 20),
+  ('SOLARE',  null, null, 'México', 50)
 on conflict do nothing;
 
 -- 2) PRIMER SUPER ADMIN
