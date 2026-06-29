@@ -8,9 +8,17 @@
 
   const DIR = ["Calle La Válvula #15", "Parque Industrial Perisur, 45619",
                "San Pedro Tlaquepaque, Jalisco.", "Tel. 33 3003 3200"];
-  const BANNER = ["TIEMPO DE ENTREGA CONFIRMAR 1 SEMANA, SALVO CONFIRMACIÓN DE MATERIAL",
-                  "ESTA COTIZACIÓN NO INCLUYE COSTOS DE FLETE, INSTALACIÓN O VIÁTICOS.",
-                  "DESCUENTO DISTRIBUIDOR APLICADO"];
+  // El texto "no incluye..." se arma según lo que SÍ se esté cobrando (instalación/flete).
+  function bannerLineas(d) {
+    const excl = [];
+    if (!d.incluyeFlete) excl.push("FLETE");
+    if (!d.incluyeInstalacion) excl.push("INSTALACIÓN");
+    excl.push("VIÁTICOS");
+    let lista = excl.length === 1 ? excl[0] : excl.slice(0, -1).join(", ") + " O " + excl[excl.length - 1];
+    return ["TIEMPO DE ENTREGA CONFIRMAR 1 SEMANA, SALVO CONFIRMACIÓN DE MATERIAL",
+            "ESTA COTIZACIÓN NO INCLUYE COSTOS DE " + lista + ".",
+            "DESCUENTO DISTRIBUIDOR APLICADO"];
+  }
   const NOTA = "CARGOS POR ALMACENAJE $100 POR DÍA NATURAL, DESPUÉS DE 1 MES DE LA FECHA DE ENTREGA DEL PEDIDO. " +
                "CONDICIONES DE PAGO: 60% DE ANTICIPO, 40% DE SALDO EL CUAL DEBE SER LIQUIDADO ANTES DE LA ENTREGA DEL PRODUCTO.";
   const CONTACTO = "TEL: 33 3003 3200 EXT 201   CEL: 33 1044 0220 / 33 1446 2754 / 33 1942 1893";
@@ -160,12 +168,13 @@
       }
 
       // ---------- Banner verde ----------
-      const bh = 12 * BANNER.length + 10;
+      const banner = bannerLineas(d);
+      const bh = 12 * banner.length + 10;
       doc.setFillColor(...VERDE);
       doc.rect(M, by, W - 2 * M, bh, "F");
       doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
       let yb = by + 14;
-      BANNER.forEach((l) => { doc.text(l, W / 2, yb, { align: "center" }); yb += 12; });
+      banner.forEach((l) => { doc.text(l, W / 2, yb, { align: "center" }); yb += 12; });
       by += bh + 16;
 
       // ---------- Pie ----------

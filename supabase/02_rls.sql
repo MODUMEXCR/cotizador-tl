@@ -39,6 +39,7 @@ alter table public.distribuidor     enable row level security;
 alter table public.profiles         enable row level security;
 alter table public.cotizacion       enable row level security;
 alter table public.cotizacion_linea enable row level security;
+alter table public.color            enable row level security;
 
 -- ---------- PROFILES (usuarios) ----------
 -- Jerarquía:
@@ -135,7 +136,7 @@ create policy cotlinea_all on public.cotizacion_linea for all
 do $$
 declare t text;
 begin
-  foreach t in array array['familia','producto','producto_precio'] loop
+  foreach t in array array['familia','producto','producto_precio','color'] loop
     execute format('create policy %1$s_select on public.%1$s for select using ( auth.uid() is not null );', t);
     execute format('create policy %1$s_modify on public.%1$s for all using ( public.es_admin() ) with check ( public.es_admin() );', t);
   end loop;

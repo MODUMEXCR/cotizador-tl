@@ -19,6 +19,7 @@ public class CatalogoService
     public List<Familia> Familias { get; private set; } = new();
     public List<Producto> Productos { get; private set; } = new();
     public List<PDistribuidor> Distribuidores { get; private set; } = new();
+    public List<PColor> Colores { get; private set; } = new();
 
     public async Task CargarAsync(bool forzar = false)
     {
@@ -30,6 +31,7 @@ public class CatalogoService
                                    .Order("orden", Constants.Ordering.Ascending).Get();
         var precios   = await _supa.From<PProductoPrecio>().Get();
         var distribs  = await _supa.From<PDistribuidor>().Order("nombre", Constants.Ordering.Ascending).Get();
+        var colores   = await _supa.From<PColor>().Order("nombre", Constants.Ordering.Ascending).Get();
 
         // Agrupar precios por producto
         var preciosPorProducto = precios.Models
@@ -54,12 +56,14 @@ public class CatalogoService
             Espesor = p.Espesor,
             RequiereMedidas = p.RequiereMedidas,
             AplicaDescuento = p.AplicaDescuento,
+            EsExtra = p.EsExtra,
             Activo = p.Activo,
             Orden = p.Orden,
             Precios = preciosPorProducto.TryGetValue(p.ProductoId, out var d) ? d : new()
         }).ToList();
 
         Distribuidores = distribs.Models;
+        Colores = colores.Models;
         _cargado = true;
     }
 

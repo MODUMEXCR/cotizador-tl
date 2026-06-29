@@ -30,8 +30,20 @@ public class PProducto : BaseModel
     [Column("espesor")]          public string? Espesor { get; set; }
     [Column("requiere_medidas")] public bool RequiereMedidas { get; set; }
     [Column("aplica_descuento")] public bool AplicaDescuento { get; set; } = true;
+    [Column("es_extra")]         public bool EsExtra { get; set; }
     [Column("activo")]           public bool Activo { get; set; } = true;
     [Column("orden")]            public int Orden { get; set; }
+}
+
+[Table("color")]
+public class PColor : BaseModel
+{
+    [PrimaryKey("color_id", false)] public long ColorId { get; set; }
+    [Column("nombre")]          public string Nombre { get; set; } = "";
+    [Column("grupo")]           public string Grupo { get; set; } = "";
+    [Column("ambito")]          public string Ambito { get; set; } = "";
+    [Column("tiempo_especial")] public bool TiempoEspecial { get; set; }
+    [Column("activo")]          public bool Activo { get; set; } = true;
 }
 
 [Table("producto_precio")]

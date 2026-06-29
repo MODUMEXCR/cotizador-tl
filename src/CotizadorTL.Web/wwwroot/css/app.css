@@ -59,6 +59,25 @@ a, .btn-link { color: #5a9e1f; }
 
 .btn-add { float: right; background: var(--tl-verde); color: #fff; border: 0; border-radius: 6px;
            padding: .3rem .7rem; font-size: .85rem; cursor: pointer; }
+
+/* Configurador: tarjeta por renglón */
+.renglon-card { border: 1px solid var(--tl-borde); border-radius: 10px; padding: .9rem 1rem; margin-bottom: 1rem; background: #fcfcfd; }
+.renglon-top { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-end; }
+.renglon-top > label, .renglon-opts > label { display: flex; flex-direction: column; font-size: .8rem; color: #555; gap: .2rem; }
+.renglon-top > label { flex: 1; min-width: 160px; }
+.renglon-top .mini, .renglon-opts .mini { flex: 0 0 auto; min-width: 0; }
+.renglon-top .mini input { width: 6rem; }
+.renglon-top select, .renglon-top input, .renglon-opts select, .renglon-opts input, .renglon-card textarea {
+    padding: .4rem .5rem; border: 1px solid var(--tl-borde); border-radius: 6px; font-size: .92rem; box-sizing: border-box; }
+.renglon-opts { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-end; margin-top: .7rem; }
+.renglon-opts label { flex: 1; min-width: 150px; }
+.renglon-opts .mini input { width: 7rem; }
+label.chk { flex-direction: row !important; align-items: center; gap: .4rem; font-size: .85rem; color: #333; }
+.extras { margin-top: .7rem; background: #f4f5f7; border-radius: 8px; padding: .6rem .8rem; font-size: .85rem; }
+.extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .3rem .8rem; margin-top: .4rem; }
+.desc { display: flex; flex-direction: column; font-size: .8rem; color: #555; gap: .2rem; margin-top: .7rem; }
+.desc textarea { width: 100%; }
+.renglon-importe { margin-top: .6rem; font-size: .95rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
 .tabla-wrap { overflow-x: auto; }
 table.renglones { width: 100%; border-collapse: collapse; font-size: .95rem; }
 table.renglones th { text-align: left; color: #777; font-weight: 600; padding: .35rem .4rem; border-bottom: 2px solid var(--tl-borde); white-space: nowrap; }

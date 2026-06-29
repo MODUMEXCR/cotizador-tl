@@ -35,9 +35,21 @@ create table public.producto (
   espesor          text,
   requiere_medidas boolean not null default false, -- pide largo/ancho (cm) para calcular m2
   aplica_descuento boolean not null default true,
+  es_extra         boolean not null default false,  -- extra de locker (se suma al precio del locker)
   activo           boolean not null default true,
   orden            int not null default 0,
   creado_el        timestamptz not null default now()
+);
+
+-- Catálogo de colores. El GRUPO (G1..G4) define el precio de la cubierta; el ÁMBITO
+-- indica dónde aplica (cubierta interior/exterior, frente/interior de locker, banca).
+create table public.color (
+  color_id        bigint generated always as identity primary key,
+  nombre          text not null,
+  grupo           text not null,                 -- 'G1','G2','G3','G4','INT'
+  ambito          text not null,                 -- 'cubierta_int','cubierta_ext','locker_frente','locker_interior','banca'
+  tiempo_especial boolean not null default false,
+  activo          boolean not null default true
 );
 create index ix_producto_familia on public.producto(familia_codigo);
 create index ix_producto_sap      on public.producto(codigo_sap);

@@ -28,6 +28,7 @@ public sealed class Producto
     public string? Espesor { get; set; }
     public bool RequiereMedidas { get; set; }
     public bool AplicaDescuento { get; set; } = true;
+    public bool EsExtra { get; set; }
     public bool Activo { get; set; } = true;
     public int Orden { get; set; }
     /// <summary>Precio por grupo/tier (G1..G4, PRO, SMART, MT/SM/BR, UNICO, etc.).</summary>
