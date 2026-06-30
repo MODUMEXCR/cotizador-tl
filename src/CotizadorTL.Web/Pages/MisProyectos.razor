@@ -3,6 +3,7 @@
 @inject CatalogoService Catalogo
 @inject Supabase.Client Supa
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <PageTitle>Mis Proyectos</PageTitle>
 
@@ -49,7 +50,7 @@ else
                 <tbody>
                     @foreach (var c in Filtradas)
                     {
-                        <tr>
+                        <tr @ondblclick="() => Abrir(c)" title="Doble clic para abrir/editar" style="cursor:pointer">
                             <td><b>@c.Folio</b></td>
                             <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yyyy")</td>
                             @if (Auth.PuedeVerTodo) { <td>@NombreDist(c.DistribuidorId)</td> }
@@ -58,8 +59,11 @@ else
                             <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
                             <td><span class="estado">@c.Estado</span></td>
                             <td class="acciones">
-                                <button class="btn-mini pdf" @onclick="() => DescargarPdf(c)">PDF</button>
+                                <button class="btn-mini xls" @onclick="() => Abrir(c)" style="background:#3a6b14">Abrir</button>
+                                <button class="btn-mini pdf" @onclick="() => DescargarPdf(c)" style="background:#c0392b">PDF</button>
                                 <button class="btn-mini xls" @onclick="() => DescargarExcel(c)">Excel</button>
+                                @if (Auth.EsAdmin)
+                                { <button class="btn-mini pdf" @onclick="() => Eliminar(c)">Eliminar</button> }
                             </td>
                         </tr>
                     }
@@ -97,6 +101,20 @@ else
         (filtroDistribuidor == 0 || c.DistribuidorId == filtroDistribuidor));
 
     private void LimpiarFiltros() { desde = hasta = null; filtroDistribuidor = 0; }
+
+    private void Abrir(PCotizacion c) => Nav.NavigateTo($"cotizar/{c.CotizacionId}");
+
+    private async Task Eliminar(PCotizacion c)
+    {
+        mensaje = null;
+        if (!await JS.InvokeAsync<bool>("confirm", $"¿Eliminar la cotización {c.Folio}? Esta acción no se puede deshacer.")) return;
+        try
+        {
+            await Supa.From<PCotizacion>().Where(x => x.CotizacionId == c.CotizacionId).Delete();
+            todas.Remove(c);
+        }
+        catch (Exception ex) { mensaje = "No se pudo eliminar: " + ex.Message; }
+    }
 
     private string NombreDist(long? id) =>
         Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == id)?.Nombre ?? "—";

@@ -1,4 +1,5 @@
 @page "/"
+@page "/cotizar/{CotId:long}"
 @inject AuthService Auth
 @inject CatalogoService Catalogo
 @inject Supabase.Client Supa
@@ -228,14 +229,50 @@ else
     };
     private string ColorRegion => RegionActual == "México" ? "MXN" : "LATAM";
 
+    [Parameter] public long? CotId { get; set; }
+    private long? editandoId;
+
     protected override async Task OnInitializedAsync()
     {
         await Catalogo.CargarAsync();
+        if (CotId is long id) { await CargarParaEditar(id); cargando = false; return; }
         cot.Folio = "COT-" + DateTime.Now.ToString("yyMMdd-HHmm");
         cot.CotizadoPor = Auth.Perfil?.Nombre;
-        if (!Auth.EsAdmin && Auth.Perfil?.DistribuidorId is long d) { distribuidorId = d; OnDistribuidorChanged(); }
+        if (!Auth.PuedeVerTodo && Auth.Perfil?.DistribuidorId is long d) { distribuidorId = d; OnDistribuidorChanged(); }
         AgregarLinea();
         cargando = false;
+    }
+
+    private async Task CargarParaEditar(long id)
+    {
+        try
+        {
+            var c = await Supa.From<PCotizacion>().Where(x => x.CotizacionId == id).Single();
+            if (c is not null)
+            {
+                editandoId = id;
+                if (!string.IsNullOrWhiteSpace(c.AppJson))
+                {
+                    var est = System.Text.Json.JsonSerializer.Deserialize<EstadoCot>(c.AppJson!);
+                    if (est is not null)
+                    {
+                        distribuidorId = est.DistribuidorId; vigencia = est.Vigencia;
+                        cot = est.Header ?? new(); cot.Lineas = new();
+                        lineas.Clear(); lineas.AddRange(est.Lineas);
+                    }
+                }
+            }
+        }
+        catch (Exception ex) { Aviso("No se pudo abrir la cotización: " + ex.Message, false); }
+        if (lineas.Count == 0) AgregarLinea();
+    }
+
+    private sealed class EstadoCot
+    {
+        public long DistribuidorId { get; set; }
+        public DateTime? Vigencia { get; set; }
+        public Cotizacion Header { get; set; } = new();
+        public List<LineaUI> Lineas { get; set; } = new();
     }
 
     // ---------- catálogo / filtros ----------
@@ -400,9 +437,16 @@ else
         {
             ArmarCotizacion();
             var t = MotorPrecios.Calcular(cot);
+
+            // Estado completo del configurador (para reabrir/editar tal cual)
+            cot.Lineas = new();
+            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Header = cot, Lineas = lineas };
+            var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
+
+            var folio = string.IsNullOrWhiteSpace(cot.Folio) ? "COT-" + DateTime.Now.ToString("yyMMddHHmmss") : cot.Folio;
             var pcot = new PCotizacion
             {
-                Folio = string.IsNullOrWhiteSpace(cot.Folio) ? "COT-" + DateTime.Now.ToString("yyMMddHHmmss") : cot.Folio,
+                Folio = folio,
                 Vigencia = vigencia, RazonSocial = cot.RazonSocial, Proyecto = cot.Proyecto, Titulo = cot.Titulo,
                 Cliente = cot.Cliente, AtencionA = cot.AtencionA, Telefono = cot.Telefono, Ciudad = cot.Ciudad,
                 CotizadoPor = cot.CotizadoPor, DistribuidorId = distribuidorId, CreadoPor = Auth.Perfil?.Id,
@@ -411,24 +455,39 @@ else
                 IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, Comentarios = cot.Comentarios,
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
+                AppJson = appJson,
             };
-            var resp = await Supa.From<PCotizacion>().Insert(pcot);
-            var nuevo = resp.Models.First();
+
+            long cotId;
+            if (editandoId is long eid)
+            {
+                pcot.CotizacionId = eid;
+                await Supa.From<PCotizacion>().Update(pcot);
+                await Supa.From<PCotizacionLinea>().Where(x => x.CotizacionId == eid).Delete();
+                cotId = eid;
+            }
+            else
+            {
+                var resp = await Supa.From<PCotizacion>().Insert(pcot);
+                cotId = resp.Models.First().CotizacionId;
+            }
+
             var filas = new List<PCotizacionLinea>(); int orden = 1;
             foreach (var l in conProducto)
             {
                 var p = ProdDe(l)!;
                 filas.Add(new PCotizacionLinea
                 {
-                    CotizacionId = nuevo.CotizacionId, Orden = orden++, ProductoId = l.ProductoId, Cantidad = l.Cantidad,
-                    CodigoSap = p.CodigoSap, Descripcion = l.Descripcion, Color = string.IsNullOrEmpty(l.ColorNombre) ? null : l.ColorNombre,
+                    CotizacionId = cotId, Orden = orden++, ProductoId = l.ProductoId, Cantidad = l.Cantidad,
+                    CodigoSap = p.CodigoSap, Descripcion = l.Descripcion, Color = ColorFinal(l),
                     LargoCm = l.LargoCm, AnchoCm = l.AnchoCm, PrecioUnitario = PrecioUnit(l), DescuentoPct = l.DescuentoPct,
                     AplicaDescuento = p.AplicaDescuento, Subtotal = MotorPrecios.R(Importe(l)),
                 });
             }
             await Supa.From<PCotizacionLinea>().Insert(filas);
             await DescargarPdf();
-            Aviso($"Cotización {nuevo.Folio} guardada y PDF descargado. La verás en Mis Proyectos.", true);
+            Aviso($"Cotización {folio} {(editandoId is null ? "guardada" : "actualizada")} y PDF descargado.", true);
+            editandoId = cotId;
         }
         catch (Exception ex) { Aviso("No se pudo guardar: " + ex.Message, false); }
         finally { guardando = false; }
@@ -467,6 +526,7 @@ else
     {
         public string? FamiliaCodigo { get; set; }
         public long? ProductoId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public string ProductoIdStr { get => ProductoId?.ToString() ?? ""; set => ProductoId = long.TryParse(value, out var v) ? v : null; }
         public string Grupo { get; set; } = "";
         public decimal Cantidad { get; set; } = 1;
@@ -478,6 +538,7 @@ else
         public string ColorInterior { get; set; } = "";
         public bool ColorEspecial { get; set; }
         public bool Exterior { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public string TipoStr { get => Exterior ? "Exterior" : "Interior"; set => Exterior = value == "Exterior"; }
         public string Descripcion { get; set; } = "";
         public Dictionary<long, int> ExtrasCant { get; set; } = new();  // extraId -> cantidad

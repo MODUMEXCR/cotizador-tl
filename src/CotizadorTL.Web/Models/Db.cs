@@ -107,6 +107,7 @@ public class PCotizacion : BaseModel
     [Column("gran_total")]     public decimal GranTotal { get; set; }
     [Column("anticipo_monto")] public decimal AnticipoMonto { get; set; }
     [Column("saldo_monto")]    public decimal SaldoMonto { get; set; }
+    [Column("app_json")]       public string? AppJson { get; set; }
 }
 
 [Table("cotizacion_linea")]

@@ -151,6 +151,7 @@ create table public.cotizacion (
   gran_total      numeric(16,2) not null default 0,
   anticipo_monto  numeric(16,2) not null default 0,
   saldo_monto     numeric(16,2) not null default 0,
+  app_json        text,                            -- estado completo del configurador (para reabrir/editar)
   actualizado_el  timestamptz not null default now()
 );
 create index ix_cotizacion_distribuidor on public.cotizacion(distribuidor_id);
