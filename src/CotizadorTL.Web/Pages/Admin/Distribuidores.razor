@@ -3,8 +3,6 @@
 @inject CatalogoService Catalogo
 @inject Supabase.Client Supa
 @inject NavigationManager Nav
-@inject HttpClient Http
-@inject Microsoft.Extensions.Configuration.IConfiguration Config
 
 <PageTitle>Distribuidores</PageTitle>
 
@@ -46,7 +44,8 @@ else
                             </td>
                             <td class="acciones">
                                 <button class="btn-mini xls" @onclick="() => GuardarCuenta(u)">@(u.Activo ? "Guardar" : "Autorizar")</button>
-                                <button class="btn-mini pdf" @onclick="() => EliminarCuenta(u)">Eliminar</button>
+                                @if (u.Activo)
+                                { <button class="btn-mini pdf" @onclick="() => DesactivarCuenta(u)">Desactivar</button> }
                             </td>
                         </tr>
                     }
@@ -150,30 +149,19 @@ else
         catch (Exception ex) { okU = false; msgU = "No se pudo guardar: " + ex.Message; }
     }
 
-    private async Task EliminarCuenta(CuentaVM u)
+    private async Task DesactivarCuenta(CuentaVM u)
     {
         msgU = null;
         try
         {
-            // Borra el LOGIN completo vía Edge Function (libera el correo para re-registro).
-            var url = Config["Supabase:Url"];
-            var token = Supa.Auth.CurrentSession?.AccessToken;
-            var req = new HttpRequestMessage(HttpMethod.Post, $"{url}/functions/v1/eliminar-usuario");
-            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
-            req.Headers.TryAddWithoutValidation("apikey", Config["Supabase:AnonKey"]);
-            req.Content = System.Net.Http.Json.JsonContent.Create(new { user_id = u.Id });
-            var resp = await Http.SendAsync(req);
-            if (resp.IsSuccessStatusCode)
-            {
-                cuentas.Remove(u);
-                okU = true; msgU = $"Cuenta de {u.Email} eliminada. El correo queda libre para registrarse de nuevo.";
-            }
-            else
-            {
-                okU = false; msgU = "No se pudo eliminar. ¿Ya está desplegada la función 'eliminar-usuario' en Supabase? (" + (int)resp.StatusCode + ")";
-            }
+            // No se borra: se conserva el correo y queda INACTIVO (pendiente). Se puede reactivar luego.
+            var p = new Profile { Id = u.Id, Nombre = u.Nombre, Email = u.Email, Rol = "Distribuidor",
+                                  DistribuidorId = u.DistribuidorId, Activo = false };
+            await Supa.From<Profile>().Update(p);
+            u.Activo = false;
+            okU = true; msgU = $"{u.Email} desactivado. Queda pendiente; puedes reactivarlo con “Autorizar” cuando quieras.";
         }
-        catch (Exception ex) { okU = false; msgU = "No se pudo eliminar: " + ex.Message; }
+        catch (Exception ex) { okU = false; msgU = "No se pudo desactivar: " + ex.Message; }
     }
 
     private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
