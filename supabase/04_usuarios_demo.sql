@@ -4,11 +4,14 @@
 -- =====================================================================
 
 -- 1) Distribuidores de ejemplo (el % es el descuento por defecto del distribuidor).
-insert into public.distribuidor (nombre, email, telefono, ubicacion, descuento_pct) values
-  ('REQUIEZ', null, null, 'México', 30),
-  ('RATTAN',  null, null, 'México', 20),
-  ('SOLARE',  null, null, 'México', 50)
+insert into public.distribuidor (nombre, email, telefono, ubicacion, pais, descuento_pct) values
+  ('REQUIEZ', null, null, null, 'México', 30),
+  ('RATTAN',  null, null, null, 'México', 20),
+  ('SOLARE',  null, null, null, 'México', 50)
 on conflict do nothing;
+
+-- Divisor para precios LATAM (MXN ÷ divisor = USD). Editable por el admin.
+insert into public.config (clave, valor) values ('divisor_usd', '17') on conflict (clave) do nothing;
 
 -- 2) PRIMER SUPER ADMIN
 -- Supabase Auth maneja el email + contraseña. Pasos:

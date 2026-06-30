@@ -48,8 +48,15 @@ create table public.color (
   nombre          text not null,
   grupo           text not null,                 -- 'G1','G2','G3','G4','INT'
   ambito          text not null,                 -- 'cubierta_int','cubierta_ext','locker_frente','locker_interior','banca'
+  region          text not null default 'MXN',   -- 'MXN' | 'LATAM'
   tiempo_especial boolean not null default false,
   activo          boolean not null default true
+);
+
+-- Configuración editable (clave/valor): divisor_usd (MXN ÷ divisor = USD para LATAM), etc.
+create table public.config (
+  clave text primary key,
+  valor text not null
 );
 create index ix_producto_familia on public.producto(familia_codigo);
 create index ix_producto_sap      on public.producto(codigo_sap);
@@ -85,6 +92,7 @@ create table public.distribuidor (
   email            text,
   telefono         text,
   ubicacion        text,
+  pais             text not null default 'México',  -- define la región: México=MXN, otro=LATAM
   descuento_pct    numeric(5,2) not null default 0, -- % de descuento por defecto del distribuidor
   activo           boolean not null default true,
   creado_el        timestamptz not null default now()

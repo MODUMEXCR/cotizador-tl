@@ -171,7 +171,7 @@ else
 
         <!-- TOTALES -->
         <section class="card totales">
-            <h2>Totales</h2>
+            <h2>Totales <span class="muted" style="font-size:.8rem">(@MonedaActual@(RegionActual=="LATAM" ? $" · ÷{Catalogo.DivisorUsd:0.##}" : ""))</span></h2>
             @{ var t = MotorPrecios.Calcular(ArmarCotizacion()); }
             <table class="tot">
                 <tr><td>Subtotal público</td><td class="num">@Money(t.Subtotal)</td></tr>
@@ -197,8 +197,11 @@ else
     private long distribuidorId;
     private readonly List<LineaUI> lineas = new();
 
-    private string nombreDistribuidorActual =>
-        Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId)?.Nombre ?? "(sin asignar)";
+    private PDistribuidor? DistribActual => Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId);
+    private string nombreDistribuidorActual => DistribActual?.Nombre ?? "(sin asignar)";
+    private string RegionActual => DistribActual?.Region ?? "MXN";
+    private string MonedaActual => RegionActual == "LATAM" ? "USD" : "MXN";
+    private decimal Factor => RegionActual == "LATAM" ? 1m / (Catalogo.DivisorUsd <= 0 ? 17m : Catalogo.DivisorUsd) : 1m;
 
     protected override async Task OnInitializedAsync()
     {
@@ -220,10 +223,11 @@ else
 
     private IEnumerable<PColor> ColoresDe(LineaUI l)
     {
-        if (EsFamilia(l, "CUBIERTAS")) return Catalogo.Colores.Where(c => c.Ambito == (l.Exterior ? "cubierta_ext" : "cubierta_int"));
-        if (EsFamilia(l, "BANCAS"))    return Catalogo.Colores.Where(c => c.Ambito == "banca");
-        if (EsFamilia(l, "LOCKERS"))   return Catalogo.Colores.Where(c => c.Ambito == "locker_frente");
-        return Enumerable.Empty<PColor>();
+        var amb = EsFamilia(l, "CUBIERTAS") ? (l.Exterior ? "cubierta_ext" : "cubierta_int")
+                : EsFamilia(l, "BANCAS") ? "banca"
+                : EsFamilia(l, "LOCKERS") ? "locker_frente" : null;
+        if (amb is null) return Enumerable.Empty<PColor>();
+        return Catalogo.Colores.Where(c => c.Ambito == amb && c.Region == RegionActual);
     }
 
     private string TierDe(Producto p) => (p.CodigoSap.StartsWith("L-") || p.CodigoSap.Contains("SMART")) ? "SMART" : "PRO";
@@ -260,7 +264,7 @@ else
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra)
             foreach (var exId in l.ExtrasIds)
                 if (Catalogo.Buscar(exId) is Producto ex) precio += PrecioExtra(ex, TierDe(p));
-        return precio;
+        return precio * Factor;   // LATAM: ÷ divisor (USD); MXN: ×1
     }
 
     private decimal Importe(LineaUI l) => l.Cantidad * PrecioUnit(l);
@@ -284,8 +288,15 @@ else
     private void OnColorChanged(LineaUI l) { RegenerarDescripcion(l); StateHasChanged(); }
     private void OnDistribuidorChanged()
     {
-        var d = Catalogo.Distribuidores.FirstOrDefault(x => x.DistribuidorId == distribuidorId);
-        if (d is not null) cot.DescuentoPct = d.DescuentoPct;
+        var d = DistribActual;
+        if (d is not null)
+        {
+            cot.DescuentoPct = d.DescuentoPct;
+            cot.IvaPct = RegionActual == "MXN" ? 16m : 0m;   // default por región (editable)
+            if (string.IsNullOrWhiteSpace(cot.RazonSocial)) cot.RazonSocial = d.Nombre;
+            // El cambio de moneda/colores invalida los colores ya elegidos:
+            foreach (var l in lineas) { l.ColorNombre = ""; l.ColorInterior = ""; }
+        }
         StateHasChanged();
     }
     private void ToggleExtra(LineaUI l, long id, bool on)
@@ -350,7 +361,8 @@ else
                 Vigencia = vigencia, RazonSocial = cot.RazonSocial, Proyecto = cot.Proyecto, Titulo = cot.Titulo,
                 Cliente = cot.Cliente, AtencionA = cot.AtencionA, Telefono = cot.Telefono, Ciudad = cot.Ciudad,
                 CotizadoPor = cot.CotizadoPor, DistribuidorId = distribuidorId, CreadoPor = Auth.Perfil?.Id,
-                Estado = "borrador", Moneda = "MXN", TipoCambio = cot.TipoCambio, DescuentoPct = cot.DescuentoPct,
+                Estado = "borrador", Moneda = MonedaActual,
+                TipoCambio = RegionActual == "LATAM" ? Catalogo.DivisorUsd : 1m, DescuentoPct = cot.DescuentoPct,
                 IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, Comentarios = cot.Comentarios,
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
@@ -393,6 +405,7 @@ else
             atencionA = cot.AtencionA, telefono = cot.Telefono, ciudad = cot.Ciudad, cotizadoPor = cot.CotizadoPor,
             comentarios = cot.Comentarios, descuentoPct = cot.DescuentoPct.ToString("0.#"),
             ivaPct = cot.IvaPct.ToString("0.#"), anticipoPct = (double)cot.AnticipoPct,
+            moneda = MonedaActual,
             incluyeInstalacion = hayInstalacion, incluyeFlete = hayFlete,
             totales = new { subtotal = (double)t.Subtotal, descuentoMonto = (double)t.DescuentoMonto, subtotalDesc = (double)t.SubtotalDesc,
                 ivaMonto = (double)t.IvaMonto, granTotal = (double)t.GranTotal, anticipo = (double)t.Anticipo, saldo = (double)t.Saldo },

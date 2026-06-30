@@ -40,6 +40,7 @@ alter table public.profiles         enable row level security;
 alter table public.cotizacion       enable row level security;
 alter table public.cotizacion_linea enable row level security;
 alter table public.color            enable row level security;
+alter table public.config           enable row level security;
 
 -- ---------- PROFILES (usuarios) ----------
 -- Jerarquía:
@@ -142,6 +143,10 @@ begin
     execute format('create policy %1$s_modify on public.%1$s for all using ( public.es_admin() ) with check ( public.es_admin() );', t);
   end loop;
 end $$;
+
+-- ---------- CONFIG (divisor USD, etc.) ----------
+create policy config_select on public.config for select using ( auth.uid() is not null );
+create policy config_modify on public.config for all using ( public.es_admin() ) with check ( public.es_admin() );
 
 -- ---------- BITÁCORA DE PRECIOS ----------
 -- Solo admin/super la consultan; la escribe el trigger (security definer).

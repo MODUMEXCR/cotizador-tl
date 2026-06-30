@@ -120,6 +120,10 @@
 
       let fy = doc.lastAutoTable.finalY + 14;
 
+      // Moneda (USD para LATAM)
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.text("PRECIOS EN " + txt(d.moneda || "MXN"), M, fy - 2);
+
       // ---------- Totales (derecha) ----------
       const tot = d.totales || {};
       const ancho = 250, x0 = W - M - ancho;

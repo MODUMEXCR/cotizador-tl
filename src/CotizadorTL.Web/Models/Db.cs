@@ -42,8 +42,16 @@ public class PColor : BaseModel
     [Column("nombre")]          public string Nombre { get; set; } = "";
     [Column("grupo")]           public string Grupo { get; set; } = "";
     [Column("ambito")]          public string Ambito { get; set; } = "";
+    [Column("region")]          public string Region { get; set; } = "MXN";
     [Column("tiempo_especial")] public bool TiempoEspecial { get; set; }
     [Column("activo")]          public bool Activo { get; set; } = true;
+}
+
+[Table("config")]
+public class PConfig : BaseModel
+{
+    [PrimaryKey("clave", false)] public string Clave { get; set; } = "";
+    [Column("valor")]            public string Valor { get; set; } = "";
 }
 
 [Table("producto_precio")]
@@ -62,8 +70,14 @@ public class PDistribuidor : BaseModel
     [Column("email")]         public string? Email { get; set; }
     [Column("telefono")]      public string? Telefono { get; set; }
     [Column("ubicacion")]     public string? Ubicacion { get; set; }
+    [Column("pais")]          public string Pais { get; set; } = "México";
     [Column("descuento_pct")] public decimal DescuentoPct { get; set; }
     [Column("activo")]        public bool Activo { get; set; } = true;
+
+    /// <summary>MXN si el país es México; LATAM en cualquier otro caso.</summary>
+    public string Region => string.Equals((Pais ?? "").Trim().TrimEnd('.'), "México", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals((Pais ?? "").Trim(), "Mexico", StringComparison.OrdinalIgnoreCase)
+                            ? "MXN" : "LATAM";
 }
 
 [Table("cotizacion")]

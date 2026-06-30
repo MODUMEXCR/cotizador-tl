@@ -125,15 +125,15 @@ for i,(c,n,p) in enumerate(SERV, start=1):
 
 # ===================== COLORES =====================
 G1=["Negro","Gris Metalizado","Blanco","Alúmina","Grafito Nocturno","Walnut Heights","Skyline Walnut"]
-COLORES=[]  # (nombre, grupo, ambito, tiempo_especial)
-for c in G1: COLORES.append((c,"G1","cubierta_int",False))
-COLORES.append(("Calcutta Marble","G2","cubierta_int",False))
-COLORES.append(("White Marble","G3","cubierta_int",False))
-for c in ["Roble Lineal","Italian Walnut","Atenas","Tiziano","Industrial Concrete"]: COLORES.append((c,"G4","cubierta_ext",False))
-for c in ["Dark Steel","Vanilla"]: COLORES.append((c,"G4","cubierta_ext",True))
-for c in G1: COLORES.append((c,"G1","locker_frente",False))
-COLORES.append(("Alúmina","INT","locker_interior",False))
-for c in G1: COLORES.append((c,"G1","banca",False))
+COLORES=[]  # (nombre, grupo, ambito, region, tiempo_especial)  -- todos MXN; los LATAM se siembran aparte
+for c in G1: COLORES.append((c,"G1","cubierta_int","MXN",False))
+COLORES.append(("Calcutta Marble","G2","cubierta_int","MXN",False))
+COLORES.append(("White Marble","G3","cubierta_int","MXN",False))
+for c in ["Roble Lineal","Italian Walnut","Atenas","Tiziano","Industrial Concrete"]: COLORES.append((c,"G4","cubierta_ext","MXN",False))
+for c in ["Dark Steel","Vanilla"]: COLORES.append((c,"G4","cubierta_ext","MXN",True))
+for c in G1: COLORES.append((c,"G1","locker_frente","MXN",False))
+COLORES.append(("Alúmina","INT","locker_interior","MXN",False))
+for c in G1: COLORES.append((c,"G1","banca","MXN",False))
 
 # ===================== EMITIR SQL =====================
 L=["-- =====================================================================",
@@ -157,8 +157,8 @@ for p in PRODUCTOS:
         L.append(f"  insert into public.producto_precio (producto_id,grupo,precio) values (pid,{sqls(g)},{pr});")
 L.append("end $$;")
 L.append("")
-L.append("insert into public.color (nombre,grupo,ambito,tiempo_especial) values")
-L.append(",\n".join(f"  ({sqls(n)},{sqls(g)},{sqls(a)},{str(t).lower()})" for n,g,a,t in COLORES)+";")
+L.append("insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values")
+L.append(",\n".join(f"  ({sqls(n)},{sqls(g)},{sqls(a)},{sqls(reg)},{str(t).lower()})" for n,g,a,reg,t in COLORES)+";")
 open(OUT_SQL,"w",encoding="utf-8").write("\n".join(L))
 
 byf=Counter(p["familia"] for p in PRODUCTOS); extras=sum(1 for p in PRODUCTOS if p["es_extra"])

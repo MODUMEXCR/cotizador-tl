@@ -20,6 +20,8 @@ public class CatalogoService
     public List<Producto> Productos { get; private set; } = new();
     public List<PDistribuidor> Distribuidores { get; private set; } = new();
     public List<PColor> Colores { get; private set; } = new();
+    /// <summary>Divisor para precios LATAM (MXN ÷ divisor = USD). Configurable; default 17.</summary>
+    public decimal DivisorUsd { get; private set; } = 17m;
 
     public async Task CargarAsync(bool forzar = false)
     {
@@ -32,6 +34,7 @@ public class CatalogoService
         var precios   = await _supa.From<PProductoPrecio>().Get();
         var distribs  = await _supa.From<PDistribuidor>().Order("nombre", Constants.Ordering.Ascending).Get();
         var colores   = await _supa.From<PColor>().Order("nombre", Constants.Ordering.Ascending).Get();
+        var config    = await _supa.From<PConfig>().Get();
 
         // Agrupar precios por producto
         var preciosPorProducto = precios.Models
@@ -64,6 +67,8 @@ public class CatalogoService
 
         Distribuidores = distribs.Models;
         Colores = colores.Models;
+        var div = config.Models.FirstOrDefault(c => c.Clave == "divisor_usd")?.Valor;
+        if (decimal.TryParse(div, out var d2) && d2 > 0) DivisorUsd = d2;
         _cargado = true;
     }
 
