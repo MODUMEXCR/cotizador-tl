@@ -102,9 +102,9 @@ else
                             @if (EsFamilia(l, "CUBIERTAS"))
                             {
                                 <label class="mini">Tipo
-                                    <select @bind="l.Exterior" @bind:after="StateHasChanged">
-                                        <option value="false">Interior</option>
-                                        <option value="true">Exterior</option>
+                                    <select @bind="l.TipoStr" @bind:after="() => OnTipoChanged(l)">
+                                        <option value="Interior">Interior</option>
+                                        <option value="Exterior">Exterior</option>
                                     </select>
                                 </label>
                             }
@@ -293,6 +293,7 @@ else
         StateHasChanged();
     }
     private void OnColorChanged(LineaUI l) { RegenerarDescripcion(l); StateHasChanged(); }
+    private void OnTipoChanged(LineaUI l) { l.ColorNombre = ""; RegenerarDescripcion(l); StateHasChanged(); }
     private void OnDistribuidorChanged()
     {
         var d = DistribActual;
@@ -439,6 +440,7 @@ else
         public string ColorInterior { get; set; } = "";
         public bool ColorEspecial { get; set; }
         public bool Exterior { get; set; }
+        public string TipoStr { get => Exterior ? "Exterior" : "Interior"; set => Exterior = value == "Exterior"; }
         public string Descripcion { get; set; } = "";
         public List<long> ExtrasIds { get; set; } = new();
     }
