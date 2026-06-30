@@ -82,11 +82,17 @@ public class AuthService
         }
         catch (Exception ex)
         {
+            Console.WriteLine("[registro] " + ex);   // detalle en la consola del navegador (F12) para diagnóstico
             var e = (ex.Message ?? "").ToLowerInvariant();
-            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists")) return "Ese correo ya tiene una cuenta.";
-            if (e.Contains("password") || e.Contains("weak") || e.Contains("least"))        return "La contraseña es muy corta (mínimo 6 caracteres).";
-            if (e.Contains("invalid") && e.Contains("email"))                               return "El correo no es válido.";
-            return "No se pudo crear la cuenta. Inténtalo de nuevo.";
+            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists") || e.Contains("422"))
+                return "Ese correo ya tiene una cuenta. Si fue rechazada, pide a un administrador que la reactive.";
+            if (e.Contains("signup") || e.Contains("sign up") || e.Contains("not allowed") || e.Contains("disabled"))
+                return "El registro de cuentas está deshabilitado. Contacta con un administrador.";
+            if (e.Contains("password") || e.Contains("weak") || e.Contains("least") || e.Contains("6 char"))
+                return "La contraseña es muy corta (mínimo 6 caracteres).";
+            if (e.Contains("invalid") && e.Contains("email"))
+                return "El correo no es válido.";
+            return "No se pudo crear la cuenta. Revisa el correo o inténtalo más tarde.";
         }
     }
 
