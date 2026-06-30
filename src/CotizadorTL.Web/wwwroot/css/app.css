@@ -74,7 +74,10 @@ a, .btn-link { color: #5a9e1f; }
 .renglon-opts .mini input { width: 7rem; }
 label.chk { flex-direction: row !important; align-items: center; gap: .4rem; font-size: .85rem; color: #333; }
 .extras { margin-top: .7rem; background: #f4f5f7; border-radius: 8px; padding: .6rem .8rem; font-size: .85rem; }
-.extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .3rem .8rem; margin-top: .4rem; }
+.extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .3rem .8rem; margin-top: .4rem; }
+.extra-item { display: flex; align-items: center; gap: .4rem; }
+.extra-cant-wrap { color: #666; font-size: .85rem; white-space: nowrap; }
+.extra-cant { width: 3.4rem; padding: .2rem .3rem; border: 1px solid var(--tl-borde); border-radius: 5px; }
 .desc { display: flex; flex-direction: column; font-size: .8rem; color: #555; gap: .2rem; margin-top: .7rem; }
 .desc textarea { width: 100%; }
 .renglon-importe { margin-top: .6rem; font-size: .95rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }

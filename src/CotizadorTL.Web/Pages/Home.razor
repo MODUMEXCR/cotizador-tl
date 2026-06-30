@@ -112,16 +112,23 @@ else
                             @* Color (cubiertas/bancas/locker-frente) *@
                             @if (EsFamilia(l, "CUBIERTAS") || EsFamilia(l, "BANCAS") || EsFamilia(l, "LOCKERS") && prod.TipoPrecio != "m2" && !prod.EsExtra)
                             {
-                                <label>Color
-                                    <select @bind="l.ColorNombre" @bind:after="() => OnColorChanged(l)">
-                                        <option value="">—</option>
-                                        @foreach (var c in ColoresDe(l))
-                                        { <option value="@c.Nombre">@c.Nombre (@c.Grupo)@(c.TiempoEspecial ? " ·tiempo esp." : "")</option> }
-                                    </select>
-                                </label>
+                                @if (EsFamilia(l, "CUBIERTAS") && l.ColorEspecial)
+                                {
+                                    <label>Color especial<input @bind="l.ColorEspecialNombre" @bind:after="() => OnColorChanged(l)" placeholder="Escribe el color" /></label>
+                                }
+                                else
+                                {
+                                    <label>Color
+                                        <select @bind="l.ColorNombre" @bind:after="() => OnColorChanged(l)">
+                                            <option value="">—</option>
+                                            @foreach (var c in ColoresDe(l))
+                                            { <option value="@c.Nombre">@c.Nombre (@c.Grupo)@(c.TiempoEspecial ? " ·tiempo esp." : "")</option> }
+                                        </select>
+                                    </label>
+                                }
                                 @if (EsFamilia(l, "CUBIERTAS"))
                                 {
-                                    <label class="chk"><input type="checkbox" @bind="l.ColorEspecial" @bind:after="StateHasChanged" /> Color especial (+20%)</label>
+                                    <label class="chk"><input type="checkbox" @bind="l.ColorEspecial" @bind:after="() => OnColorChanged(l)" /> Color especial (+20%)</label>
                                 }
                             }
 
@@ -131,7 +138,7 @@ else
                                 <label>Color interior
                                     <select @bind="l.ColorInterior" @bind:after="StateHasChanged">
                                         <option value="">Alúmina (estándar)</option>
-                                        @foreach (var c in Catalogo.Colores.Where(c => c.Ambito == "locker_frente"))
+                                        @foreach (var c in ColoresInterior())
                                         { <option value="@c.Nombre">@c.Nombre (+10%)</option> }
                                     </select>
                                 </label>
@@ -146,11 +153,22 @@ else
                                 <div class="extras-grid">
                                     @foreach (var ex in Extras())
                                     {
-                                        <label class="chk">
-                                            <input type="checkbox" checked="@l.ExtrasIds.Contains(ex.ProductoId)"
-                                                   @onchange="e => ToggleExtra(l, ex.ProductoId, (bool)e.Value!)" />
-                                            @ex.Nombre (@Money(PrecioExtra(ex, TierDe(prod))))
-                                        </label>
+                                        var sel = l.ExtrasCant.ContainsKey(ex.ProductoId);
+                                        <div class="extra-item">
+                                            <label class="chk">
+                                                <input type="checkbox" checked="@sel"
+                                                       @onchange="e => ToggleExtra(l, ex.ProductoId, (bool)e.Value!)" />
+                                                @ex.Nombre (@Money(PrecioExtra(ex, TierDe(prod))))
+                                            </label>
+                                            @if (sel)
+                                            {
+                                                <span class="extra-cant-wrap">×
+                                                    <input class="extra-cant" type="number" min="1" step="1"
+                                                           value="@l.ExtrasCant[ex.ProductoId]"
+                                                           @onchange="e => SetExtraCant(l, ex.ProductoId, e.Value?.ToString())" />
+                                                </span>
+                                            }
+                                        </div>
                                     }
                                 </div>
                             </div>
@@ -269,8 +287,8 @@ else
         if (EsFamilia(l, "CUBIERTAS") && l.ColorEspecial) precio *= 1.20m;
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra && !string.IsNullOrEmpty(l.ColorInterior)) precio *= 1.10m; // interior distinto a alúmina
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra)
-            foreach (var exId in l.ExtrasIds)
-                if (Catalogo.Buscar(exId) is Producto ex) precio += PrecioExtra(ex, TierDe(p));
+            foreach (var kv in l.ExtrasCant)
+                if (Catalogo.Buscar(kv.Key) is Producto ex) precio += PrecioExtra(ex, TierDe(p)) * kv.Value;
         return precio * Factor;   // LATAM: ÷ divisor (USD); MXN: ×1
     }
 
@@ -283,7 +301,7 @@ else
     private void OnFamiliaChanged(LineaUI l)
     {
         l.ProductoId = null; l.Grupo = ""; l.Descripcion = ""; l.LargoCm = l.AnchoCm = null;
-        l.ColorNombre = l.ColorInterior = ""; l.ColorEspecial = false; l.Exterior = false; l.ExtrasIds.Clear();
+        l.ColorNombre = l.ColorInterior = l.ColorEspecialNombre = ""; l.ColorEspecial = false; l.Exterior = false; l.ExtrasCant.Clear();
         StateHasChanged();
     }
     private void OnProductoChanged(LineaUI l)
@@ -309,10 +327,27 @@ else
     }
     private void ToggleExtra(LineaUI l, long id, bool on)
     {
-        if (on) { if (!l.ExtrasIds.Contains(id)) l.ExtrasIds.Add(id); }
-        else l.ExtrasIds.Remove(id);
+        if (on) l.ExtrasCant[id] = l.ExtrasCant.GetValueOrDefault(id, 1) is var q && q > 0 ? q : 1;
+        else l.ExtrasCant.Remove(id);
         RegenerarDescripcion(l); StateHasChanged();
     }
+
+    private void SetExtraCant(LineaUI l, long id, string? valor)
+    {
+        if (int.TryParse(valor, out var n) && n >= 1) l.ExtrasCant[id] = n;
+        RegenerarDescripcion(l); StateHasChanged();
+    }
+
+    // Colores interior del locker (sin la Alúmina estándar, filtrados por región)
+    private IEnumerable<PColor> ColoresInterior() =>
+        Catalogo.Colores.Where(c => c.Ambito == "locker_interior" && c.Region == ColorRegion
+                                    && c.Nombre != "Alúmina" && c.Nombre != "Alumina");
+
+    // Color que va al PDF/descripción (especial escrito a mano, o el del catálogo)
+    private string? ColorFinal(LineaUI l) =>
+        EsFamilia(l, "CUBIERTAS") && l.ColorEspecial
+            ? (string.IsNullOrWhiteSpace(l.ColorEspecialNombre) ? null : l.ColorEspecialNombre.Trim())
+            : (string.IsNullOrEmpty(l.ColorNombre) ? null : l.ColorNombre);
 
     // ---------- descripción automática ----------
     private void RegenerarDescripcion(LineaUI l)
@@ -326,10 +361,12 @@ else
                 : $"{l.LargoCm:0.#} CM X {l.AnchoCm:0.#} CM";
             sb.Replace("__ CM DIÁMETRO", medida).Replace("__ CM X __ CM", medida).Replace("MEDIDA FINAL: __", $"MEDIDA FINAL: {medida}");
         }
-        if (!string.IsNullOrEmpty(l.ColorNombre)) sb.Append($" COLOR: {l.ColorNombre}.");
-        if (EsFamilia(l, "LOCKERS") && l.ExtrasIds.Count > 0)
+        var colorTxt = ColorFinal(l);
+        if (!string.IsNullOrEmpty(colorTxt)) sb.Append($" COLOR: {colorTxt}.");
+        if (!string.IsNullOrEmpty(l.ColorInterior)) sb.Append($" INTERIOR: {l.ColorInterior}.");
+        if (EsFamilia(l, "LOCKERS") && l.ExtrasCant.Count > 0)
         {
-            var nombres = l.ExtrasIds.Select(id => Catalogo.Buscar(id)?.Nombre).Where(n => n != null);
+            var nombres = l.ExtrasCant.Select(kv => { var n = Catalogo.Buscar(kv.Key)?.Nombre; return kv.Value > 1 ? $"{n} (x{kv.Value})" : n; }).Where(n => n != null);
             sb.Append(" INCLUYE: " + string.Join(", ", nombres) + ".");
         }
         l.Descripcion = sb.ToString();
@@ -344,7 +381,7 @@ else
             return new LineaCotizacion
             {
                 ProductoId = l.ProductoId, Cantidad = l.Cantidad, CodigoSap = p?.CodigoSap ?? "",
-                Descripcion = l.Descripcion, Color = string.IsNullOrEmpty(l.ColorNombre) ? null : l.ColorNombre,
+                Descripcion = l.Descripcion, Color = ColorFinal(l),
                 LargoCm = l.LargoCm, AnchoCm = l.AnchoCm, PrecioUnitario = PrecioUnit(l),
                 DescuentoPct = l.DescuentoPct, AplicaDescuento = p?.AplicaDescuento ?? true,
             };
@@ -420,7 +457,7 @@ else
             lineas = lineas.Where(l => l.ProductoId is not null).Select(l => new
             {
                 cantidad = (double)l.Cantidad, codigoSap = ProdDe(l)?.CodigoSap ?? "", descripcion = l.Descripcion,
-                color = l.ColorNombre, precioUnitario = (double)PrecioUnit(l), importe = (double)Importe(l),
+                color = ColorFinal(l), precioUnitario = (double)PrecioUnit(l), importe = (double)Importe(l),
             }).ToArray(),
         };
         await JS.InvokeVoidAsync("cotizadorPdf.generar", dto);
@@ -437,11 +474,12 @@ else
         public decimal? AnchoCm { get; set; }
         public decimal DescuentoPct { get; set; }
         public string ColorNombre { get; set; } = "";
+        public string ColorEspecialNombre { get; set; } = "";
         public string ColorInterior { get; set; } = "";
         public bool ColorEspecial { get; set; }
         public bool Exterior { get; set; }
         public string TipoStr { get => Exterior ? "Exterior" : "Interior"; set => Exterior = value == "Exterior"; }
         public string Descripcion { get; set; } = "";
-        public List<long> ExtrasIds { get; set; } = new();
+        public Dictionary<long, int> ExtrasCant { get; set; } = new();  // extraId -> cantidad
     }
 }
