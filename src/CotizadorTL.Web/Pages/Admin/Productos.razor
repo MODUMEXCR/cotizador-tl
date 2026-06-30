@@ -23,7 +23,7 @@ else
         <h2>Nuevo producto</h2>
         <div class="campos">
             <label>Familia
-                <select @bind="nFamilia">
+                <select @bind="nFamilia" @bind:after="OnFamiliaNuevoChange">
                     @foreach (var f in Catalogo.Familias) { <option value="@f.Codigo">@f.Nombre</option> }
                 </select>
             </label>
@@ -37,19 +37,8 @@ else
             </label>
             <label>Grupo/Tier
                 <select @bind="nGrupo">
-                    <option value="UNICO">Único (un solo precio)</option>
-                    <option value="G1">G1 · Grupo 1</option>
-                    <option value="G2">G2 · Grupo 2</option>
-                    <option value="G3">G3 · Grupo 3 (core blanco)</option>
-                    <option value="G4">G4 · Grupo 4 (UV/exterior)</option>
-                    <option value="ESP_INT">Especial interior (G1+20%)</option>
-                    <option value="ESP_EXT">Especial exterior (G4+20%)</option>
-                    <option value="PRO">PRO</option>
-                    <option value="SMART">SMART</option>
-                    <option value="3mm">3 mm</option>
-                    <option value="6mm">6 mm</option>
-                    <option value="9mm">9 mm</option>
-                    <option value="12mm">12 mm</option>
+                    @foreach (var g in GruposDe(nFamilia))
+                    { <option value="@g.val">@g.label</option> }
                 </select>
             </label>
             <label>Precio (MXN)<input type="number" step="0.0001" @bind="nPrecio" /></label>
@@ -100,7 +89,7 @@ else
     private string? msg; private bool ok;
     private string fFamilia = "";
     // alta
-    private string nFamilia = "CUBIERTAS", nCodigo = "", nNombre = "", nTipo = "fijo", nGrupo = "UNICO", nDesc = "";
+    private string nFamilia = "CUBIERTAS", nCodigo = "", nNombre = "", nTipo = "fijo", nGrupo = "G1", nDesc = "";
     private decimal nPrecio;
     private bool nExtra;
 
@@ -109,6 +98,24 @@ else
         if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
         await Catalogo.CargarAsync();
         cargando = false;
+    }
+
+    // Grupos válidos por familia (se reflejan en el desplegable)
+    private (string val, string label)[] GruposDe(string familia) => familia switch
+    {
+        "CUBIERTAS" => new[] { ("G1","G1 · Grupo 1"), ("G2","G2 · Grupo 2"), ("G3","G3 · Grupo 3 (core blanco)"),
+                               ("G4","G4 · Grupo 4 (UV/exterior)"), ("ESP_INT","Especial interior (+20%)"), ("ESP_EXT","Especial exterior (+20%)") },
+        "LOCKERS"   => new[] { ("UNICO","Único (un solo precio)"), ("PRO","PRO"), ("SMART","SMART"),
+                               ("3mm","3 mm"), ("6mm","6 mm"), ("9mm","9 mm"), ("12mm","12 mm") },
+        "BANCAS"    => new[] { ("G1","G1 · Grupo 1") },
+        _           => new[] { ("UNICO","Único (un solo precio)") },  // Servicios, etc.
+    };
+
+    private void OnFamiliaNuevoChange()
+    {
+        var grupos = GruposDe(nFamilia);
+        if (!grupos.Any(g => g.val == nGrupo)) nGrupo = grupos[0].val;  // ajusta el grupo al primero válido
+        StateHasChanged();
     }
 
     private IEnumerable<Producto> Filtrados() =>
