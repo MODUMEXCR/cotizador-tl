@@ -86,6 +86,8 @@ public class AuthService
             var e = (ex.Message ?? "").ToLowerInvariant();
             if (e.Contains("already") || e.Contains("registered") || e.Contains("exists") || e.Contains("422"))
                 return "Ese correo ya tiene una cuenta. Si fue rechazada, pide a un administrador que la reactive.";
+            if (e.Contains("rate") || e.Contains("429") || e.Contains("too many"))
+                return "Demasiados intentos de registro. Espera unos minutos e inténtalo de nuevo.";
             if (e.Contains("signup") || e.Contains("sign up") || e.Contains("not allowed") || e.Contains("disabled"))
                 return "El registro de cuentas está deshabilitado. Contacta con un administrador.";
             if (e.Contains("password") || e.Contains("weak") || e.Contains("least") || e.Contains("6 char"))
