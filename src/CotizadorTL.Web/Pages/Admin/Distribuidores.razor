@@ -3,6 +3,8 @@
 @inject CatalogoService Catalogo
 @inject Supabase.Client Supa
 @inject NavigationManager Nav
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
 
 <PageTitle>Distribuidores</PageTitle>
 
@@ -153,11 +155,25 @@ else
         msgU = null;
         try
         {
-            await Supa.From<Profile>().Where(x => x.Id == u.Id).Delete();
-            cuentas.Remove(u);
-            okU = true; msgU = $"Cuenta de {u.Email} eliminada.";
+            // Borra el LOGIN completo vía Edge Function (libera el correo para re-registro).
+            var url = Config["Supabase:Url"];
+            var token = Supa.Auth.CurrentSession?.AccessToken;
+            var req = new HttpRequestMessage(HttpMethod.Post, $"{url}/functions/v1/eliminar-usuario");
+            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
+            req.Headers.TryAddWithoutValidation("apikey", Config["Supabase:AnonKey"]);
+            req.Content = System.Net.Http.Json.JsonContent.Create(new { user_id = u.Id });
+            var resp = await Http.SendAsync(req);
+            if (resp.IsSuccessStatusCode)
+            {
+                cuentas.Remove(u);
+                okU = true; msgU = $"Cuenta de {u.Email} eliminada. El correo queda libre para registrarse de nuevo.";
+            }
+            else
+            {
+                okU = false; msgU = "No se pudo eliminar. ¿Ya está desplegada la función 'eliminar-usuario' en Supabase? (" + (int)resp.StatusCode + ")";
+            }
         }
-        catch (Exception ex) { okU = false; msgU = "No se pudo eliminar (¿tiene cotizaciones?): " + ex.Message; }
+        catch (Exception ex) { okU = false; msgU = "No se pudo eliminar: " + ex.Message; }
     }
 
     private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
