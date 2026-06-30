@@ -42,14 +42,25 @@ public class AuthService
             var session = await _supa.Auth.SignIn(email, password);
             if (session?.User == null) return "Correo o contraseña incorrectos.";
             await CargarPerfil();
-            if (Perfil is { Activo: false }) { await CerrarSesion(); return "Tu usuario está desactivado."; }
+            if (Perfil is { Activo: false }) { await CerrarSesion(); return "Tu cuenta aún no ha sido autorizada por un administrador."; }
             Cambio?.Invoke();
             return null;
         }
         catch (Exception ex)
         {
-            return "No se pudo iniciar sesión: " + ex.Message;
+            return MensajeAmigable(ex.Message);
         }
+    }
+
+    /// <summary>Convierte el error técnico de Supabase Auth en un mensaje claro para el usuario.</summary>
+    private static string MensajeAmigable(string error)
+    {
+        var e = (error ?? "").ToLowerInvariant();
+        if (e.Contains("invalid_credentials") || e.Contains("invalid login")) return "Correo o contraseña incorrectos.";
+        if (e.Contains("email not confirmed") || e.Contains("not confirmed"))  return "Debes confirmar tu correo antes de entrar.";
+        if (e.Contains("rate") || e.Contains("too many"))                       return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+        if (e.Contains("network") || e.Contains("failed to fetch"))            return "Sin conexión. Revisa tu internet e inténtalo de nuevo.";
+        return "No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.";
     }
 
     /// <summary>Auto-registro de un distribuidor. Queda inactivo hasta que un Admin/Super lo apruebe.
@@ -71,7 +82,11 @@ public class AuthService
         }
         catch (Exception ex)
         {
-            return "No se pudo crear la cuenta: " + ex.Message;
+            var e = (ex.Message ?? "").ToLowerInvariant();
+            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists")) return "Ese correo ya tiene una cuenta.";
+            if (e.Contains("password") || e.Contains("weak") || e.Contains("least"))        return "La contraseña es muy corta (mínimo 6 caracteres).";
+            if (e.Contains("invalid") && e.Contains("email"))                               return "El correo no es válido.";
+            return "No se pudo crear la cuenta. Inténtalo de nuevo.";
         }
     }
 
