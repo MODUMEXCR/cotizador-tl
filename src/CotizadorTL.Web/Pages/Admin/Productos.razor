@@ -35,7 +35,23 @@ else
                     <option value="m2">Por m²</option>
                 </select>
             </label>
-            <label>Grupo/Tier<input @bind="nGrupo" placeholder="UNICO, G1, PRO…" /></label>
+            <label>Grupo/Tier
+                <select @bind="nGrupo">
+                    <option value="UNICO">Único (un solo precio)</option>
+                    <option value="G1">G1 · Grupo 1</option>
+                    <option value="G2">G2 · Grupo 2</option>
+                    <option value="G3">G3 · Grupo 3 (core blanco)</option>
+                    <option value="G4">G4 · Grupo 4 (UV/exterior)</option>
+                    <option value="ESP_INT">Especial interior (G1+20%)</option>
+                    <option value="ESP_EXT">Especial exterior (G4+20%)</option>
+                    <option value="PRO">PRO</option>
+                    <option value="SMART">SMART</option>
+                    <option value="3mm">3 mm</option>
+                    <option value="6mm">6 mm</option>
+                    <option value="9mm">9 mm</option>
+                    <option value="12mm">12 mm</option>
+                </select>
+            </label>
             <label>Precio (MXN)<input type="number" step="0.0001" @bind="nPrecio" /></label>
             <label class="chk"><input type="checkbox" @bind="nExtra" /> Es extra de locker</label>
         </div>
