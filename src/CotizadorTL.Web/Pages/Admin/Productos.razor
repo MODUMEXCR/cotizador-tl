@@ -1,0 +1,141 @@
+@page "/admin/productos"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject NavigationManager Nav
+
+<PageTitle>Productos</PageTitle>
+
+@if (!Auth.EsAdmin)
+{
+    <p>No tienes acceso a esta sección.</p>
+}
+else if (cargando)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <h1>Productos</h1>
+
+    <!-- Alta -->
+    <section class="card">
+        <h2>Nuevo producto</h2>
+        <div class="campos">
+            <label>Familia
+                <select @bind="nFamilia">
+                    @foreach (var f in Catalogo.Familias) { <option value="@f.Codigo">@f.Nombre</option> }
+                </select>
+            </label>
+            <label>Código SAP<input @bind="nCodigo" /></label>
+            <label>Nombre<input @bind="nNombre" /></label>
+            <label>Tipo de precio
+                <select @bind="nTipo">
+                    <option value="fijo">Fijo (por pieza)</option>
+                    <option value="m2">Por m²</option>
+                </select>
+            </label>
+            <label>Grupo/Tier<input @bind="nGrupo" placeholder="UNICO, G1, PRO…" /></label>
+            <label>Precio (MXN)<input type="number" step="0.0001" @bind="nPrecio" /></label>
+            <label class="chk"><input type="checkbox" @bind="nExtra" /> Es extra de locker</label>
+        </div>
+        <label class="desc">Descripción<textarea rows="2" @bind="nDesc"></textarea></label>
+        <button class="btn-add" @onclick="Agregar" disabled="@guardando">@(guardando ? "Guardando…" : "Agregar producto")</button>
+        @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
+    </section>
+
+    <!-- Listado por familia -->
+    <section class="card">
+        <h2>Productos <span class="muted small">(@Filtrados().Count())</span></h2>
+        <div class="filtros">
+            <label>Filtrar por familia
+                <select @bind="fFamilia">
+                    <option value="">Todas</option>
+                    @foreach (var f in Catalogo.Familias) { <option value="@f.Codigo">@f.Nombre</option> }
+                </select>
+            </label>
+        </div>
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead><tr><th>Código SAP</th><th>Nombre</th><th>Familia</th><th>Tipo</th><th class="num">Precio(s)</th><th>Extra</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var p in Filtrados())
+                    {
+                        <tr>
+                            <td><b>@p.CodigoSap</b></td>
+                            <td>@p.Nombre</td>
+                            <td>@NombreFamilia(p.FamiliaCodigo)</td>
+                            <td>@(p.TipoPrecio == "m2" ? "m²" : "fijo")</td>
+                            <td class="num">@string.Join(" · ", p.Precios.Select(kv => $"{kv.Key}: {kv.Value:#,##0.##}"))</td>
+                            <td>@(p.EsExtra ? "Sí" : "")</td>
+                            <td><button class="btn-mini pdf" @onclick="() => Eliminar(p)">Eliminar</button></td>
+                        </tr>
+                    }
+                    @if (!Filtrados().Any())
+                    { <tr><td colspan="7" class="muted center">Sin productos.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@code {
+    private bool cargando = true, guardando;
+    private string? msg; private bool ok;
+    private string fFamilia = "";
+    // alta
+    private string nFamilia = "CUBIERTAS", nCodigo = "", nNombre = "", nTipo = "fijo", nGrupo = "UNICO", nDesc = "";
+    private decimal nPrecio;
+    private bool nExtra;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
+        await Catalogo.CargarAsync();
+        cargando = false;
+    }
+
+    private IEnumerable<Producto> Filtrados() =>
+        (string.IsNullOrEmpty(fFamilia) ? Catalogo.Productos : Catalogo.PorFamilia(fFamilia)).OrderBy(p => p.FamiliaCodigo).ThenBy(p => p.Orden);
+
+    private string NombreFamilia(string codigo) => Catalogo.Familias.FirstOrDefault(f => f.Codigo == codigo)?.Nombre ?? codigo;
+
+    private async Task Agregar()
+    {
+        msg = null;
+        if (string.IsNullOrWhiteSpace(nCodigo) || string.IsNullOrWhiteSpace(nNombre)) { ok = false; msg = "Código y nombre son obligatorios."; return; }
+        guardando = true;
+        try
+        {
+            var prod = new PProducto
+            {
+                CodigoSap = nCodigo.Trim(), FamiliaCodigo = nFamilia, Nombre = nNombre.Trim(), Descripcion = nDesc ?? "",
+                TipoPrecio = nTipo, Unidad = nTipo == "m2" ? "m2" : "pieza", Moneda = "MXN",
+                RequiereMedidas = nTipo == "m2", AplicaDescuento = nFamilia != "SERVICIOS", EsExtra = nExtra, Activo = true, Orden = 999,
+            };
+            var resp = await Supa.From<PProducto>().Insert(prod);
+            var nuevo = resp.Models.First();
+            await Supa.From<PProductoPrecio>().Insert(new PProductoPrecio
+            {
+                ProductoId = nuevo.ProductoId, Grupo = string.IsNullOrWhiteSpace(nGrupo) ? "UNICO" : nGrupo.Trim(), Precio = nPrecio
+            });
+            await Catalogo.CargarAsync(forzar: true);
+            ok = true; msg = $"Producto {nuevo.CodigoSap} agregado.";
+            nCodigo = nNombre = nDesc = ""; nPrecio = 0; nExtra = false;
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo agregar: " + ex.Message; }
+        finally { guardando = false; }
+    }
+
+    private async Task Eliminar(Producto p)
+    {
+        msg = null;
+        try
+        {
+            await Supa.From<PProducto>().Where(x => x.ProductoId == p.ProductoId).Delete();
+            await Catalogo.CargarAsync(forzar: true);
+            ok = true; msg = $"Producto {p.CodigoSap} eliminado.";
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo eliminar (¿usado en cotizaciones?): " + ex.Message; }
+    }
+}

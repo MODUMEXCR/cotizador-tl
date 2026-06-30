@@ -135,6 +135,17 @@ for c in G1: COLORES.append((c,"G1","locker_frente","MXN",False))
 COLORES.append(("Alúmina","INT","locker_interior","MXN",False))
 for c in G1: COLORES.append((c,"G1","banca","MXN",False))
 
+# ---- Colores LATAM (aplican a regiones LATAM y Costa Rica) ----
+LAT_INT = ["Blanco","Gris","Grafito Nocturno","Negro","Ámbar Wood","Nogal Grafito","Inox Satín"]  # G1
+LAT_EXT = ["Roble Lineal","Italian Walnut","Atenas","Tiziano","Industrial Concrete"]               # G4
+LAT_LOCKER = ["Negro","Gris Metalizado","Blanco","Alumina","Grafito Nocturno","Walnut Heights","Skyline Walnut"]
+for c in LAT_INT: COLORES.append((c,"G1","cubierta_int","LATAM",False))
+for c in LAT_EXT: COLORES.append((c,"G4","cubierta_ext","LATAM",False))
+for c in ["Dark Steel","Vanilla"]: COLORES.append((c,"G4","cubierta_ext","LATAM",True))
+for c in LAT_LOCKER: COLORES.append((c,"G1","locker_frente","LATAM",False))
+for c in ["Alumina","Negro","Blanco"]: COLORES.append((c,"INT","locker_interior","LATAM",False))
+for c in LAT_INT: COLORES.append((c,"G1","banca","LATAM",False))
+
 # ===================== EMITIR SQL =====================
 L=["-- =====================================================================",
    "-- Cotizador Thin Laminates — 03 · Seed del catálogo (configurador real)",

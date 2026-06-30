@@ -92,7 +92,9 @@ create table public.distribuidor (
   email            text,
   telefono         text,
   ubicacion        text,
-  pais             text not null default 'México',  -- define la región: México=MXN, otro=LATAM
+  pais             text not null default 'México',  -- país (informativo)
+  region           text not null default 'México'   -- 'México' | 'LATAM' | 'Costa Rica' (define moneda/precio)
+                    check (region in ('México','LATAM','Costa Rica')),
   descuento_pct    numeric(5,2) not null default 0, -- % de descuento por defecto del distribuidor
   activo           boolean not null default true,
   creado_el        timestamptz not null default now()
@@ -104,7 +106,7 @@ create table public.profiles (
   nombre          text not null default '',
   email           text,
   rol             text not null default 'Distribuidor'
-                    check (rol in ('Super Admin','Administrador','Distribuidor')),
+                    check (rol in ('Super Admin','Administrador','Vendedor','Distribuidor')),
   distribuidor_id bigint references public.distribuidor(distribuidor_id),
   activo          boolean not null default true,
   creado_el       timestamptz not null default now()

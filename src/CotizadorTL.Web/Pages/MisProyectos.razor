@@ -8,7 +8,7 @@
 
 <h1>Mis Proyectos</h1>
 <p class="lead">
-    @(Auth.EsAdmin ? "Todas las cotizaciones." : "Tus cotizaciones.") Filtra por fecha@(Auth.EsAdmin ? " o distribuidor" : "") y descarga el PDF o el Excel.
+    @(Auth.PuedeVerTodo ? "Todas las cotizaciones." : "Tus cotizaciones.") Filtra por fecha@(Auth.PuedeVerTodo ? " o distribuidor" : "") y descarga el PDF o el Excel.
 </p>
 
 @if (cargando)
@@ -21,7 +21,7 @@ else
         <div class="filtros">
             <label>Desde<input type="date" @bind="desde" /></label>
             <label>Hasta<input type="date" @bind="hasta" /></label>
-            @if (Auth.EsAdmin)
+            @if (Auth.PuedeVerTodo)
             {
                 <label>Distribuidor
                     <select @bind="filtroDistribuidor">
@@ -41,7 +41,7 @@ else
                 <thead>
                     <tr>
                         <th>Folio</th><th>Fecha</th>
-                        @if (Auth.EsAdmin) { <th>Distribuidor</th> }
+                        @if (Auth.PuedeVerTodo) { <th>Distribuidor</th> }
                         <th>Cliente</th><th>Proyecto</th><th class="num">Gran total</th>
                         <th>Estado</th><th>Descargas</th>
                     </tr>
@@ -52,7 +52,7 @@ else
                         <tr>
                             <td><b>@c.Folio</b></td>
                             <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                            @if (Auth.EsAdmin) { <td>@NombreDist(c.DistribuidorId)</td> }
+                            @if (Auth.PuedeVerTodo) { <td>@NombreDist(c.DistribuidorId)</td> }
                             <td>@c.Cliente</td>
                             <td>@c.Proyecto</td>
                             <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
@@ -65,7 +65,7 @@ else
                     }
                     @if (!Filtradas.Any())
                     {
-                        <tr><td colspan="@(Auth.EsAdmin ? 8 : 7)" class="muted center">No hay cotizaciones con esos filtros.</td></tr>
+                        <tr><td colspan="@(Auth.PuedeVerTodo ? 8 : 7)" class="muted center">No hay cotizaciones con esos filtros.</td></tr>
                     }
                 </tbody>
             </table>

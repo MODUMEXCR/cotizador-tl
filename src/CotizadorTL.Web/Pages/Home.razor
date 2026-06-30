@@ -22,7 +22,7 @@ else
                 <label>Folio (ID cotización)<input @bind="cot.Folio" /></label>
                 <label>Vigencia<input type="date" @bind="vigencia" /></label>
                 <label>Distribuidor
-                    @if (Auth.EsAdmin)
+                    @if (Auth.PuedeVerTodo)
                     {
                         <select @bind="distribuidorId" @bind:after="OnDistribuidorChanged">
                             <option value="0">— Selecciona —</option>
@@ -42,7 +42,7 @@ else
                 <label>Cotizado por<input @bind="cot.CotizadoPor" /></label>
             </div>
             <div class="campos">
-                <label>Descuento distribuidor %<input type="number" step="0.01" @bind="cot.DescuentoPct" /></label>
+                <label>Descuento distribuidor %<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@Auth.EsVendedor" /></label>
                 <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" /></label>
                 <label>Anticipo %<input type="number" step="0.01" @bind="cot.AnticipoPct" /></label>
             </div>
@@ -74,7 +74,7 @@ else
                         </label>
                         <label class="mini">Cant.<input type="number" min="1" step="1" @bind="l.Cantidad" @bind:after="StateHasChanged" /></label>
                         <label class="mini">Desc.%<input type="number" min="0" max="100" step="0.01" @bind="l.DescuentoPct" @bind:after="StateHasChanged"
-                                    disabled="@(prod is { AplicaDescuento:false })" /></label>
+                                    disabled="@(prod is { AplicaDescuento:false } || Auth.EsVendedor)" /></label>
                         <button class="btn-del" @onclick="() => QuitarLinea(l)" title="Quitar">✕</button>
                     </div>
 
@@ -199,9 +199,16 @@ else
 
     private PDistribuidor? DistribActual => Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId);
     private string nombreDistribuidorActual => DistribActual?.Nombre ?? "(sin asignar)";
-    private string RegionActual => DistribActual?.Region ?? "MXN";
-    private string MonedaActual => RegionActual == "LATAM" ? "USD" : "MXN";
-    private decimal Factor => RegionActual == "LATAM" ? 1m / (Catalogo.DivisorUsd <= 0 ? 17m : Catalogo.DivisorUsd) : 1m;
+    private string RegionActual => DistribActual?.Region ?? "México";
+    private string MonedaActual => RegionActual switch { "LATAM" => "USD", "Costa Rica" => "CRC", _ => "MXN" };
+    private decimal Divisor => Catalogo.DivisorUsd <= 0 ? 17m : Catalogo.DivisorUsd;
+    private decimal Factor => RegionActual switch
+    {
+        "LATAM" => 1m / Divisor,
+        "Costa Rica" => (1m / Divisor) * (Catalogo.MultiplicadorCrc <= 0 ? 490m : Catalogo.MultiplicadorCrc),
+        _ => 1m
+    };
+    private string ColorRegion => RegionActual == "México" ? "MXN" : "LATAM";
 
     protected override async Task OnInitializedAsync()
     {
@@ -227,7 +234,7 @@ else
                 : EsFamilia(l, "BANCAS") ? "banca"
                 : EsFamilia(l, "LOCKERS") ? "locker_frente" : null;
         if (amb is null) return Enumerable.Empty<PColor>();
-        return Catalogo.Colores.Where(c => c.Ambito == amb && c.Region == RegionActual);
+        return Catalogo.Colores.Where(c => c.Ambito == amb && c.Region == ColorRegion);
     }
 
     private string TierDe(Producto p) => (p.CodigoSap.StartsWith("L-") || p.CodigoSap.Contains("SMART")) ? "SMART" : "PRO";
@@ -292,7 +299,7 @@ else
         if (d is not null)
         {
             cot.DescuentoPct = d.DescuentoPct;
-            cot.IvaPct = RegionActual == "MXN" ? 16m : 0m;   // default por región (editable)
+            cot.IvaPct = RegionActual switch { "México" => 16m, "Costa Rica" => 13m, _ => 0m }; // default por región (editable)
             if (string.IsNullOrWhiteSpace(cot.RazonSocial)) cot.RazonSocial = d.Nombre;
             // El cambio de moneda/colores invalida los colores ya elegidos:
             foreach (var l in lineas) { l.ColorNombre = ""; l.ColorInterior = ""; }

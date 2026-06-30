@@ -21,7 +21,9 @@ public class AuthService
     public bool Autenticado => _supa.Auth.CurrentUser != null && Perfil != null;
     public string Rol => Perfil?.Rol ?? "Distribuidor";
     public bool EsSuper => Rol == "Super Admin";
-    public bool EsAdmin => Rol is "Super Admin" or "Administrador";
+    public bool EsAdmin => Rol is "Super Admin" or "Administrador";   // gestiona precios/descuentos/usuarios
+    public bool EsVendedor => Rol == "Vendedor";
+    public bool PuedeVerTodo => Rol is "Super Admin" or "Administrador" or "Vendedor"; // ve/crea todo
     public bool EsDistribuidor => Rol == "Distribuidor";
 
     /// <summary>Al arrancar la app, si había sesión guardada, carga el perfil.</summary>

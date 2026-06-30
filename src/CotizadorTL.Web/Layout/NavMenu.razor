@@ -30,6 +30,14 @@
                 </NavLink>
             </div>
             <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin/productos">
+                    <span aria-hidden="true">📦</span> Productos
+                </NavLink>
+            </div>
+        }
+        @if (Auth.PuedeVerTodo)
+        {
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="admin/distribuidores">
                     <span aria-hidden="true">🏢</span> Distribuidores
                 </NavLink>

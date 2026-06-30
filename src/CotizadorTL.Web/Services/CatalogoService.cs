@@ -22,6 +22,8 @@ public class CatalogoService
     public List<PColor> Colores { get; private set; } = new();
     /// <summary>Divisor para precios LATAM (MXN ÷ divisor = USD). Configurable; default 17.</summary>
     public decimal DivisorUsd { get; private set; } = 17m;
+    /// <summary>Multiplicador para Costa Rica (USD × mult = CRC colones). Configurable; default 490.</summary>
+    public decimal MultiplicadorCrc { get; private set; } = 490m;
 
     public async Task CargarAsync(bool forzar = false)
     {
@@ -68,7 +70,9 @@ public class CatalogoService
         Distribuidores = distribs.Models;
         Colores = colores.Models;
         var div = config.Models.FirstOrDefault(c => c.Clave == "divisor_usd")?.Valor;
-        if (decimal.TryParse(div, out var d2) && d2 > 0) DivisorUsd = d2;
+        if (decimal.TryParse(div, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d2) && d2 > 0) DivisorUsd = d2;
+        var mc = config.Models.FirstOrDefault(c => c.Clave == "multiplicador_crc")?.Valor;
+        if (decimal.TryParse(mc, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var m2) && m2 > 0) MultiplicadorCrc = m2;
         _cargado = true;
     }
 

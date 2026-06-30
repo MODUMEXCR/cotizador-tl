@@ -18,13 +18,14 @@ else
 {
     <h1>Precios</h1>
 
-    <!-- ===== Tipo de cambio LATAM ===== -->
+    <!-- ===== Tipo de cambio por región ===== -->
     <section class="card">
-        <h2>Tipo de cambio LATAM</h2>
-        <p class="muted small">Los precios para distribuidores fuera de México se calculan: precio MXN ÷ divisor, en dólares (USD).</p>
+        <h2>Tipo de cambio</h2>
+        <p class="muted small">LATAM: precio MXN ÷ divisor (USD). Costa Rica: ese precio USD × multiplicador (colones).</p>
         <div class="filtros">
-            <label>Divisor (MXN ÷ divisor = USD)<input type="number" step="0.01" @bind="divisor" /></label>
-            <button class="btn-add" @onclick="GuardarDivisor">Guardar</button>
+            <label>Divisor LATAM (MXN ÷ divisor = USD)<input type="number" step="0.01" @bind="divisor" /></label>
+            <label>Multiplicador Costa Rica (USD × mult = CRC)<input type="number" step="0.01" @bind="multCrc" /></label>
+            <button class="btn-add" @onclick="GuardarTipoCambio">Guardar</button>
         </div>
         @if (msgD is not null) { <div class="aviso @(okD ? "ok" : "err")">@msgD</div> }
     </section>
@@ -101,7 +102,7 @@ else
     private bool cargando = true, aplicando;
     private string gFamilia = "", gGrupo = "", iFamilia = "";
     private decimal? gPct;
-    private decimal divisor = 17m;
+    private decimal divisor = 17m, multCrc = 490m;
     private string? msgG, msgI, msgD;
     private bool okG, okI, okD;
     private readonly List<FilaPrecio> filas = new();
@@ -111,19 +112,21 @@ else
         if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
         await Catalogo.CargarAsync();
         divisor = Catalogo.DivisorUsd;
+        multCrc = Catalogo.MultiplicadorCrc;
         cargando = false;
     }
 
-    private async Task GuardarDivisor()
+    private async Task GuardarTipoCambio()
     {
         msgD = null;
-        if (divisor <= 0) { okD = false; msgD = "El divisor debe ser mayor que 0."; return; }
+        if (divisor <= 0 || multCrc <= 0) { okD = false; msgD = "Los valores deben ser mayores que 0."; return; }
         try
         {
-            await Supa.From<PConfig>().Upsert(new PConfig { Clave = "divisor_usd",
-                Valor = divisor.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            await Supa.From<PConfig>().Upsert(new PConfig { Clave = "divisor_usd", Valor = divisor.ToString(inv) });
+            await Supa.From<PConfig>().Upsert(new PConfig { Clave = "multiplicador_crc", Valor = multCrc.ToString(inv) });
             await Catalogo.CargarAsync(forzar: true);
-            okD = true; msgD = $"Divisor actualizado a {divisor}.";
+            okD = true; msgD = $"Tipo de cambio actualizado (÷{divisor} USD, ×{multCrc} CRC).";
         }
         catch (Exception ex) { okD = false; msgD = "No se pudo guardar: " + ex.Message; }
     }

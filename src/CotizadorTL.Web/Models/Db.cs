@@ -71,13 +71,9 @@ public class PDistribuidor : BaseModel
     [Column("telefono")]      public string? Telefono { get; set; }
     [Column("ubicacion")]     public string? Ubicacion { get; set; }
     [Column("pais")]          public string Pais { get; set; } = "México";
+    [Column("region")]        public string Region { get; set; } = "México";  // 'México' | 'LATAM' | 'Costa Rica'
     [Column("descuento_pct")] public decimal DescuentoPct { get; set; }
     [Column("activo")]        public bool Activo { get; set; } = true;
-
-    /// <summary>MXN si el país es México; LATAM en cualquier otro caso.</summary>
-    public string Region => string.Equals((Pais ?? "").Trim().TrimEnd('.'), "México", StringComparison.OrdinalIgnoreCase)
-                            || string.Equals((Pais ?? "").Trim(), "Mexico", StringComparison.OrdinalIgnoreCase)
-                            ? "MXN" : "LATAM";
 }
 
 [Table("cotizacion")]

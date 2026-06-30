@@ -6,7 +6,7 @@
 
 <PageTitle>Distribuidores</PageTitle>
 
-@if (!Auth.EsAdmin)
+@if (!Auth.PuedeVerTodo)
 {
     <p>No tienes acceso a esta sección.</p>
 }
@@ -56,12 +56,21 @@ else
         @if (msgU is not null) { <div class="aviso @(okU ? "ok" : "err")">@msgU</div> }
     </section>
 
-    <!-- ===== Empresas distribuidoras ===== -->
+    <!-- ===== Empresas distribuidoras (alta/edición: solo Admin/Super) ===== -->
+    @if (Auth.EsAdmin)
+    {
     <section class="card">
         <h2>@(edit.DistribuidorId == 0 ? "Nueva empresa distribuidora" : "Editar empresa")</h2>
         <div class="campos">
             <label>Nombre<input @bind="edit.Nombre" /></label>
-            <label>País (México = precios MXN; otro = LATAM/USD)<input @bind="edit.Pais" /></label>
+            <label>País<input @bind="edit.Pais" /></label>
+            <label>Región (define moneda y precio)
+                <select @bind="edit.Region">
+                    <option value="México">México (MXN)</option>
+                    <option value="LATAM">LATAM (USD)</option>
+                    <option value="Costa Rica">Costa Rica (colones)</option>
+                </select>
+            </label>
             <label>Teléfono<input @bind="edit.Telefono" /></label>
             <label>Ubicación / ciudad<input @bind="edit.Ubicacion" /></label>
             <label>Descuento por defecto %<input type="number" step="0.01" @bind="edit.DescuentoPct" /></label>
@@ -73,6 +82,7 @@ else
         { <button class="btn-pdf" style="width:auto;margin-left:.5rem" @onclick="NuevoForm">Cancelar edición</button> }
         @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
     </section>
+    }
 
     <section class="card">
         <h2>Empresas</h2>
@@ -87,7 +97,8 @@ else
                             <td><span class="estado">@d.Region</span></td><td>@d.Ubicacion</td>
                             <td class="num">@d.DescuentoPct.ToString("0.#")</td>
                             <td class="acciones">
-                                <button class="btn-mini xls" @onclick="() => Editar(d)">Editar</button>
+                                @if (Auth.EsAdmin)
+                                { <button class="btn-mini xls" @onclick="() => Editar(d)">Editar</button> }
                                 @if (Auth.EsSuper)
                                 { <button class="btn-mini pdf" @onclick="() => Borrar(d)">Borrar</button> }
                             </td>
@@ -109,7 +120,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Auth.EsAdmin) { Nav.NavigateTo(""); return; }
+        if (!Auth.PuedeVerTodo) { Nav.NavigateTo(""); return; }
         await Catalogo.CargarAsync();
         await CargarCuentas();
         cargando = false;
@@ -153,7 +164,7 @@ else
 
     private void Editar(PDistribuidor d)
     {
-        edit = new PDistribuidor { DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion, Pais = d.Pais, DescuentoPct = d.DescuentoPct, Activo = d.Activo };
+        edit = new PDistribuidor { DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion, Pais = d.Pais, Region = d.Region, DescuentoPct = d.DescuentoPct, Activo = d.Activo };
         msg = null;
     }
 

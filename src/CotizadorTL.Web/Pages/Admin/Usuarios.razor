@@ -35,6 +35,7 @@ else
                             <td>
                                 <select @bind="u.Rol">
                                     <option>Distribuidor</option>
+                                    <option>Vendedor</option>
                                     <option>Administrador</option>
                                     <option>Super Admin</option>
                                 </select>
@@ -63,7 +64,7 @@ else
         if (!Auth.EsSuper) { Nav.NavigateTo(""); return; }
         var resp = await Supa.From<Profile>()
                              .Order("nombre", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
-        foreach (var p in resp.Models.Where(p => p.Rol is "Administrador" or "Super Admin"))
+        foreach (var p in resp.Models.Where(p => p.Rol is "Administrador" or "Super Admin" or "Vendedor"))
             usuarios.Add(new UsuarioVM { Id = p.Id, Nombre = p.Nombre, Email = p.Email, Rol = p.Rol, DistribuidorId = p.DistribuidorId, Activo = p.Activo });
         cargando = false;
     }
