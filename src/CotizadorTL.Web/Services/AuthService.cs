@@ -57,7 +57,7 @@ public class AuthService
     {
         var e = (error ?? "").ToLowerInvariant();
         if (e.Contains("invalid_credentials") || e.Contains("invalid login")) return "Correo o contraseña incorrectos.";
-        if (e.Contains("email not confirmed") || e.Contains("not confirmed"))  return "Debes confirmar tu correo antes de entrar.";
+        if (e.Contains("email not confirmed") || e.Contains("not confirmed"))  return "Correo aún no autorizado. Contacta con un administrador.";
         if (e.Contains("rate") || e.Contains("too many"))                       return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
         if (e.Contains("network") || e.Contains("failed to fetch"))            return "Sin conexión. Revisa tu internet e inténtalo de nuevo.";
         return "No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.";
