@@ -29,6 +29,7 @@ public class PProducto : BaseModel
     [Column("moneda")]           public string Moneda { get; set; } = "MXN";
     [Column("espesor")]          public string? Espesor { get; set; }
     [Column("requiere_medidas")] public bool RequiereMedidas { get; set; }
+    [Column("medida_unica")]     public bool MedidaUnica { get; set; }
     [Column("aplica_descuento")] public bool AplicaDescuento { get; set; } = true;
     [Column("es_extra")]         public bool EsExtra { get; set; }
     [Column("activo")]           public bool Activo { get; set; } = true;
@@ -108,6 +109,7 @@ public class PCotizacion : BaseModel
     [Column("anticipo_monto")] public decimal AnticipoMonto { get; set; }
     [Column("saldo_monto")]    public decimal SaldoMonto { get; set; }
     [Column("app_json")]       public string? AppJson { get; set; }
+    [Column("fabricacion")]    public string? Fabricacion { get; set; }
 }
 
 [Table("cotizacion_linea")]

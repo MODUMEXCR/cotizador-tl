@@ -35,10 +35,10 @@ FAMILIAS = [
 ]
 PRODUCTOS = []
 def add(codigo, familia, nombre, precios, descripcion="", tipo="fijo", unidad="pieza",
-        espesor=None, medidas=False, desc_aplica=True, es_extra=False, orden=0):
+        espesor=None, medidas=False, desc_aplica=True, es_extra=False, orden=0, medida_unica=False):
     PRODUCTOS.append(dict(codigo_sap=codigo, familia=familia, nombre=nombre, descripcion=descripcion,
         tipo_precio=tipo, unidad=unidad, moneda="MXN", espesor=espesor, requiere_medidas=medidas,
-        aplica_descuento=desc_aplica, es_extra=es_extra, orden=orden,
+        aplica_descuento=desc_aplica, es_extra=es_extra, orden=orden, medida_unica=medida_unica,
         precios={g: round(p,4) for g,p in precios.items() if p is not None}))
 
 # ===================== CUBIERTAS =====================
@@ -46,7 +46,8 @@ cub = RAW["CUBIERTAS"]
 R = {"G1":num(cub[4][2]),"G2":num(cub[7][2]),"G3":num(cub[8][2]),"G4":num(cub[9][2]),
      "ESP_INT":num(cub[6][2]),"ESP_EXT":num(cub[12][2])}
 DESC_INT = "SUMINISTRO DE CUBIERTA {forma} DE LAMINADO COMPACTO DE 12.7 MM DE ESPESOR MARCA THIN LAMINATES. MEDIDA FINAL: {medida} GARANTÍA 25 AÑOS EN LAMINADO COMPACTO (INTERIOR). CANTO __"
-add("CR-ESP","CUBIERTAS","Cubierta redonda medida especial",R,DESC_INT.format(forma="REDONDA",medida="__ CM DIÁMETRO"),tipo="m2",unidad="m2",medidas=True,orden=1)
+add("CR-ESP","CUBIERTAS","Cubierta redonda medida especial",R,DESC_INT.format(forma="REDONDA",medida="__ CM DIÁMETRO"),tipo="m2",unidad="m2",medidas=True,medida_unica=True,orden=1)
+add("CC-ESP","CUBIERTAS","Cubierta cuadrada medida especial",R,DESC_INT.format(forma="CUADRADA",medida="__ CM"),tipo="m2",unidad="m2",medidas=True,medida_unica=True,orden=2)
 add("CT-ESP","CUBIERTAS","Cubierta rectangular medida especial",R,DESC_INT.format(forma="RECTANGULAR",medida="__ CM X __ CM"),tipo="m2",unidad="m2",medidas=True,orden=2)
 add("CU-ESP","CUBIERTAS","Cubierta forma irregular medida especial",R,DESC_INT.format(forma="FORMA IRREGULAR",medida="__ CM X __ CM"),tipo="m2",unidad="m2",medidas=True,orden=3)
 # Cubiertas de línea (código fijo CR-/CC-/CT-, precio por grupo)
@@ -161,9 +162,9 @@ L.append(",\n".join(f"  ({sqls(c)},{sqls(n)},{str(a).lower()},{o})" for c,n,a,o 
 L.append("")
 L.append("do $$\ndeclare pid bigint;\nbegin")
 for p in PRODUCTOS:
-    L.append("  insert into public.producto (codigo_sap,familia_codigo,nombre,descripcion,tipo_precio,unidad,moneda,espesor,requiere_medidas,aplica_descuento,es_extra,orden) values "
+    L.append("  insert into public.producto (codigo_sap,familia_codigo,nombre,descripcion,tipo_precio,unidad,moneda,espesor,requiere_medidas,medida_unica,aplica_descuento,es_extra,orden) values "
         f"({sqls(p['codigo_sap'])},{sqls(p['familia'])},{sqls(p['nombre'])},{sqls(p['descripcion'])},{sqls(p['tipo_precio'])},{sqls(p['unidad'])},{sqls(p['moneda'])},{sqls(p['espesor'])},"
-        f"{str(p['requiere_medidas']).lower()},{str(p['aplica_descuento']).lower()},{str(p['es_extra']).lower()},{p['orden']}) returning producto_id into pid;")
+        f"{str(p['requiere_medidas']).lower()},{str(p['medida_unica']).lower()},{str(p['aplica_descuento']).lower()},{str(p['es_extra']).lower()},{p['orden']}) returning producto_id into pid;")
     for g,pr in p["precios"].items():
         L.append(f"  insert into public.producto_precio (producto_id,grupo,precio) values (pid,{sqls(g)},{pr});")
 L.append("end $$;")

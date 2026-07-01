@@ -60,6 +60,7 @@ public class CatalogoService
             Moneda = p.Moneda,
             Espesor = p.Espesor,
             RequiereMedidas = p.RequiereMedidas,
+            MedidaUnica = p.MedidaUnica,
             AplicaDescuento = p.AplicaDescuento,
             EsExtra = p.EsExtra,
             Activo = p.Activo,

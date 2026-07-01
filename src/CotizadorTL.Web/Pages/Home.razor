@@ -40,12 +40,21 @@ else
                 <label>Atención a<input @bind="cot.AtencionA" /></label>
                 <label>Teléfono<input @bind="cot.Telefono" /></label>
                 <label>Ciudad<input @bind="cot.Ciudad" /></label>
-                <label>Cotizado por<input @bind="cot.CotizadoPor" /></label>
+                <label>Cotizado por<input value="@cot.CotizadoPor" disabled /></label>
+                @if (Auth.PuedeVerTodo)
+                {
+                    <label>Lugar de fabricación
+                        <select @bind="fabricacion">
+                            <option value="México">México</option>
+                            <option value="Costa Rica">Costa Rica</option>
+                        </select>
+                    </label>
+                }
             </div>
             <div class="campos">
-                <label>Descuento distribuidor %<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@Auth.EsVendedor" /></label>
-                <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" /></label>
-                <label>Anticipo %<input type="number" step="0.01" @bind="cot.AnticipoPct" /></label>
+                <label>Descuento distribuidor %<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@(!Auth.EsAdmin)" /></label>
+                <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" disabled="@(!Auth.EsAdmin)" /></label>
+                <label>Anticipo %<input type="number" value="60" disabled /></label>
             </div>
             <label>Comentarios o instrucciones especiales<textarea @bind="cot.Comentarios" rows="2"></textarea></label>
         </section>
@@ -75,7 +84,7 @@ else
                         </label>
                         <label class="mini">Cant.<input type="number" min="1" step="1" @bind="l.Cantidad" @bind:after="StateHasChanged" /></label>
                         <label class="mini">Desc.%<input type="number" min="0" max="100" step="0.01" @bind="l.DescuentoPct" @bind:after="StateHasChanged"
-                                    disabled="@(prod is { AplicaDescuento:false } || Auth.EsVendedor)" /></label>
+                                    disabled="@(prod is { AplicaDescuento:false } || !Auth.EsAdmin)" /></label>
                         <button class="btn-del" @onclick="() => QuitarLinea(l)" title="Quitar">✕</button>
                     </div>
 
@@ -83,10 +92,14 @@ else
                     {
                         <div class="renglon-opts">
                             @* Medidas para productos por m² *@
-                            @if (prod.RequiereMedidas)
+                            @if (prod.RequiereMedidas && prod.MedidaUnica)
                             {
-                                <label class="mini">Largo (cm)<input type="number" step="0.1" @bind="l.LargoCm" @bind:after="StateHasChanged" /></label>
-                                <label class="mini">Ancho (cm)<input type="number" step="0.1" @bind="l.AnchoCm" @bind:after="StateHasChanged" /></label>
+                                <label class="mini">Medida (cm)<input type="number" step="0.1" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                            }
+                            else if (prod.RequiereMedidas)
+                            {
+                                <label class="mini">Largo (cm)<input type="number" step="0.1" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                                <label class="mini">Ancho (cm)<input type="number" step="0.1" @bind="l.AnchoCm" @bind:after="() => OnColorChanged(l)" /></label>
                             }
 
                             @* Espesor para lockers especiales por m² *@
@@ -175,6 +188,34 @@ else
                             </div>
                         }
 
+                        @* Cubiertas: canto (sin costo) + perforación (sin costo) + grabado láser ($120 c/u) *@
+                        @if (EsFamilia(l, "CUBIERTAS"))
+                        {
+                            <div class="renglon-opts">
+                                <label class="mini">Canto
+                                    <select @bind="l.Canto" @bind:after="() => OnColorChanged(l)">
+                                        <option value="">—</option>
+                                        <option value="A">A</option><option value="B">B</option>
+                                        <option value="C">C</option><option value="D">D</option>
+                                    </select>
+                                </label>
+                                <label class="chk"><input type="checkbox" @bind="l.Perforacion" @bind:after="() => OnColorChanged(l)" /> Perforación (sin costo)</label>
+                                @if (l.Perforacion)
+                                { <label class="mini">Cant. perforación<input type="number" min="1" step="1" @bind="l.PerforacionCant" @bind:after="() => OnColorChanged(l)" /></label> }
+                                <label class="chk"><input type="checkbox" @bind="l.Grabado" @bind:after="() => OnColorChanged(l)" /> Grabado láser x cubierta ($120)</label>
+                                @if (l.Grabado)
+                                { <label class="mini">Cant. grabado<input type="number" min="1" step="1" @bind="l.GrabadoCant" @bind:after="() => OnColorChanged(l)" /></label> }
+                            </div>
+                        }
+                        @if (EsFamilia(l, "BANCAS"))
+                        {
+                            <div class="renglon-opts">
+                                <label class="chk"><input type="checkbox" @bind="l.Grabado" @bind:after="() => OnColorChanged(l)" /> Grabado láser x banca ($120)</label>
+                                @if (l.Grabado)
+                                { <label class="mini">Cant. grabado<input type="number" min="1" step="1" @bind="l.GrabadoCant" @bind:after="() => OnColorChanged(l)" /></label> }
+                            </div>
+                        }
+
                         <label class="desc">Descripción (va al PDF)
                             <textarea rows="3" @bind="l.Descripcion"></textarea>
                         </label>
@@ -214,6 +255,7 @@ else
     private Cotizacion cot = new();
     private DateTime? vigencia;
     private long distribuidorId;
+    private string fabricacion = "México";
     private readonly List<LineaUI> lineas = new();
 
     private PDistribuidor? DistribActual => Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId);
@@ -248,18 +290,40 @@ else
         try
         {
             var c = await Supa.From<PCotizacion>().Where(x => x.CotizacionId == id).Single();
-            if (c is not null)
+            if (c is null) { AgregarLinea(); return; }
+            editandoId = id;
+            // Encabezado desde la fila (funciona aunque no haya app_json)
+            cot.Folio = c.Folio; cot.RazonSocial = c.RazonSocial; cot.Proyecto = c.Proyecto; cot.Titulo = c.Titulo;
+            cot.Cliente = c.Cliente; cot.AtencionA = c.AtencionA; cot.Telefono = c.Telefono; cot.Ciudad = c.Ciudad;
+            cot.CotizadoPor = c.CotizadoPor; cot.Comentarios = c.Comentarios;
+            cot.DescuentoPct = c.DescuentoPct; cot.IvaPct = c.IvaPct; cot.AnticipoPct = c.AnticipoPct;
+            vigencia = c.Vigencia; distribuidorId = c.DistribuidorId ?? 0; fabricacion = c.Fabricacion ?? "México";
+
+            if (!string.IsNullOrWhiteSpace(c.AppJson))
             {
-                editandoId = id;
-                if (!string.IsNullOrWhiteSpace(c.AppJson))
+                var est = System.Text.Json.JsonSerializer.Deserialize<EstadoCot>(c.AppJson!);
+                if (est is not null)
                 {
-                    var est = System.Text.Json.JsonSerializer.Deserialize<EstadoCot>(c.AppJson!);
-                    if (est is not null)
+                    distribuidorId = est.DistribuidorId; vigencia = est.Vigencia; fabricacion = est.Fabricacion ?? "México";
+                    cot = est.Header ?? cot; cot.Lineas = new();
+                    lineas.Clear(); lineas.AddRange(est.Lineas);
+                }
+            }
+            else
+            {
+                // Respaldo (cotizaciones viejas sin estado): reconstruye renglones básicos
+                var filas = (await Supa.From<PCotizacionLinea>().Where(x => x.CotizacionId == id)
+                                       .Order("orden", Supabase.Postgrest.Constants.Ordering.Ascending).Get()).Models;
+                lineas.Clear();
+                foreach (var f in filas)
+                {
+                    var prod = f.ProductoId is long pid ? Catalogo.Buscar(pid) : null;
+                    lineas.Add(new LineaUI
                     {
-                        distribuidorId = est.DistribuidorId; vigencia = est.Vigencia;
-                        cot = est.Header ?? new(); cot.Lineas = new();
-                        lineas.Clear(); lineas.AddRange(est.Lineas);
-                    }
+                        FamiliaCodigo = prod?.FamiliaCodigo, ProductoId = f.ProductoId, Cantidad = f.Cantidad,
+                        LargoCm = f.LargoCm, AnchoCm = f.AnchoCm, ColorNombre = f.Color ?? "",
+                        DescuentoPct = f.DescuentoPct, Descripcion = f.Descripcion ?? "",
+                    });
                 }
             }
         }
@@ -271,6 +335,7 @@ else
     {
         public long DistribuidorId { get; set; }
         public DateTime? Vigencia { get; set; }
+        public string Fabricacion { get; set; } = "México";
         public Cotizacion Header { get; set; } = new();
         public List<LineaUI> Lineas { get; set; } = new();
     }
@@ -320,8 +385,15 @@ else
         var p = ProdDe(l); if (p is null) return 0m;
         var grupo = GrupoEfectivo(l, p);
         decimal precio = p.Precios.GetValueOrDefault(grupo, p.Precios.Values.FirstOrDefault());
-        if (p.TipoPrecio == "m2") precio *= ((l.LargoCm ?? 0) / 100m) * ((l.AnchoCm ?? 0) / 100m);
+        if (p.TipoPrecio == "m2")
+        {
+            decimal a = (l.LargoCm ?? 0) / 100m;
+            decimal b = p.MedidaUnica ? a : (l.AnchoCm ?? 0) / 100m;   // redonda/cuadrada: área = medida²
+            precio *= a * b;
+        }
         if (EsFamilia(l, "CUBIERTAS") && l.ColorEspecial) precio *= 1.20m;
+        // Grabado láser en cubiertas/bancas: $120 por pieza grabada (sin descuento de línea; se suma al unitario)
+        if ((EsFamilia(l, "CUBIERTAS") || EsFamilia(l, "BANCAS")) && l.Grabado) precio += 120m * Math.Max(1, l.GrabadoCant);
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra && !string.IsNullOrEmpty(l.ColorInterior)) precio *= 1.10m; // interior distinto a alúmina
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra)
             foreach (var kv in l.ExtrasCant)
@@ -339,6 +411,7 @@ else
     {
         l.ProductoId = null; l.Grupo = ""; l.Descripcion = ""; l.LargoCm = l.AnchoCm = null;
         l.ColorNombre = l.ColorInterior = l.ColorEspecialNombre = ""; l.ColorEspecial = false; l.Exterior = false; l.ExtrasCant.Clear();
+        l.Canto = ""; l.Perforacion = false; l.PerforacionCant = 1; l.Grabado = false; l.GrabadoCant = 1;
         StateHasChanged();
     }
     private void OnProductoChanged(LineaUI l)
@@ -393,14 +466,19 @@ else
         var sb = new System.Text.StringBuilder(p.Descripcion);
         if (p.RequiereMedidas && (l.LargoCm > 0 || l.AnchoCm > 0))
         {
-            var medida = EsFamilia(l, "CUBIERTAS") && p.CodigoSap == "CR-ESP"
-                ? $"{l.LargoCm:0.#} CM DIÁMETRO"
-                : $"{l.LargoCm:0.#} CM X {l.AnchoCm:0.#} CM";
-            sb.Replace("__ CM DIÁMETRO", medida).Replace("__ CM X __ CM", medida).Replace("MEDIDA FINAL: __", $"MEDIDA FINAL: {medida}");
+            string medida;
+            if (p.MedidaUnica)
+                medida = p.CodigoSap.StartsWith("CR") ? $"{l.LargoCm:0.#} CM DIÁMETRO" : $"{l.LargoCm:0.#} X {l.LargoCm:0.#} CM";
+            else
+                medida = $"{l.LargoCm:0.#} X {l.AnchoCm:0.#} CM";
+            sb.Replace("__ CM DIÁMETRO", medida).Replace("__ CM X __ CM", medida).Replace("__ CM", medida).Replace("MEDIDA FINAL: __", $"MEDIDA FINAL: {medida}");
         }
+        if (!string.IsNullOrEmpty(l.Canto)) sb.Replace("CANTO __", "CANTO " + l.Canto);
         var colorTxt = ColorFinal(l);
         if (!string.IsNullOrEmpty(colorTxt)) sb.Append($" COLOR: {colorTxt}.");
         if (!string.IsNullOrEmpty(l.ColorInterior)) sb.Append($" INTERIOR: {l.ColorInterior}.");
+        if (l.Perforacion) sb.Append($" PERFORACIÓN: SÍ (x{Math.Max(1, l.PerforacionCant)}).");
+        if ((EsFamilia(l, "CUBIERTAS") || EsFamilia(l, "BANCAS")) && l.Grabado) sb.Append($" GRABADO LÁSER (x{Math.Max(1, l.GrabadoCant)}).");
         if (EsFamilia(l, "LOCKERS") && l.ExtrasCant.Count > 0)
         {
             var nombres = l.ExtrasCant.Select(kv => { var n = Catalogo.Buscar(kv.Key)?.Nombre; return kv.Value > 1 ? $"{n} (x{kv.Value})" : n; }).Where(n => n != null);
@@ -440,7 +518,7 @@ else
 
             // Estado completo del configurador (para reabrir/editar tal cual)
             cot.Lineas = new();
-            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Header = cot, Lineas = lineas };
+            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
             var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
 
             var folio = string.IsNullOrWhiteSpace(cot.Folio) ? "COT-" + DateTime.Now.ToString("yyMMddHHmmss") : cot.Folio;
@@ -455,7 +533,7 @@ else
                 IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, Comentarios = cot.Comentarios,
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
-                AppJson = appJson,
+                AppJson = appJson, Fabricacion = fabricacion,
             };
 
             long cotId;
@@ -538,6 +616,11 @@ else
         public string ColorInterior { get; set; } = "";
         public bool ColorEspecial { get; set; }
         public bool Exterior { get; set; }
+        public string Canto { get; set; } = "";
+        public bool Perforacion { get; set; }
+        public int PerforacionCant { get; set; } = 1;
+        public bool Grabado { get; set; }
+        public int GrabadoCant { get; set; } = 1;
         [System.Text.Json.Serialization.JsonIgnore]
         public string TipoStr { get => Exterior ? "Exterior" : "Interior"; set => Exterior = value == "Exterior"; }
         public string Descripcion { get; set; } = "";

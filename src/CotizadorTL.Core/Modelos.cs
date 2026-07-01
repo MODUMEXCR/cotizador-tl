@@ -27,6 +27,7 @@ public sealed class Producto
     public string Moneda { get; set; } = "MXN";
     public string? Espesor { get; set; }
     public bool RequiereMedidas { get; set; }
+    public bool MedidaUnica { get; set; }
     public bool AplicaDescuento { get; set; } = true;
     public bool EsExtra { get; set; }
     public bool Activo { get; set; } = true;

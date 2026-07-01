@@ -34,6 +34,7 @@ create table public.producto (
   moneda           text not null default 'MXN' check (moneda in ('MXN','USD')),
   espesor          text,
   requiere_medidas boolean not null default false, -- pide largo/ancho (cm) para calcular m2
+  medida_unica     boolean not null default false, -- redonda/cuadrada: una sola medida (área = medida²)
   aplica_descuento boolean not null default true,
   es_extra         boolean not null default false,  -- extra de locker (se suma al precio del locker)
   activo           boolean not null default true,
@@ -152,6 +153,7 @@ create table public.cotizacion (
   anticipo_monto  numeric(16,2) not null default 0,
   saldo_monto     numeric(16,2) not null default 0,
   app_json        text,                            -- estado completo del configurador (para reabrir/editar)
+  fabricacion     text,                            -- lugar de fabricación: 'México' | 'Costa Rica'
   actualizado_el  timestamptz not null default now()
 );
 create index ix_cotizacion_distribuidor on public.cotizacion(distribuidor_id);
