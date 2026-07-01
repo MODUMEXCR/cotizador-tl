@@ -122,7 +122,7 @@
 
       // Moneda (USD para LATAM)
       doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
-      doc.text("PRECIOS EN " + txt(d.moneda || "MXN"), M, fy - 2);
+      doc.text("PRECIOS EN " + txt(d.moneda || "MXN") + (d.tipoPdf ? "  ·  " + d.tipoPdf : ""), M, fy - 2);
 
       // ---------- Totales (derecha) ----------
       const tot = d.totales || {};
@@ -136,8 +136,10 @@
         fy += 15;
       };
       rowT("SUBTOTAL PÚBLICO", tot.subtotal);
-      rowT("DESCUENTO DISTRIBUIDOR " + txt(d.descuentoPct) + "%", tot.descuentoMonto, { color: ROJO });
-      rowT("SUBTOTAL DESCUENTO", tot.subtotalDesc);
+      if (d.mostrarDescuento) {
+        rowT("DESCUENTO DISTRIBUIDOR", tot.descuentoMonto, { color: ROJO });
+        rowT("SUBTOTAL CON DESCUENTO", tot.subtotalDesc);
+      }
       rowT("IVA " + txt(d.ivaPct) + "%", tot.ivaMonto, { color: ROJO });
       doc.setDrawColor(...OSCURO); doc.line(x0, fy - 10, W - M, fy - 10);
       rowT("GRAN TOTAL", tot.granTotal, { bold: true });
@@ -197,7 +199,7 @@
 
   window.cotizadorPdf = {
     construir: construir,
-    generar: function (d) { construir(d).save("Cotizacion-" + txt(d.folio) + ".pdf"); },
+    generar: function (d) { construir(d).save("Cotizacion-" + txt(d.folio) + (d.tipoPdf ? "-" + d.tipoPdf : "") + ".pdf"); },
     // Solo para pruebas: renderiza el PDF dentro de un iframe.
     previa: function (d, iframeId) {
       document.getElementById(iframeId).src = construir(d).output("datauristring");

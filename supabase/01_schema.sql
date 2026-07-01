@@ -101,6 +101,14 @@ create table public.distribuidor (
   creado_el        timestamptz not null default now()
 );
 
+-- Descuento por distribuidor y familia (fallback: distribuidor.descuento_pct).
+create table public.distribuidor_descuento (
+  distribuidor_id bigint not null references public.distribuidor(distribuidor_id) on delete cascade,
+  familia_codigo  text   not null references public.familia(codigo),
+  descuento_pct   numeric(5,2) not null default 0,
+  primary key (distribuidor_id, familia_codigo)
+);
+
 -- profiles: 1:1 con auth.users. Supabase Auth maneja email + contraseña.
 create table public.profiles (
   id              uuid primary key references auth.users(id) on delete cascade,

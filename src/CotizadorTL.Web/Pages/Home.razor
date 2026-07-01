@@ -20,7 +20,7 @@ else
         <section class="card">
             <h2>Datos de la cotización</h2>
             <div class="campos">
-                <label>Folio (ID cotización)<input @bind="cot.Folio" /></label>
+                <label>Folio (ID cotización)<input value="@(string.IsNullOrEmpty(cot.Folio) ? "(se asigna al guardar)" : cot.Folio)" disabled /></label>
                 <label>Vigencia<input type="date" @bind="vigencia" /></label>
                 <label>Distribuidor
                     @if (Auth.PuedeVerTodo)
@@ -52,7 +52,7 @@ else
                 }
             </div>
             <div class="campos">
-                <label>Descuento distribuidor %<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@(!Auth.EsAdmin)" /></label>
+                <label>Descuento adicional % (admin)<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@(!Auth.EsAdmin)" /></label>
                 <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" disabled="@(!Auth.EsAdmin)" /></label>
                 <label>Anticipo %<input type="number" value="60" disabled /></label>
             </div>
@@ -235,7 +235,7 @@ else
             @{ var t = MotorPrecios.Calcular(ArmarCotizacion()); }
             <table class="tot">
                 <tr><td>Subtotal público</td><td class="num">@Money(t.Subtotal)</td></tr>
-                <tr><td>Descuento distribuidor (@cot.DescuentoPct.ToString("0.#")%)</td><td class="num desc">-@Money(t.DescuentoMonto)</td></tr>
+                <tr><td>Descuentos</td><td class="num desc">-@Money(t.DescuentoMonto)</td></tr>
                 <tr><td>Subtotal con descuento</td><td class="num">@Money(t.SubtotalDesc)</td></tr>
                 <tr><td>IVA (@cot.IvaPct.ToString("0.#")%)</td><td class="num">@Money(t.IvaMonto)</td></tr>
                 <tr class="gran"><td>GRAN TOTAL</td><td class="num">@Money(t.GranTotal)</td></tr>
@@ -243,8 +243,9 @@ else
                 <tr><td>Saldo</td><td class="num">@Money(t.Saldo)</td></tr>
             </table>
             @if (mensaje is not null) { <div class="aviso @(mensajeOk ? "ok" : "err")">@mensaje</div> }
-            <button class="btn-guardar" @onclick="Guardar" disabled="@guardando">@(guardando ? "Guardando…" : "Guardar y descargar PDF")</button>
-            <button class="btn-pdf" @onclick="DescargarPdf">Descargar PDF (sin guardar)</button>
+            <button class="btn-guardar" @onclick="Guardar" disabled="@guardando">@(guardando ? "Guardando…" : "Descargar PDF Distribuidor (guardar)")</button>
+            <button class="btn-pdf" @onclick="() => DescargarPdf(false)">Descargar PDF Cliente</button>
+            <p class="muted small">El PDF Distribuidor lleva descuentos y es el que se guarda (y va al Excel). El PDF Cliente va a precio público.</p>
         </section>
     </div>
 }
@@ -278,7 +279,7 @@ else
     {
         await Catalogo.CargarAsync();
         if (CotId is long id) { await CargarParaEditar(id); cargando = false; return; }
-        cot.Folio = "COT-" + DateTime.Now.ToString("yyMMdd-HHmm");
+        cot.Folio = "";   // se asigna el consecutivo al guardar
         cot.CotizadoPor = Auth.Perfil?.Nombre;
         if (!Auth.PuedeVerTodo && Auth.Perfil?.DistribuidorId is long d) { distribuidorId = d; OnDistribuidorChanged(); }
         AgregarLinea();
@@ -417,7 +418,13 @@ else
     private void OnProductoChanged(LineaUI l)
     {
         var p = ProdDe(l);
-        if (p is not null) { l.Grupo = p.Precios.Keys.FirstOrDefault() ?? "UNICO"; RegenerarDescripcion(l); }
+        if (p is not null)
+        {
+            l.Grupo = p.Precios.Keys.FirstOrDefault() ?? "UNICO";
+            // descuento base según la familia del producto y el distribuidor
+            if (distribuidorId != 0 && p.AplicaDescuento) l.DescuentoPct = Catalogo.DescuentoFamilia(distribuidorId, l.FamiliaCodigo);
+            RegenerarDescripcion(l);
+        }
         StateHasChanged();
     }
     private void OnColorChanged(LineaUI l) { RegenerarDescripcion(l); StateHasChanged(); }
@@ -427,11 +434,16 @@ else
         var d = DistribActual;
         if (d is not null)
         {
-            cot.DescuentoPct = d.DescuentoPct;
+            cot.DescuentoPct = 0m;   // "descuento adicional" global (solo admin); base va por familia en cada renglón
             cot.IvaPct = RegionActual switch { "México" => 16m, "Costa Rica" => 13m, _ => 0m }; // default por región (editable)
             if (string.IsNullOrWhiteSpace(cot.RazonSocial)) cot.RazonSocial = d.Nombre;
-            // El cambio de moneda/colores invalida los colores ya elegidos:
-            foreach (var l in lineas) { l.ColorNombre = ""; l.ColorInterior = ""; }
+            // Aplica el descuento por familia a cada renglón; y el cambio de región invalida colores
+            foreach (var l in lineas)
+            {
+                l.ColorNombre = ""; l.ColorInterior = "";
+                var p = ProdDe(l);
+                if (p is not null && p.AplicaDescuento) l.DescuentoPct = Catalogo.DescuentoFamilia(distribuidorId, l.FamiliaCodigo);
+            }
         }
         StateHasChanged();
     }
@@ -521,7 +533,22 @@ else
             var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
             var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
 
-            var folio = string.IsNullOrWhiteSpace(cot.Folio) ? "COT-" + DateTime.Now.ToString("yyMMddHHmmss") : cot.Folio;
+            bool eraEdicion = editandoId is not null;
+            string folio;
+            if (!eraEdicion)
+            {
+                var n = Catalogo.FolioConsecutivo;
+                folio = n.ToString();
+                await Supa.From<PConfig>().Upsert(new PConfig { Clave = "folio_consecutivo", Valor = (n + 1).ToString() });
+            }
+            else
+            {
+                var baseF = FolioBase(cot.Folio ?? "");
+                var existentes = (await Supa.From<PCotizacion>()
+                    .Filter("folio", Supabase.Postgrest.Constants.Operator.Like, baseF + "%").Get())
+                    .Models.Select(x => x.Folio).ToList();
+                folio = SiguienteVariante(baseF, existentes);
+            }
             var pcot = new PCotizacion
             {
                 Folio = folio,
@@ -536,19 +563,9 @@ else
                 AppJson = appJson, Fabricacion = fabricacion,
             };
 
-            long cotId;
-            if (editandoId is long eid)
-            {
-                pcot.CotizacionId = eid;
-                await Supa.From<PCotizacion>().Update(pcot);
-                await Supa.From<PCotizacionLinea>().Where(x => x.CotizacionId == eid).Delete();
-                cotId = eid;
-            }
-            else
-            {
-                var resp = await Supa.From<PCotizacion>().Insert(pcot);
-                cotId = resp.Models.First().CotizacionId;
-            }
+            // Siempre inserta: una edición se guarda como VARIANTE nueva (el original queda intacto).
+            var resp = await Supa.From<PCotizacion>().Insert(pcot);
+            var cotId = resp.Models.First().CotizacionId;
 
             var filas = new List<PCotizacionLinea>(); int orden = 1;
             foreach (var l in conProducto)
@@ -563,21 +580,44 @@ else
                 });
             }
             await Supa.From<PCotizacionLinea>().Insert(filas);
+            editandoId = cotId; cot.Folio = folio;
             await DescargarPdf();
-            Aviso($"Cotización {folio} {(editandoId is null ? "guardada" : "actualizada")} y PDF descargado.", true);
-            editandoId = cotId;
+            await Catalogo.CargarAsync(forzar: true);   // refresca el consecutivo para la próxima cotización
+            Aviso($"Cotización {folio} {(eraEdicion ? "guardada como variante (el original queda intacto)" : "guardada")} y PDF descargado.", true);
         }
         catch (Exception ex) { Aviso("No se pudo guardar: " + ex.Message, false); }
         finally { guardando = false; }
     }
 
     private void Aviso(string m, bool ok) { mensaje = m; mensajeOk = ok; }
+
+    // Folio base (sin la letra de variante) y siguiente variante disponible (B, C, D…)
+    private static string FolioBase(string f) =>
+        (f.Length >= 2 && f[^2] == '-' && char.IsLetter(f[^1])) ? f[..^2] : f;
+
+    private static string SiguienteVariante(string baseF, List<string> existentes)
+    {
+        var usadas = existentes.Where(x => !string.IsNullOrEmpty(x) && x.StartsWith(baseF + "-"))
+                               .Select(x => x[(baseF.Length + 1)..]).ToHashSet();
+        for (char c = 'B'; c <= 'Z'; c++)
+            if (!usadas.Contains(c.ToString())) return $"{baseF}-{c}";
+        return $"{baseF}-{DateTime.Now:HHmmss}";
+    }
     private static string Money(decimal v) => "$" + v.ToString("#,##0.00");
 
-    private async Task DescargarPdf()
+    // conDescuento=true -> PDF DISTRIBUIDOR (con descuentos, se guarda/va al Excel); false -> PDF CLIENTE (precio público)
+    private async Task DescargarPdf(bool conDescuento = true)
     {
         ArmarCotizacion();
-        var t = MotorPrecios.Calcular(cot);
+        Totales t;
+        if (conDescuento)
+            t = MotorPrecios.Calcular(cot);
+        else
+        {
+            var sin = new Cotizacion { IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, DescuentoPct = 0m,
+                Lineas = cot.Lineas.Select(l => new LineaCotizacion { Cantidad = l.Cantidad, PrecioUnitario = l.PrecioUnitario, AplicaDescuento = false }).ToList() };
+            t = MotorPrecios.Calcular(sin);
+        }
         bool hayInstalacion = lineas.Any(l => ProdDe(l)?.CodigoSap.StartsWith("INST-") == true);
         bool hayFlete = lineas.Any(l => ProdDe(l)?.CodigoSap.StartsWith("FLETE") == true);
         var dto = new
@@ -587,7 +627,7 @@ else
             atencionA = cot.AtencionA, telefono = cot.Telefono, ciudad = cot.Ciudad, cotizadoPor = cot.CotizadoPor,
             comentarios = cot.Comentarios, descuentoPct = cot.DescuentoPct.ToString("0.#"),
             ivaPct = cot.IvaPct.ToString("0.#"), anticipoPct = (double)cot.AnticipoPct,
-            moneda = MonedaActual,
+            moneda = MonedaActual, mostrarDescuento = conDescuento, tipoPdf = conDescuento ? "DISTRIBUIDOR" : "CLIENTE",
             incluyeInstalacion = hayInstalacion, incluyeFlete = hayFlete,
             totales = new { subtotal = (double)t.Subtotal, descuentoMonto = (double)t.DescuentoMonto, subtotalDesc = (double)t.SubtotalDesc,
                 ivaMonto = (double)t.IvaMonto, granTotal = (double)t.GranTotal, anticipo = (double)t.Anticipo, saldo = (double)t.Saldo },

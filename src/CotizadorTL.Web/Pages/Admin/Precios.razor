@@ -30,6 +30,17 @@ else
         @if (msgD is not null) { <div class="aviso @(okD ? "ok" : "err")">@msgD</div> }
     </section>
 
+    <!-- ===== Numeración de folios ===== -->
+    <section class="card">
+        <h2>Numeración de folios</h2>
+        <p class="muted small">Número consecutivo que se asignará a la próxima cotización nueva (temporal, editable).</p>
+        <div class="filtros">
+            <label>Próximo folio<input type="number" min="1" step="1" @bind="folioConsec" /></label>
+            <button class="btn-add" @onclick="GuardarFolio">Guardar</button>
+        </div>
+        @if (msgF is not null) { <div class="aviso @(okF ? "ok" : "err")">@msgF</div> }
+    </section>
+
     <!-- ===== Ajuste grupal ===== -->
     <section class="card">
         <h2>Ajuste grupal (por familia / tier)</h2>
@@ -103,8 +114,9 @@ else
     private string gFamilia = "", gGrupo = "", iFamilia = "";
     private decimal? gPct;
     private decimal divisor = 17m, multCrc = 490m;
-    private string? msgG, msgI, msgD;
-    private bool okG, okI, okD;
+    private int folioConsec = 1000;
+    private string? msgG, msgI, msgD, msgF;
+    private bool okG, okI, okD, okF;
     private readonly List<FilaPrecio> filas = new();
 
     protected override async Task OnInitializedAsync()
@@ -113,7 +125,21 @@ else
         await Catalogo.CargarAsync();
         divisor = Catalogo.DivisorUsd;
         multCrc = Catalogo.MultiplicadorCrc;
+        folioConsec = Catalogo.FolioConsecutivo;
         cargando = false;
+    }
+
+    private async Task GuardarFolio()
+    {
+        msgF = null;
+        if (folioConsec <= 0) { okF = false; msgF = "El folio debe ser mayor que 0."; return; }
+        try
+        {
+            await Supa.From<PConfig>().Upsert(new PConfig { Clave = "folio_consecutivo", Valor = folioConsec.ToString() });
+            await Catalogo.CargarAsync(forzar: true);
+            okF = true; msgF = $"Próximo folio: {folioConsec}.";
+        }
+        catch (Exception ex) { okF = false; msgF = "No se pudo guardar: " + ex.Message; }
     }
 
     private async Task GuardarTipoCambio()

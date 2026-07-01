@@ -24,6 +24,10 @@ public class CatalogoService
     public decimal DivisorUsd { get; private set; } = 17m;
     /// <summary>Multiplicador para Costa Rica (USD × mult = CRC colones). Configurable; default 490.</summary>
     public decimal MultiplicadorCrc { get; private set; } = 490m;
+    /// <summary>Siguiente número de folio (consecutivo). Editable en Precios.</summary>
+    public int FolioConsecutivo { get; private set; } = 1000;
+    /// <summary>Descuentos por distribuidor y familia: distribuidorId -> (familia -> %).</summary>
+    private Dictionary<long, Dictionary<string, decimal>> _descFam = new();
 
     public async Task CargarAsync(bool forzar = false)
     {
@@ -37,6 +41,7 @@ public class CatalogoService
         var distribs  = await _supa.From<PDistribuidor>().Order("nombre", Constants.Ordering.Ascending).Get();
         var colores   = await _supa.From<PColor>().Order("nombre", Constants.Ordering.Ascending).Get();
         var config    = await _supa.From<PConfig>().Get();
+        var descFam   = await _supa.From<PDistribuidorDescuento>().Get();
 
         // Agrupar precios por producto
         var preciosPorProducto = precios.Models
@@ -74,6 +79,10 @@ public class CatalogoService
         if (decimal.TryParse(div, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d2) && d2 > 0) DivisorUsd = d2;
         var mc = config.Models.FirstOrDefault(c => c.Clave == "multiplicador_crc")?.Valor;
         if (decimal.TryParse(mc, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var m2) && m2 > 0) MultiplicadorCrc = m2;
+        var fc = config.Models.FirstOrDefault(c => c.Clave == "folio_consecutivo")?.Valor;
+        if (int.TryParse(fc, out var f2) && f2 > 0) FolioConsecutivo = f2;
+        _descFam = descFam.Models.GroupBy(d => d.DistribuidorId)
+                          .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.FamiliaCodigo, x => x.DescuentoPct));
         _cargado = true;
     }
 
@@ -81,4 +90,12 @@ public class CatalogoService
         => Productos.Where(p => p.FamiliaCodigo == familiaCodigo);
 
     public Producto? Buscar(long productoId) => Productos.FirstOrDefault(p => p.ProductoId == productoId);
+
+    /// <summary>Descuento % del distribuidor para una familia; si no hay específico, usa su descuento general.</summary>
+    public decimal DescuentoFamilia(long distribuidorId, string? familia)
+    {
+        if (familia is not null && _descFam.TryGetValue(distribuidorId, out var fam) && fam.TryGetValue(familia, out var d))
+            return d;
+        return Distribuidores.FirstOrDefault(x => x.DistribuidorId == distribuidorId)?.DescuentoPct ?? 0m;
+    }
 }

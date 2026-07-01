@@ -76,6 +76,15 @@ else
             <label>Ubicación / ciudad<input @bind="edit.Ubicacion" /></label>
             <label>Descuento por defecto %<input type="number" step="0.01" @bind="edit.DescuentoPct" /></label>
         </div>
+        @if (edit.DistribuidorId != 0)
+        {
+            <p class="muted small" style="margin:.6rem 0 .2rem"><b>Descuentos por familia</b> (si quedan en 0, se usa el descuento por defecto):</p>
+            <div class="campos">
+                <label>Cubiertas %<input type="number" step="0.01" @bind="descCub" /></label>
+                <label>Lockers %<input type="number" step="0.01" @bind="descLock" /></label>
+                <label>Bancas %<input type="number" step="0.01" @bind="descBanca" /></label>
+            </div>
+        }
         <button class="btn-add" @onclick="GuardarEmpresa" disabled="@guardando">
             @(guardando ? "Guardando…" : (edit.DistribuidorId == 0 ? "Agregar" : "Guardar cambios"))
         </button>
@@ -166,9 +175,19 @@ else
 
     private void NuevoForm() { edit = new PDistribuidor(); msg = null; }
 
-    private void Editar(PDistribuidor d)
+    private decimal descCub, descLock, descBanca;
+
+    private async Task Editar(PDistribuidor d)
     {
         edit = new PDistribuidor { DistribuidorId = d.DistribuidorId, Nombre = d.Nombre, Email = d.Email, Telefono = d.Telefono, Ubicacion = d.Ubicacion, Pais = d.Pais, Region = d.Region, DescuentoPct = d.DescuentoPct, Activo = d.Activo };
+        descCub = descLock = descBanca = 0;
+        var rows = (await Supa.From<PDistribuidorDescuento>().Where(x => x.DistribuidorId == d.DistribuidorId).Get()).Models;
+        foreach (var r in rows)
+        {
+            if (r.FamiliaCodigo == "CUBIERTAS") descCub = r.DescuentoPct;
+            else if (r.FamiliaCodigo == "LOCKERS") descLock = r.DescuentoPct;
+            else if (r.FamiliaCodigo == "BANCAS") descBanca = r.DescuentoPct;
+        }
         msg = null;
     }
 
@@ -179,8 +198,19 @@ else
         guardando = true;
         try
         {
-            if (edit.DistribuidorId == 0) await Supa.From<PDistribuidor>().Insert(edit);
-            else await Supa.From<PDistribuidor>().Update(edit);
+            var editingId = edit.DistribuidorId;
+            if (editingId == 0) await Supa.From<PDistribuidor>().Insert(edit);
+            else
+            {
+                await Supa.From<PDistribuidor>().Update(edit);
+                // Descuentos por familia (solo se guardan los > 0; el resto usa el descuento por defecto)
+                await Supa.From<PDistribuidorDescuento>().Where(x => x.DistribuidorId == editingId).Delete();
+                var rows = new List<PDistribuidorDescuento>();
+                if (descCub > 0) rows.Add(new() { DistribuidorId = editingId, FamiliaCodigo = "CUBIERTAS", DescuentoPct = descCub });
+                if (descLock > 0) rows.Add(new() { DistribuidorId = editingId, FamiliaCodigo = "LOCKERS", DescuentoPct = descLock });
+                if (descBanca > 0) rows.Add(new() { DistribuidorId = editingId, FamiliaCodigo = "BANCAS", DescuentoPct = descBanca });
+                if (rows.Count > 0) await Supa.From<PDistribuidorDescuento>().Insert(rows);
+            }
             await Catalogo.CargarAsync(forzar: true);
             ok = true; msg = "Empresa guardada."; NuevoForm();
         }

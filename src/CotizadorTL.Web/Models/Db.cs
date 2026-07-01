@@ -55,6 +55,14 @@ public class PConfig : BaseModel
     [Column("valor")]            public string Valor { get; set; } = "";
 }
 
+[Table("distribuidor_descuento")]
+public class PDistribuidorDescuento : BaseModel
+{
+    [PrimaryKey("distribuidor_id", false)] public long DistribuidorId { get; set; }
+    [Column("familia_codigo")] public string FamiliaCodigo { get; set; } = "";
+    [Column("descuento_pct")]  public decimal DescuentoPct { get; set; }
+}
+
 [Table("producto_precio")]
 public class PProductoPrecio : BaseModel
 {

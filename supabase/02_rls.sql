@@ -41,6 +41,7 @@ alter table public.cotizacion       enable row level security;
 alter table public.cotizacion_linea enable row level security;
 alter table public.color            enable row level security;
 alter table public.config           enable row level security;
+alter table public.distribuidor_descuento enable row level security;
 
 -- ---------- PROFILES (usuarios) ----------
 -- Jerarquía:
@@ -144,9 +145,15 @@ begin
   end loop;
 end $$;
 
--- ---------- CONFIG (divisor USD, etc.) ----------
+-- ---------- CONFIG (divisor USD, consecutivo, etc.) ----------
 create policy config_select on public.config for select using ( auth.uid() is not null );
 create policy config_modify on public.config for all using ( public.es_admin() ) with check ( public.es_admin() );
+
+-- ---------- DESCUENTOS POR DISTRIBUIDOR/FAMILIA ----------
+create policy dd_select on public.distribuidor_descuento for select
+  using ( public.puede_ver_todo() or distribuidor_id = public.mi_distribuidor() );
+create policy dd_modify on public.distribuidor_descuento for all
+  using ( public.es_admin() ) with check ( public.es_admin() );
 
 -- ---------- BITÁCORA DE PRECIOS ----------
 -- Solo admin/super la consultan; la escribe el trigger (security definer).
