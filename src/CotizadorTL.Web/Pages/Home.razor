@@ -537,9 +537,10 @@ else
             string folio;
             if (!eraEdicion)
             {
-                var n = Catalogo.FolioConsecutivo;
-                folio = n.ToString();
-                await Supa.From<PConfig>().Upsert(new PConfig { Clave = "folio_consecutivo", Valor = (n + 1).ToString() });
+                // Toma el siguiente consecutivo vía función de servidor (atómico, sin chocar con RLS)
+                var rpc = await Supa.Rpc("siguiente_folio", new Dictionary<string, object?>());
+                var raw = (rpc?.Content ?? "").Trim().Trim('"');
+                folio = string.IsNullOrEmpty(raw) ? Catalogo.FolioConsecutivo.ToString() : raw;
             }
             else
             {
