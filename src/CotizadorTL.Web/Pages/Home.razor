@@ -245,7 +245,7 @@ else
             @if (mensaje is not null) { <div class="aviso @(mensajeOk ? "ok" : "err")">@mensaje</div> }
             <button class="btn-guardar" @onclick="Guardar" disabled="@guardando">@(guardando ? "Guardando…" : "Descargar PDF Distribuidor (guardar)")</button>
             <button class="btn-pdf" @onclick="() => DescargarPdf(false)">Descargar PDF Cliente</button>
-            <p class="muted small">El PDF Distribuidor lleva descuentos y es el que se guarda (y va al Excel). El PDF Cliente va a precio público.</p>
+            <p class="muted small">El PDF Distribuidor lleva descuentos. El PDF Cliente va a precio público.</p>
         </section>
     </div>
 }
