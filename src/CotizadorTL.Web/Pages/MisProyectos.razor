@@ -62,7 +62,7 @@ else
                                 <button class="btn-mini xls" @onclick="() => Abrir(c)" style="background:#3a6b14">Abrir</button>
                                 <button class="btn-mini pdf" @onclick="() => DescargarPdf(c)" style="background:#c0392b">PDF</button>
                                 <button class="btn-mini xls" @onclick="() => DescargarExcel(c)">Excel</button>
-                                @if (Auth.EsAdmin)
+                                @if (Auth.PuedeVerTodo)
                                 { <button class="btn-mini pdf" @onclick="() => Eliminar(c)">Eliminar</button> }
                             </td>
                         </tr>
