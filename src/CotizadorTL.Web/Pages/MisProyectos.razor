@@ -163,10 +163,17 @@ else
             {
                 codigoSap = l.CodigoSap, descripcion = l.Descripcion, textoLibre = l.TextoLibre,
                 cantidad = (double)l.Cantidad, precioUnitario = (double)l.PrecioUnitario,
-                desc1 = (double)l.DescuentoPct,        // Descuento de renglón
-                desc2 = (double)c.DescuentoPct,        // Descuento distribuidor (global)
+                desc1 = (double)l.DescuentoPct,        // Descuento de renglón (familia)
+                desc2 = (double)c.DescuentoPct,        // Descuento adicional (global)
             }).ToArray();
-            await JS.InvokeVoidAsync("cotizadorExcel.generar", c.Folio, rows);
+            var info = new
+            {
+                folio = c.Folio, fecha = c.Fecha.ToLocalTime().ToString("dd/MM/yyyy"),
+                cliente = c.Cliente, ciudad = c.Ciudad, atencion = c.AtencionA,
+                distribuidor = NombreDist(c.DistribuidorId), proyecto = c.Proyecto,
+                fabricacion = c.Fabricacion, moneda = c.Moneda,
+            };
+            await JS.InvokeVoidAsync("cotizadorExcel.generar", info, rows);
         }
         catch (Exception ex) { mensaje = "No se pudo generar el Excel: " + ex.Message; }
     }
