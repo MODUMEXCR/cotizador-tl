@@ -41,7 +41,7 @@ else
             <table class="proyectos">
                 <thead>
                     <tr>
-                        <th>Folio</th><th>Fecha</th>
+                        <th>Expediente</th><th>Fecha</th>
                         @if (Auth.PuedeVerTodo) { <th>Distribuidor</th> }
                         <th>Cliente</th><th>Proyecto</th><th class="num">Gran total</th>
                         <th>Estado</th><th>Fabricación</th><th>Descargas</th>
@@ -124,7 +124,9 @@ else
         try
         {
             c.Fabricacion = string.IsNullOrEmpty(valor) ? null : valor;
+            if (c.Fecha.Year < 2000) c.Fecha = DateTime.UtcNow;   // repara expedientes viejos sin fecha
             await Supa.From<PCotizacion>().Update(c);
+            StateHasChanged();
         }
         catch (Exception ex) { mensaje = "No se pudo guardar el lugar de fabricación: " + ex.Message; }
     }

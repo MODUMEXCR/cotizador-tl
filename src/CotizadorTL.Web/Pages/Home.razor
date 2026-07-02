@@ -20,7 +20,7 @@ else
         <section class="card">
             <h2>Datos de la cotización</h2>
             <div class="campos">
-                <label>Folio (ID cotización)<input value="@(string.IsNullOrEmpty(cot.Folio) ? "(se asigna al guardar)" : cot.Folio)" disabled /></label>
+                <label>Expediente<input value="@(string.IsNullOrEmpty(cot.Folio) ? "(se asigna luego)" : cot.Folio)" disabled /></label>
                 <label>Vigencia<input type="date" @bind="vigencia" /></label>
                 <label>Distribuidor
                     @if (Auth.PuedeVerTodo)
@@ -552,7 +552,7 @@ else
             }
             var pcot = new PCotizacion
             {
-                Folio = folio,
+                Folio = folio, Fecha = DateTime.UtcNow,
                 Vigencia = vigencia, RazonSocial = cot.RazonSocial, Proyecto = cot.Proyecto, Titulo = cot.Titulo,
                 Cliente = cot.Cliente, AtencionA = cot.AtencionA, Telefono = cot.Telefono, Ciudad = cot.Ciudad,
                 CotizadoPor = cot.CotizadoPor, DistribuidorId = distribuidorId, CreadoPor = Auth.Perfil?.Id,
