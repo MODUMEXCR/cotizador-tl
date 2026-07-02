@@ -18,9 +18,28 @@ else
     <h1>Usuarios</h1>
     <p class="muted small">
         Solo <b>Administradores</b> y <b>Super Admin</b>. Los distribuidores se gestionan en la pestaña
-        <b>Distribuidores</b>. El alta del login se hace en Supabase → Authentication, o por auto-registro
-        (el usuario se registra y aquí lo promueves a Administrador).
+        <b>Distribuidores</b>. Aquí el <b>Super Admin</b> crea las cuentas y les asigna el rol; también puede
+        promover a Administrador o Vendedor a quien se haya auto-registrado.
     </p>
+
+    <section class="card">
+        <h2 class="sub">Crear usuario</h2>
+        <div class="filtros">
+            <label>Nombre<input @bind="nNombre" placeholder="Nombre y apellido" /></label>
+            <label>Email<input type="email" @bind="nEmail" placeholder="correo@empresa.com" /></label>
+            <label>Contraseña<input type="password" @bind="nPass" placeholder="mínimo 6 caracteres" /></label>
+            <label>Rol
+                <select @bind="nRol">
+                    <option>Administrador</option>
+                    <option>Vendedor</option>
+                    <option>Super Admin</option>
+                </select>
+            </label>
+            <button class="btn-add" disabled="@creando" @onclick="Crear">@(creando ? "Creando…" : "Crear")</button>
+        </div>
+        <p class="muted small">La cuenta queda activa de inmediato con el rol elegido.</p>
+        @if (msgCrear is not null) { <div class="aviso @(okCrear ? "ok" : "err")">@msgCrear</div> }
+    </section>
 
     <section class="card">
         <div class="tabla-wrap">
@@ -49,7 +68,6 @@ else
                 </tbody>
             </table>
         </div>
-        <p class="muted small">Tip: para crear un Administrador, que la persona se registre y luego cámbiale el rol a “Administrador” aquí (al guardar, pasa a esta lista).</p>
         @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
     </section>
 }
@@ -59,6 +77,10 @@ else
     private string? msg; private bool ok;
     private readonly List<UsuarioVM> usuarios = new();
 
+    // Alta de usuario
+    private string nNombre = "", nEmail = "", nPass = "", nRol = "Administrador";
+    private bool creando; private string? msgCrear; private bool okCrear;
+
     protected override async Task OnInitializedAsync()
     {
         if (!Auth.EsSuper) { Nav.NavigateTo(""); return; }
@@ -67,6 +89,29 @@ else
         foreach (var p in resp.Models.Where(p => p.Rol is "Administrador" or "Super Admin" or "Vendedor"))
             usuarios.Add(new UsuarioVM { Id = p.Id, Nombre = p.Nombre, Email = p.Email, Rol = p.Rol, DistribuidorId = p.DistribuidorId, Activo = p.Activo });
         cargando = false;
+    }
+
+    private async Task Crear()
+    {
+        msgCrear = null;
+        if (string.IsNullOrWhiteSpace(nNombre) || string.IsNullOrWhiteSpace(nEmail) || string.IsNullOrWhiteSpace(nPass))
+        { okCrear = false; msgCrear = "Completa nombre, email y contraseña."; return; }
+        if (nPass.Length < 6) { okCrear = false; msgCrear = "La contraseña debe tener al menos 6 caracteres."; return; }
+
+        creando = true;
+        try
+        {
+            var err = await Auth.CrearUsuario(nNombre.Trim(), nEmail.Trim(), nPass, nRol);
+            if (err is not null) { okCrear = false; msgCrear = err; return; }
+
+            okCrear = true; msgCrear = $"Usuario {nEmail.Trim()} creado como {nRol}.";
+            var creado = await Supa.From<Profile>().Where(p => p.Email == nEmail.Trim()).Single();
+            if (creado is not null && usuarios.All(x => x.Id != creado.Id))
+                usuarios.Insert(0, new UsuarioVM { Id = creado.Id, Nombre = creado.Nombre, Email = creado.Email, Rol = creado.Rol, DistribuidorId = creado.DistribuidorId, Activo = creado.Activo });
+            nNombre = nEmail = nPass = ""; nRol = "Administrador";
+        }
+        catch (Exception ex) { okCrear = false; msgCrear = "No se pudo crear el usuario: " + ex.Message; }
+        finally { creando = false; }
     }
 
     private async Task Guardar(UsuarioVM u)

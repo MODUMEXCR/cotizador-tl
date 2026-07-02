@@ -98,6 +98,69 @@ public class AuthService
         }
     }
 
+    /// <summary>El Super Admin crea una cuenta y le asigna el rol de una vez (Administrador/Vendedor/Super Admin).
+    /// Sin backend con service_role, se hace en dos pasos: SignUp del nuevo usuario (que inicia su sesión) y luego
+    /// se RESTAURA la sesión del Super Admin para asignarle el rol saltando el RLS. Devuelve null si todo bien.</summary>
+    public async Task<string?> CrearUsuario(string nombre, string email, string password, string rol)
+    {
+        if (!EsSuper) return "Solo un Super Admin puede crear usuarios.";
+        var sesion = _supa.Auth.CurrentSession;
+        if (sesion?.AccessToken is null || sesion.RefreshToken is null) return "Tu sesión expiró. Vuelve a entrar.";
+        var accessToken = sesion.AccessToken;
+        var refreshToken = sesion.RefreshToken;
+
+        try
+        {
+            var opciones = new Supabase.Gotrue.SignUpOptions
+            {
+                Data = new Dictionary<string, object> { ["nombre"] = nombre }
+            };
+            await _supa.Auth.SignUp(email, password, opciones);
+        }
+        catch (Exception ex)
+        {
+            await RestaurarSesion(accessToken, refreshToken);
+            var e = (ex.Message ?? "").ToLowerInvariant();
+            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists") || e.Contains("422"))
+                return "Ese correo ya tiene una cuenta. Cámbiale el rol en la lista de abajo.";
+            if (e.Contains("password") || e.Contains("weak") || e.Contains("least") || e.Contains("6 char"))
+                return "La contraseña es muy corta (mínimo 6 caracteres).";
+            if (e.Contains("invalid") && e.Contains("email"))
+                return "El correo no es válido.";
+            if (e.Contains("rate") || e.Contains("429") || e.Contains("too many"))
+                return "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
+            return "No se pudo crear el usuario: " + ex.Message;
+        }
+
+        // El SignUp dejó iniciada la sesión del NUEVO usuario. Volvemos a la del Super Admin.
+        await RestaurarSesion(accessToken, refreshToken);
+
+        try
+        {
+            var nuevo = await _supa.From<Profile>().Where(p => p.Email == email).Single();
+            if (nuevo is null) return "El usuario se creó, pero no se pudo asignar el rol. Ajústalo en la lista.";
+            nuevo.Rol = rol;
+            nuevo.Activo = true;
+            await _supa.From<Profile>().Update(nuevo);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return "El usuario se creó, pero no se pudo asignar el rol: " + ex.Message;
+        }
+    }
+
+    private async Task RestaurarSesion(string accessToken, string refreshToken)
+    {
+        try
+        {
+            await _supa.Auth.SetSession(accessToken, refreshToken);
+            await CargarPerfil();
+            Cambio?.Invoke();
+        }
+        catch { /* si falla, el usuario tendrá que volver a entrar */ }
+    }
+
     public async Task CerrarSesion()
     {
         await _supa.Auth.SignOut();
