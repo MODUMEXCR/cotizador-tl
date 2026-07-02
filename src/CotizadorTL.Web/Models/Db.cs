@@ -58,7 +58,8 @@ public class PConfig : BaseModel
 [Table("distribuidor_descuento")]
 public class PDistribuidorDescuento : BaseModel
 {
-    [PrimaryKey("distribuidor_id", false)] public long DistribuidorId { get; set; }
+    // Clave compuesta natural (distribuidor_id, familia_codigo): SÍ se debe enviar al insertar.
+    [PrimaryKey("distribuidor_id", true)] public long DistribuidorId { get; set; }
     [Column("familia_codigo")] public string FamiliaCodigo { get; set; } = "";
     [Column("descuento_pct")]  public decimal DescuentoPct { get; set; }
 }
