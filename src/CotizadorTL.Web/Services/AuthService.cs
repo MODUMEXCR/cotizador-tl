@@ -9,8 +9,17 @@ namespace CotizadorTL.Web.Services;
 public class AuthService
 {
     private readonly Supabase.Client _supa;
+    private readonly HttpClient _http;
+    private readonly string _url;
+    private readonly string _anon;
 
-    public AuthService(Supabase.Client supa) => _supa = supa;
+    public AuthService(Supabase.Client supa, HttpClient http, Microsoft.Extensions.Configuration.IConfiguration cfg)
+    {
+        _supa = supa;
+        _http = http;
+        _url  = (cfg["Supabase:Url"] ?? "").TrimEnd('/');
+        _anon = cfg["Supabase:AnonKey"] ?? "";
+    }
 
     /// <summary>Perfil del usuario actual (rol, distribuidor). Null si no ha entrado.</summary>
     public Profile? Perfil { get; private set; }
@@ -99,66 +108,43 @@ public class AuthService
     }
 
     /// <summary>El Super Admin crea una cuenta y le asigna el rol de una vez (Administrador/Vendedor/Super Admin).
-    /// Sin backend con service_role, se hace en dos pasos: SignUp del nuevo usuario (que inicia su sesión) y luego
-    /// se RESTAURA la sesión del Super Admin para asignarle el rol saltando el RLS. Devuelve null si todo bien.</summary>
+    /// Llama a la Edge Function "crear-usuario", que usa la service_role DEL SERVIDOR (nunca en el navegador) para
+    /// crear el usuario ya confirmado sin tocar la sesión actual. Devuelve null si todo bien, o un mensaje de error.</summary>
     public async Task<string?> CrearUsuario(string nombre, string email, string password, string rol)
     {
         if (!EsSuper) return "Solo un Super Admin puede crear usuarios.";
-        var sesion = _supa.Auth.CurrentSession;
-        if (sesion?.AccessToken is null || sesion.RefreshToken is null) return "Tu sesión expiró. Vuelve a entrar.";
-        var accessToken = sesion.AccessToken;
-        var refreshToken = sesion.RefreshToken;
+        var token = _supa.Auth.CurrentSession?.AccessToken;
+        if (string.IsNullOrEmpty(token)) return "Tu sesión expiró. Vuelve a entrar.";
 
         try
         {
-            var opciones = new Supabase.Gotrue.SignUpOptions
-            {
-                Data = new Dictionary<string, object> { ["nombre"] = nombre }
-            };
-            await _supa.Auth.SignUp(email, password, opciones);
+            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/crear-usuario");
+            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
+            req.Headers.TryAddWithoutValidation("apikey", _anon);
+            var payload = System.Text.Json.JsonSerializer.Serialize(new { nombre, email, password, rol });
+            req.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+
+            var resp = await _http.SendAsync(req);
+            var body = await resp.Content.ReadAsStringAsync();
+            if (resp.IsSuccessStatusCode) return null;
+
+            return ExtraerError(body) ?? $"No se pudo crear el usuario (código {(int)resp.StatusCode}).";
         }
         catch (Exception ex)
         {
-            await RestaurarSesion(accessToken, refreshToken);
-            var e = (ex.Message ?? "").ToLowerInvariant();
-            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists") || e.Contains("422"))
-                return "Ese correo ya tiene una cuenta. Cámbiale el rol en la lista de abajo.";
-            if (e.Contains("password") || e.Contains("weak") || e.Contains("least") || e.Contains("6 char"))
-                return "La contraseña es muy corta (mínimo 6 caracteres).";
-            if (e.Contains("invalid") && e.Contains("email"))
-                return "El correo no es válido.";
-            if (e.Contains("rate") || e.Contains("429") || e.Contains("too many"))
-                return "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
             return "No se pudo crear el usuario: " + ex.Message;
-        }
-
-        // El SignUp dejó iniciada la sesión del NUEVO usuario. Volvemos a la del Super Admin.
-        await RestaurarSesion(accessToken, refreshToken);
-
-        try
-        {
-            var nuevo = await _supa.From<Profile>().Where(p => p.Email == email).Single();
-            if (nuevo is null) return "El usuario se creó, pero no se pudo asignar el rol. Ajústalo en la lista.";
-            nuevo.Rol = rol;
-            nuevo.Activo = true;
-            await _supa.From<Profile>().Update(nuevo);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            return "El usuario se creó, pero no se pudo asignar el rol: " + ex.Message;
         }
     }
 
-    private async Task RestaurarSesion(string accessToken, string refreshToken)
+    private static string? ExtraerError(string body)
     {
         try
         {
-            await _supa.Auth.SetSession(accessToken, refreshToken);
-            await CargarPerfil();
-            Cambio?.Invoke();
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("error", out var e)) return e.GetString();
         }
-        catch { /* si falla, el usuario tendrá que volver a entrar */ }
+        catch { /* cuerpo no-JSON */ }
+        return null;
     }
 
     public async Task CerrarSesion()
