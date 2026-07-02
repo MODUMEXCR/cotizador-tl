@@ -44,7 +44,7 @@ else
                         <th>Folio</th><th>Fecha</th>
                         @if (Auth.PuedeVerTodo) { <th>Distribuidor</th> }
                         <th>Cliente</th><th>Proyecto</th><th class="num">Gran total</th>
-                        <th>Estado</th><th>Descargas</th>
+                        <th>Estado</th><th>Fabricación</th><th>Descargas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,6 +58,20 @@ else
                             <td>@c.Proyecto</td>
                             <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
                             <td><span class="estado">@c.Estado</span></td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                @if (Auth.PuedeVerTodo)
+                                {
+                                    <select value="@(c.Fabricacion ?? "")" @onchange="e => GuardarFabricacion(c, e.Value?.ToString())">
+                                        <option value="">— Sin asignar —</option>
+                                        <option value="México">México</option>
+                                        <option value="Costa Rica">Costa Rica</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    @(string.IsNullOrEmpty(c.Fabricacion) ? "—" : c.Fabricacion)
+                                }
+                            </td>
                             <td class="acciones">
                                 <button class="btn-mini xls" @onclick="() => Abrir(c)" style="background:#3a6b14">Abrir</button>
                                 <button class="btn-mini pdf" @onclick="() => DescargarPdf(c)" style="background:#c0392b">PDF</button>
@@ -69,7 +83,7 @@ else
                     }
                     @if (!Filtradas.Any())
                     {
-                        <tr><td colspan="@(Auth.PuedeVerTodo ? 8 : 7)" class="muted center">No hay cotizaciones con esos filtros.</td></tr>
+                        <tr><td colspan="@(Auth.PuedeVerTodo ? 9 : 8)" class="muted center">No hay cotizaciones con esos filtros.</td></tr>
                     }
                 </tbody>
             </table>
@@ -103,6 +117,17 @@ else
     private void LimpiarFiltros() { desde = hasta = null; filtroDistribuidor = 0; }
 
     private void Abrir(PCotizacion c) => Nav.NavigateTo($"cotizar/{c.CotizacionId}");
+
+    private async Task GuardarFabricacion(PCotizacion c, string? valor)
+    {
+        mensaje = null;
+        try
+        {
+            c.Fabricacion = string.IsNullOrEmpty(valor) ? null : valor;
+            await Supa.From<PCotizacion>().Update(c);
+        }
+        catch (Exception ex) { mensaje = "No se pudo guardar el lugar de fabricación: " + ex.Message; }
+    }
 
     private async Task Eliminar(PCotizacion c)
     {
