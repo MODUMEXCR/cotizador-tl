@@ -1,8 +1,14 @@
 :root {
-    --tl-verde: #8bc53f;       /* verde Thin Laminates */
+    /* Gama basada en el logo Thin Laminates: verde lima + gris cálido */
+    --tl-lima: #a6ce29;        /* verde lima del logo (acentos, brillos, foco) */
+    --tl-verde: #6f9d18;       /* verde profundo, mismo tono (botones/barras, texto blanco) */
+    --tl-verde-h: #5e8611;     /* hover de botones */
+    --tl-verde-txt: #4e6e10;   /* verde oscuro para texto/enlaces sobre blanco */
     --tl-oscuro: #2b2b2b;
-    --tl-gris: #f4f5f7;
-    --tl-borde: #e2e4e8;
+    --tl-gris-txt: #8c8583;    /* gris cálido del logo (texto secundario) */
+    --tl-gris: #f5f6f1;        /* fondo claro con leve tinte cálido */
+    --tl-borde: #e4e2dc;       /* borde cálido */
+    --tl-lima-bg: #eef6d8;     /* fondo lima muy claro (avisos ok, hovers) */
 }
 
 html { font-size: 21px; }   /* base grande -> toda la letra escala */
@@ -11,7 +17,7 @@ html, body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; color: #
 h1 { color: var(--tl-oscuro); }
 .lead { color: #555; }
 
-a, .btn-link { color: #5a9e1f; }
+a, .btn-link { color: var(--tl-verde-txt); }
 
 /* Menú lateral: enlaces en negrita, sin subrayado (respaldo global) */
 .nav-scrollable .nav-link { text-decoration: none !important; font-weight: 700; }
@@ -19,7 +25,7 @@ a, .btn-link { color: #5a9e1f; }
 
 /* Barra superior */
 .top-row { display: flex; align-items: center; justify-content: flex-end; gap: 1rem;
-           height: 3.5rem; background: #fff; border-bottom: 1px solid var(--tl-borde); }
+           height: 3.5rem; background: #fff; border-bottom: 2px solid var(--tl-lima); }
 .top-row .usuario { color: #555; font-size: .9rem; }
 .logout { background: var(--tl-gris); border: 1px solid var(--tl-borde); border-radius: 6px;
           padding: .35rem .8rem; cursor: pointer; }
@@ -31,7 +37,7 @@ a, .btn-link { color: #5a9e1f; }
 
 /* ---------- Login ---------- */
 .login-wrap { min-height: 100vh; display: grid; place-items: center;
-              background: linear-gradient(135deg, #f7f9f3, #eef1f5); }
+              background: linear-gradient(135deg, #f4f8e8, #eef1ea); }
 .login-card { background: #fff; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.08);
               padding: 2.2rem 2.4rem; width: min(500px, 92vw); box-sizing: border-box; }
 .login-card h1 { font-size: 1.5rem; margin: 0; white-space: nowrap; }
@@ -46,7 +52,7 @@ a, .btn-link { color: #5a9e1f; }
 .login-card button:disabled { opacity: .6; cursor: default; }
 .login-card .error { color: #c0392b; font-size: .85rem; margin-top: .8rem; }
 .login-card .cambiar-modo { margin: 1.1rem 0 0; font-size: .9rem; color: #777; text-align: center; }
-.login-card .cambiar-modo a { color: #5a9e1f; font-weight: 600; }
+.login-card .cambiar-modo a { color: var(--tl-verde-txt); font-weight: 600; }
 
 /* ---------- Cotizar ---------- */
 .cot-grid { display: flex; flex-direction: column; gap: 1rem; max-width: 100%; }
@@ -73,7 +79,7 @@ a, .btn-link { color: #5a9e1f; }
 .renglon-opts label { flex: 1; min-width: 150px; }
 .renglon-opts .mini input { width: 7rem; }
 label.chk { flex-direction: row !important; align-items: center; gap: .4rem; font-size: .85rem; color: #333; }
-.extras { margin-top: .7rem; background: #f4f5f7; border-radius: 8px; padding: .6rem .8rem; font-size: .85rem; }
+.extras { margin-top: .7rem; background: var(--tl-gris); border-radius: 8px; padding: .6rem .8rem; font-size: .85rem; }
 .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .3rem .8rem; margin-top: .4rem; }
 .extra-item { display: flex; align-items: center; gap: .4rem; }
 .extra-cant-wrap { color: #666; font-size: .85rem; white-space: nowrap; }
@@ -93,7 +99,7 @@ table.renglones .mini { width: 5rem; }
 .fila-desc td { padding-top: 0; padding-bottom: .6rem; border-bottom: 1px solid #f0f1f3; }
 .btn-del { background: #f7eaea; color: #b03030; border: 0; border-radius: 6px; padding: .25rem .5rem; cursor: pointer; }
 td.num, .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.muted { color: #999; } .center { text-align: center; } .small { font-size: .85rem; }
+.muted { color: var(--tl-gris-txt); } .center { text-align: center; } .small { font-size: .85rem; }
 
 .totales { max-width: 420px; align-self: flex-end; }
 table.tot { width: 100%; border-collapse: collapse; }
@@ -103,11 +109,11 @@ table.tot .gran td { border-top: 2px solid var(--tl-borde); font-weight: 700; fo
 .btn-guardar { width: 100%; margin-top: .8rem; background: var(--tl-verde); color: #fff; border: 0;
                border-radius: 8px; padding: .6rem; font-weight: 600; cursor: pointer; }
 .btn-guardar:disabled { opacity: .6; }
-.btn-pdf { width: 100%; margin-top: .5rem; background: #fff; color: #5a9e1f; border: 1px solid var(--tl-verde);
+.btn-pdf { width: 100%; margin-top: .5rem; background: #fff; color: var(--tl-verde-txt); border: 1px solid var(--tl-verde);
            border-radius: 8px; padding: .55rem; font-weight: 600; cursor: pointer; }
-.btn-pdf:hover { background: #f3f9ec; }
+.btn-pdf:hover { background: var(--tl-lima-bg); }
 .aviso { margin-top: .6rem; padding: .5rem .7rem; border-radius: 6px; font-size: .85rem; }
-.aviso.ok { background: #eaf6e0; color: #3a6b14; } .aviso.err { background: #fbe9e9; color: #b03030; }
+.aviso.ok { background: var(--tl-lima-bg); color: var(--tl-verde-txt); } .aviso.err { background: #fbe9e9; color: #b03030; }
 
 /* ---------- Mis Proyectos ---------- */
 .filtros { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
@@ -119,8 +125,13 @@ table.proyectos td { padding: .5rem .5rem; border-bottom: 1px solid #f0f1f3; }
 .estado { background: var(--tl-gris); border-radius: 20px; padding: .12rem .55rem; font-size: .75rem; color: #555; }
 .acciones { display: flex; gap: .35rem; }
 .btn-mini { border: 0; border-radius: 6px; padding: .3rem .6rem; font-size: .78rem; font-weight: 600; cursor: pointer; color: #fff; }
-.btn-mini.pdf { background: #c0392b; } .btn-mini.xls { background: #1d6f42; }
+.btn-mini.pdf { background: #c0392b; } .btn-mini.xls { background: var(--tl-verde); }
 .btn-mini:hover { opacity: .9; }
+
+/* Foco con acento lima de la marca */
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tl-verde) !important;
+    box-shadow: 0 0 0 2px rgba(166,206,41,.35); }
+.btn-add:hover, .btn-guardar:hover:not(:disabled), .login-card button:hover:not(:disabled) { background: var(--tl-verde-h); }
 
 #blazor-error-ui { background: #ffe9e9; bottom: 0; box-shadow: 0 -1px 2px rgba(0,0,0,.2);
                    display: none; left: 0; padding: .6rem 1.25rem; position: fixed; width: 100%; z-index: 1000; }
