@@ -1,90 +1,129 @@
-// Genera el Excel (.xlsx) para SAP con encabezado (cliente/distribuidor/obra/fabricación)
-// + tabla de columnas SAP, con celdas separadas y colores (usa xlsx-js-style).
+// Genera el Excel (.xlsx) para SAP con encabezado (logo TL + cliente/distribuidor/obra/fabricación)
+// + tabla de columnas SAP, con celdas separadas y los colores de la marca Thin Laminates (usa ExcelJS).
 (function () {
-  const AZUL = "1F3864";     // encabezados oscuros
-  const BANDA = "D9E1F2";    // bandas claras
-  const GRIS = "BFBFBF";     // bordes
-  const b = { style: "thin", color: { rgb: GRIS } };
-  const BORDES = { top: b, bottom: b, left: b, right: b };
-
-  const stTitulo = { font: { bold: true, sz: 14, color: { rgb: AZUL } }, alignment: { horizontal: "center", vertical: "center" } };
-  const stMarca = { font: { bold: true, sz: 16, color: { rgb: AZUL } }, alignment: { vertical: "center" } };
-  const stEmpresa = { font: { sz: 9, color: { rgb: "444444" } }, alignment: { horizontal: "right", vertical: "center", wrapText: true } };
-  const stBandaHdr = { font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: AZUL } }, alignment: { horizontal: "left", vertical: "center" } };
-  const stInfo = { font: { sz: 10, color: { rgb: "222222" } }, fill: { fgColor: { rgb: BANDA } }, alignment: { horizontal: "left", vertical: "center" }, border: BORDES };
-  const stTh = { font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: AZUL } }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: BORDES };
-  const stTd = { font: { sz: 9, color: { rgb: "222222" } }, alignment: { vertical: "center", wrapText: true }, border: BORDES };
-  const stTdNum = { font: { sz: 9, color: { rgb: "222222" } }, alignment: { horizontal: "right", vertical: "center" }, border: BORDES, numFmt: "#,##0.00" };
-  const stTdCen = { font: { sz: 9, color: { rgb: "222222" } }, alignment: { horizontal: "center", vertical: "center" }, border: BORDES };
-  const stTotal = { font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: AZUL } }, alignment: { horizontal: "right", vertical: "center" }, border: BORDES };
-  const stTotalNum = { font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: AZUL } }, alignment: { horizontal: "right", vertical: "center" }, border: BORDES, numFmt: "#,##0.00" };
+  const VERDE = "FF5A9E1F";       // verde TL (fondo de encabezados, texto blanco)
+  const VERDEOSCURO = "FF3A6B14"; // verde oscuro (título)
+  const VERDECLARO = "FFEAF6E0";  // verde muy claro (bandas de info)
+  const GRIS = "FFBFBFBF";        // bordes
+  const TXT = "FF222222";
+  const bd = { style: "thin", color: { argb: GRIS } };
+  const BORDER = { top: bd, bottom: bd, left: bd, right: bd };
+  const solid = (argb) => ({ type: "pattern", pattern: "solid", fgColor: { argb } });
 
   const ENCAB = ["Clase de artículo/servicio", "Número de artículo", "Descripción del artículo", "Texto libre",
                  "Cantidad", "Precio por unidad", "Descuento 1", "Descuento 2", "Descuento 3", "Descuento 4"];
-  const NCOL = ENCAB.length; // 10 (A..J)
 
   window.cotizadorExcel = {
-    generar: function (info, lineas) {
-      const XLSX = window.XLSX;
+    generar: async function (info, lineas) {
+      const ExcelJS = window.ExcelJS;
+      if (!ExcelJS) throw new Error("ExcelJS no cargó.");
       info = info || {}; lineas = lineas || [];
-      const ws = {}, merges = [];
-      const set = (r, c, v, s, t) => { ws[XLSX.utils.encode_cell({ r, c })] = { v: v == null ? "" : v, t: t || "s", s: s }; };
-      const mg = (r1, c1, r2, c2) => merges.push({ s: { r: r1, c: c1 }, e: { r: r2, c: c2 } });
 
-      let r = 0;
-      // Marca (izq) + empresa (der)
-      set(r, 0, "GRUPO MODUMEX / THIN LAMINATES", stMarca); mg(r, 0, r + 1, 4);
-      set(r, 5, "Calle La Válvula #15, Parque Industrial Perisur, 45619", stEmpresa); mg(r, 5, r, 9);
-      set(r + 1, 5, "San Pedro Tlaquepaque, Jalisco · Tel. 33 3003 3200", stEmpresa); mg(r + 1, 5, r + 1, 9);
-      r += 2;
-      // Título
-      set(r, 0, "COTIZACIÓN", stTitulo); mg(r, 0, r, 9); r += 2;
-      // Bloques Cliente / Distribuidor
-      set(r, 0, "CLIENTE", stBandaHdr); mg(r, 0, r, 4);
-      set(r, 5, "DISTRIBUIDOR", stBandaHdr); mg(r, 5, r, 9); r++;
-      const fila2 = (izqLabel, izqVal, derLabel, derVal) => {
-        set(r, 0, (izqLabel ? izqLabel + ": " : "") + (izqVal || ""), stInfo); mg(r, 0, r, 4);
-        set(r, 5, (derLabel ? derLabel + ": " : "") + (derVal || ""), stInfo); mg(r, 5, r, 9); r++;
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Cotización", { views: [{ showGridLines: false }] });
+      ws.columns = [{ width: 20 }, { width: 16 }, { width: 46 }, { width: 14 }, { width: 9 },
+                    { width: 13 }, { width: 11 }, { width: 11 }, { width: 11 }, { width: 11 }];
+
+      // ---- Helpers (capturan ws) ----
+      const banda = (r, c1, c2, txt) => {
+        ws.mergeCells(r, c1, r, c2);
+        for (let c = c1; c <= c2; c++) { const x = ws.getCell(r, c); x.fill = solid(VERDE); x.border = BORDER; }
+        const m = ws.getCell(r, c1);
+        m.value = txt; m.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } };
+        m.alignment = { horizontal: "left", vertical: "middle" };
+      };
+      const infoCell = (r, c1, c2, v) => {
+        ws.mergeCells(r, c1, r, c2);
+        for (let c = c1; c <= c2; c++) { const x = ws.getCell(r, c); x.fill = solid(VERDECLARO); x.border = BORDER; }
+        const m = ws.getCell(r, c1);
+        m.value = v; m.font = { size: 10, color: { argb: TXT } };
+        m.alignment = { horizontal: "left", vertical: "middle" };
+      };
+      const th = (cell) => { cell.fill = solid(VERDE); cell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } }; cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; cell.border = BORDER; };
+      const td = (cell, v) => { cell.value = v; cell.font = { size: 9, color: { argb: TXT } }; cell.alignment = { vertical: "middle", wrapText: true }; cell.border = BORDER; };
+      const tdCen = (cell, v) => { cell.value = v; cell.font = { size: 9, color: { argb: TXT } }; cell.alignment = { horizontal: "center", vertical: "middle" }; cell.border = BORDER; };
+      const tdNum = (cell, v) => { cell.value = v; cell.font = { size: 9, color: { argb: TXT } }; cell.alignment = { horizontal: "right", vertical: "middle" }; cell.border = BORDER; if (v !== "" && v != null) cell.numFmt = "#,##0.00"; };
+      const totalCell = (cell, v) => { cell.fill = solid(VERDE); cell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } }; cell.alignment = { horizontal: "right", vertical: "middle" }; cell.border = BORDER; if (v !== undefined) cell.value = v; };
+
+      // ---- Logo TL (imagen real) ----
+      ws.getRow(1).height = 24; ws.getRow(2).height = 26;
+      try {
+        const dataUrl = (window.cotizadorLogos && window.cotizadorLogos.tl) || "";
+        if (dataUrl) {
+          const raw = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+          const id = wb.addImage({ base64: raw, extension: "png" });
+          ws.addImage(id, { tl: { col: 0, row: 0 }, ext: { width: 126, height: 56 } });
+        }
+      } catch (e) { /* si no hay logo, sigue sin imagen */ }
+
+      // ---- Dirección de la empresa (derecha) ----
+      const addr = (r, v) => {
+        ws.mergeCells(r, 6, r, 10);
+        const m = ws.getCell(r, 6);
+        m.value = v; m.font = { size: 9, color: { argb: "FF444444" } };
+        m.alignment = { horizontal: "right", vertical: "middle", wrapText: true };
+      };
+      addr(1, "Calle La Válvula #15, Parque Industrial Perisur, 45619");
+      addr(2, "San Pedro Tlaquepaque, Jalisco · Tel. 33 3003 3200");
+
+      // ---- Título ----
+      ws.mergeCells(4, 1, 4, 10);
+      const t = ws.getCell(4, 1);
+      t.value = "COTIZACIÓN"; t.font = { bold: true, size: 16, color: { argb: VERDEOSCURO } };
+      t.alignment = { horizontal: "center", vertical: "middle" }; ws.getRow(4).height = 24;
+
+      // ---- Bloques Cliente / Distribuidor ----
+      banda(6, 1, 5, "CLIENTE"); banda(6, 6, 10, "DISTRIBUIDOR");
+      let r = 7;
+      const fila2 = (la, va, lb, vb) => {
+        infoCell(r, 1, 5, (la ? la + ": " : "") + (va || ""));
+        infoCell(r, 6, 10, (lb ? lb + ": " : "") + (vb || ""));
+        r++;
       };
       fila2("", info.cliente, "", info.distribuidor);
       fila2("Ciudad", info.ciudad, "Atención", info.atencion);
       fila2("Obra/Proyecto", info.proyecto, "Fabricación", info.fabricacion);
-      fila2("Folio", info.folio, "Fecha", info.fecha);
+      fila2("Expediente", info.folio, "Fecha", info.fecha);
       fila2("Moneda", info.moneda, "", "");
-      r++;
-      // Encabezado de tabla
-      const rHead = r;
-      ENCAB.forEach((h, c) => set(rHead, c, h, stTh));
-      r++;
-      // Filas
+      r++; // espaciador
+
+      // ---- Encabezado de la tabla ----
+      const head = r;
+      ENCAB.forEach((h, i) => { const c = ws.getCell(head, i + 1); c.value = h; th(c); });
+      ws.getRow(head).height = 28; r++;
+
+      // ---- Filas ----
       let totalCant = 0;
       lineas.forEach((l) => {
-        set(r, 0, "Artículo", stTd);
-        set(r, 1, l.codigoSap || "", stTd);
-        set(r, 2, l.descripcion || "", stTd);
-        set(r, 3, l.textoLibre || "", stTd);
-        set(r, 4, Number(l.cantidad || 0), stTdCen, "n");
-        set(r, 5, Number(l.precioUnitario || 0), stTdNum, "n");
-        set(r, 6, (l.desc1 ? Number(l.desc1) : ""), stTdNum, l.desc1 ? "n" : "s");
-        set(r, 7, (l.desc2 ? Number(l.desc2) : ""), stTdNum, l.desc2 ? "n" : "s");
-        set(r, 8, "", stTd);
-        set(r, 9, "", stTd);
+        td(ws.getCell(r, 1), "Artículo");
+        td(ws.getCell(r, 2), l.codigoSap || "");
+        td(ws.getCell(r, 3), l.descripcion || "");
+        td(ws.getCell(r, 4), l.textoLibre || "");
+        tdCen(ws.getCell(r, 5), Number(l.cantidad || 0));
+        tdNum(ws.getCell(r, 6), Number(l.precioUnitario || 0));
+        tdNum(ws.getCell(r, 7), l.desc1 ? Number(l.desc1) : "");
+        tdNum(ws.getCell(r, 8), l.desc2 ? Number(l.desc2) : "");
+        td(ws.getCell(r, 9), "");
+        td(ws.getCell(r, 10), "");
         totalCant += Number(l.cantidad || 0);
         r++;
       });
-      // Totales
-      set(r, 0, "TOTALES", stTotal); mg(r, 0, r, 3);
-      set(r, 4, totalCant, stTotalNum, "n");
-      for (let c = 5; c < NCOL; c++) set(r, c, "", stTotal);
 
-      ws["!ref"] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r, c: NCOL - 1 } });
-      ws["!merges"] = merges;
-      ws["!cols"] = [{ wch: 20 }, { wch: 16 }, { wch: 46 }, { wch: 14 }, { wch: 9 }, { wch: 13 }, { wch: 11 }, { wch: 11 }, { wch: 11 }, { wch: 11 }];
-      ws["!rows"] = [{ hpt: 22 }];
+      // ---- Totales ----
+      ws.mergeCells(r, 1, r, 4);
+      const tot = ws.getCell(r, 1); tot.value = "TOTALES"; totalCell(tot);
+      for (let c = 2; c <= 4; c++) totalCell(ws.getCell(r, c));
+      const tc = ws.getCell(r, 5); totalCell(tc, totalCant); tc.numFmt = "#,##0.00";
+      for (let c = 6; c <= 10; c++) totalCell(ws.getCell(r, c));
 
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Cotización");
-      XLSX.writeFile(wb, "Cotizacion-" + (info.folio || "TL") + ".xlsx");
+      // ---- Descargar ----
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "Cotizacion-" + (info.folio || "TL") + ".xlsx";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
     },
   };
 })();
