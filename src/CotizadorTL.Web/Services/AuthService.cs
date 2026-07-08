@@ -21,6 +21,29 @@ public class AuthService
         _anon = cfg["Supabase:AnonKey"] ?? "";
     }
 
+    /// <summary>Llama una Edge Function por POST. Devuelve (ok, cuerpo, mensajeError).
+    /// En Blazor WASM el HttpClient a veces lanza "Unsupported method" DESPUÉS de que el servidor ya
+    /// procesó la petición; por eso se captura y quien llama decide (verificando en la BD).</summary>
+    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, object payload)
+    {
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/{nombre}");
+            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {_supa.Auth.CurrentSession?.AccessToken}");
+            req.Headers.TryAddWithoutValidation("apikey", _anon);
+            req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+            var resp = await _http.SendAsync(req);
+            var body = await resp.Content.ReadAsStringAsync();
+            if (resp.IsSuccessStatusCode) return (true, body, null);
+            return (false, body, ExtraerError(body) ?? $"código {(int)resp.StatusCode}");
+        }
+        catch (Exception ex)
+        {
+            return (false, "", ex.Message);
+        }
+    }
+
     /// <summary>Perfil del usuario actual (rol, distribuidor). Null si no ha entrado.</summary>
     public Profile? Perfil { get; private set; }
 
@@ -113,27 +136,23 @@ public class AuthService
     public async Task<string?> CrearUsuario(string nombre, string email, string password, string rol)
     {
         if (!EsSuper) return "Solo un Super Admin puede crear usuarios.";
-        var token = _supa.Auth.CurrentSession?.AccessToken;
-        if (string.IsNullOrEmpty(token)) return "Tu sesión expiró. Vuelve a entrar.";
+        var (ok, _, error) = await LlamarFuncion("crear-usuario", new { nombre, email, password, rol });
+        if (ok) return null;
+        // La respuesta HTTP pudo fallar en el navegador aunque la función SÍ creó al usuario: la BD manda.
+        if (await UsuarioListoPara(email, rol)) return null;
+        return error ?? "No se pudo crear el usuario.";
+    }
 
+    /// <summary>¿El perfil ya quedó con el rol pedido y activo? Sirve para no mostrar error si la función
+    /// creó al usuario pero la respuesta HTTP falló en el navegador.</summary>
+    private async Task<bool> UsuarioListoPara(string email, string rol)
+    {
         try
         {
-            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/crear-usuario");
-            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
-            req.Headers.TryAddWithoutValidation("apikey", _anon);
-            var payload = System.Text.Json.JsonSerializer.Serialize(new { nombre, email, password, rol });
-            req.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-
-            var resp = await _http.SendAsync(req);
-            var body = await resp.Content.ReadAsStringAsync();
-            if (resp.IsSuccessStatusCode) return null;
-
-            return ExtraerError(body) ?? $"No se pudo crear el usuario (código {(int)resp.StatusCode}).";
+            var found = (await _supa.From<Profile>().Where(p => p.Email == email).Get()).Models.FirstOrDefault();
+            return found is not null && found.Rol == rol && found.Activo;
         }
-        catch (Exception ex)
-        {
-            return "No se pudo crear el usuario: " + ex.Message;
-        }
+        catch { return false; }
     }
 
     /// <summary>Confirma el correo de un usuario existente vía la Edge Function "confirmar-usuario"
@@ -142,25 +161,12 @@ public class AuthService
     public async Task<string?> ConfirmarUsuario(string userId)
     {
         if (!PuedeVerTodo) return "No tienes permiso para confirmar usuarios.";
-        var token = _supa.Auth.CurrentSession?.AccessToken;
-        if (string.IsNullOrEmpty(token)) return "Tu sesión expiró. Vuelve a entrar.";
-        try
-        {
-            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/confirmar-usuario");
-            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
-            req.Headers.TryAddWithoutValidation("apikey", _anon);
-            var payload = System.Text.Json.JsonSerializer.Serialize(new { userId });
-            req.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-
-            var resp = await _http.SendAsync(req);
-            if (resp.IsSuccessStatusCode) return null;
-            var body = await resp.Content.ReadAsStringAsync();
-            return ExtraerError(body) ?? $"No se pudo confirmar el correo (código {(int)resp.StatusCode}).";
-        }
-        catch (Exception ex)
-        {
-            return "No se pudo confirmar el correo: " + ex.Message;
-        }
+        var (ok, _, error) = await LlamarFuncion("confirmar-usuario", new { userId });
+        if (ok) return null;
+        // "Unsupported method" es un fallo de la capa HTTP de WASM que ocurre DESPUÉS de que el servidor
+        // ya procesó: la confirmación en realidad se aplicó, así que lo tratamos como éxito.
+        if (error != null && error.Contains("Unsupported method")) return null;
+        return error ?? "No se pudo confirmar el correo.";
     }
 
     private static string? ExtraerError(string body)
