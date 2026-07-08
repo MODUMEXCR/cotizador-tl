@@ -447,21 +447,20 @@ else
     private void OnColorChanged(LineaUI l) { ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
     private void OnTipoChanged(LineaUI l) { l.ColorNombre = ""; ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
 
-    // Cubiertas de exterior (grupo G4): la medida máxima es 120 cm. Se limita y se avisa.
+    // Cubiertas REDONDAS de exterior (grupo G4): el diámetro máximo es 120 cm. Se limita y se avisa.
     private const decimal MaxG4Cm = 120m;
-    private string? MaxMedida(LineaUI l)
+    private bool EsRedondaG4(LineaUI l)
     {
         var p = ProdDe(l);
-        return (p is not null && EsFamilia(l, "CUBIERTAS") && GrupoEfectivo(l, p) == "G4") ? "120" : null;
+        return p is not null && EsFamilia(l, "CUBIERTAS") && p.CodigoSap.StartsWith("CR") && GrupoEfectivo(l, p) == "G4";
     }
+    private string? MaxMedida(LineaUI l) => EsRedondaG4(l) ? "120" : null;
     private void ClampG4(LineaUI l)
     {
-        var p = ProdDe(l);
-        if (p is null || !EsFamilia(l, "CUBIERTAS") || GrupoEfectivo(l, p) != "G4") { l.Aviso = null; return; }
+        if (!EsRedondaG4(l)) { l.Aviso = null; return; }
         bool ajustado = false;
         if (l.LargoCm > MaxG4Cm) { l.LargoCm = MaxG4Cm; ajustado = true; }
-        if (!p.MedidaUnica && l.AnchoCm > MaxG4Cm) { l.AnchoCm = MaxG4Cm; ajustado = true; }
-        l.Aviso = ajustado ? "En exterior (G4) la medida máxima es 120 cm; se ajustó a 120." : null;
+        l.Aviso = ajustado ? "En redonda de exterior (G4) el diámetro máximo es 120 cm; se ajustó a 120." : null;
     }
     private void OnDistribuidorChanged()
     {
