@@ -1,7 +1,7 @@
 // Genera el PDF de la cotización replicando la plantilla de Thin Laminates.
 // Usa jsPDF + autotable (embebidos en wwwroot/lib/jspdf, sin CDN).
 (function () {
-  const VERDE = [139, 197, 63];
+  const VERDE = [111, 157, 24];   // verde de marca TL (--tl-verde #6F9D18)
   const OSCURO = [43, 43, 43];
   const ROJO = [192, 57, 43];
   const GRIS = [120, 120, 120];
