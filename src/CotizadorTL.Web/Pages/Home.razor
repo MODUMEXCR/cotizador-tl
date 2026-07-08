@@ -24,7 +24,7 @@ else
                 <label>Vigencia<input type="date" @bind="vigencia" /></label>
                 <label>Tiempo de entrega
                     <select @bind="entrega">
-                        @for (int s = 1; s <= 10; s++)
+                        @for (int s = 1; s <= 16; s++)
                         {
                             var v = $"{s} semana{(s == 1 ? "" : "s")}";
                             <option value="@v">@v</option>
@@ -288,6 +288,18 @@ else
 
     [Parameter] public long? CotId { get; set; }
     private long? editandoId;
+    private string? snapshot;   // estado al abrir para editar; si no cambia, no se crea variante
+
+    // Serializa el estado editable normalizando el folio (para comparar sin la letra de variante).
+    private string EstadoJson()
+    {
+        var folioPrev = cot.Folio; var lineasPrev = cot.Lineas;
+        cot.Folio = ""; cot.Lineas = new();
+        var est = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
+        var json = System.Text.Json.JsonSerializer.Serialize(est);
+        cot.Folio = folioPrev; cot.Lineas = lineasPrev;
+        return json;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -323,6 +335,7 @@ else
                     distribuidorId = est.DistribuidorId; vigencia = est.Vigencia; fabricacion = est.Fabricacion ?? "México";
                     if (!string.IsNullOrWhiteSpace(est.Entrega)) entrega = est.Entrega!;
                     cot = est.Header ?? cot; cot.Lineas = new();
+                    cot.Folio = c.Folio;   // el folio autoritativo es el de la fila (el del estado va vacío)
                     lineas.Clear(); lineas.AddRange(est.Lineas);
                 }
             }
@@ -346,6 +359,7 @@ else
         }
         catch (Exception ex) { Aviso("No se pudo abrir la cotización: " + ex.Message, false); }
         if (lineas.Count == 0) AgregarLinea();
+        snapshot = EstadoJson();   // referencia para saber si luego hubo cambios
     }
 
     private sealed class EstadoCot
@@ -567,6 +581,15 @@ else
             var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
 
             bool eraEdicion = editandoId is not null;
+
+            // Si se abrió para editar y NO hubo cambios: mismo expediente, sin crear variante.
+            if (eraEdicion && EstadoJson() == snapshot)
+            {
+                await DescargarPdf();
+                Aviso($"Cotización {cot.Folio} descargada (sin cambios; mismo expediente).", true);
+                return;
+            }
+
             string folio;
             if (!eraEdicion)
             {
@@ -615,6 +638,7 @@ else
             }
             await Supa.From<PCotizacionLinea>().Insert(filas);
             editandoId = cotId; cot.Folio = folio;
+            snapshot = EstadoJson();   // nuevo punto de referencia: re-descargar sin cambios no crea otra variante
             await DescargarPdf();
             await Catalogo.CargarAsync(forzar: true);   // refresca el consecutivo para la próxima cotización
             Aviso($"Cotización {folio} {(eraEdicion ? "guardada como variante (el original queda intacto)" : "guardada")} y PDF descargado.", true);
