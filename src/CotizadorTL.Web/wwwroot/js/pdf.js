@@ -15,7 +15,8 @@
     if (!d.incluyeInstalacion) excl.push("INSTALACIÓN");
     excl.push("VIÁTICOS");
     let lista = excl.length === 1 ? excl[0] : excl.slice(0, -1).join(", ") + " O " + excl[excl.length - 1];
-    return ["TIEMPO DE ENTREGA CONFIRMAR 1 SEMANA, SALVO CONFIRMACIÓN DE MATERIAL",
+    const entrega = (d.entrega && String(d.entrega).trim()) ? String(d.entrega).trim().toUpperCase() : "CONFIRMAR";
+    return ["TIEMPO DE ENTREGA: " + entrega + ", SALVO CONFIRMACIÓN DE MATERIAL",
             "ESTA COTIZACIÓN NO INCLUYE COSTOS DE " + lista + ".",
             "DESCUENTO DISTRIBUIDOR APLICADO"];
   }

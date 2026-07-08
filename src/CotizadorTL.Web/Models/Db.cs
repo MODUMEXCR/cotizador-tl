@@ -119,6 +119,7 @@ public class PCotizacion : BaseModel
     [Column("saldo_monto")]    public decimal SaldoMonto { get; set; }
     [Column("app_json")]       public string? AppJson { get; set; }
     [Column("fabricacion")]    public string? Fabricacion { get; set; }
+    [Column("entrega")]        public string? Entrega { get; set; }
 }
 
 [Table("cotizacion_linea")]

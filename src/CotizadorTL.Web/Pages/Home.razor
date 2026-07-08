@@ -22,6 +22,15 @@ else
             <div class="campos">
                 <label>Expediente<input value="@(string.IsNullOrEmpty(cot.Folio) ? "(se asigna luego)" : cot.Folio)" disabled /></label>
                 <label>Vigencia<input type="date" @bind="vigencia" /></label>
+                <label>Tiempo de entrega
+                    <select @bind="entrega">
+                        @for (int s = 1; s <= 10; s++)
+                        {
+                            var v = $"{s} semana{(s == 1 ? "" : "s")}";
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </label>
                 <label>Distribuidor
                     @if (Auth.PuedeVerTodo)
                     {
@@ -94,12 +103,16 @@ else
                             @* Medidas para productos por m² *@
                             @if (prod.RequiereMedidas && prod.MedidaUnica)
                             {
-                                <label class="mini">Medida (cm)<input type="number" step="0.1" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                                <label class="mini">Medida (cm)<input type="number" step="0.1" max="@MaxMedida(l)" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
                             }
                             else if (prod.RequiereMedidas)
                             {
-                                <label class="mini">Largo (cm)<input type="number" step="0.1" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
-                                <label class="mini">Ancho (cm)<input type="number" step="0.1" @bind="l.AnchoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                                <label class="mini">Largo (cm)<input type="number" step="0.1" max="@MaxMedida(l)" @bind="l.LargoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                                <label class="mini">Ancho (cm)<input type="number" step="0.1" max="@MaxMedida(l)" @bind="l.AnchoCm" @bind:after="() => OnColorChanged(l)" /></label>
+                            }
+                            @if (l.Aviso is not null)
+                            {
+                                <span class="small" style="color:var(--tl-verde-txt);align-self:center">@l.Aviso</span>
                             }
 
                             @* Espesor para lockers especiales por m² *@
@@ -255,6 +268,7 @@ else
     private string? mensaje; private bool mensajeOk;
     private Cotizacion cot = new();
     private DateTime? vigencia;
+    private string entrega = "1 semana";
     private long distribuidorId;
     private string fabricacion = "México";
     private readonly List<LineaUI> lineas = new();
@@ -299,6 +313,7 @@ else
             cot.CotizadoPor = c.CotizadoPor; cot.Comentarios = c.Comentarios;
             cot.DescuentoPct = c.DescuentoPct; cot.IvaPct = c.IvaPct; cot.AnticipoPct = c.AnticipoPct;
             vigencia = c.Vigencia; distribuidorId = c.DistribuidorId ?? 0; fabricacion = c.Fabricacion ?? "México";
+            if (!string.IsNullOrWhiteSpace(c.Entrega)) entrega = c.Entrega!;
 
             if (!string.IsNullOrWhiteSpace(c.AppJson))
             {
@@ -306,6 +321,7 @@ else
                 if (est is not null)
                 {
                     distribuidorId = est.DistribuidorId; vigencia = est.Vigencia; fabricacion = est.Fabricacion ?? "México";
+                    if (!string.IsNullOrWhiteSpace(est.Entrega)) entrega = est.Entrega!;
                     cot = est.Header ?? cot; cot.Lineas = new();
                     lineas.Clear(); lineas.AddRange(est.Lineas);
                 }
@@ -336,6 +352,7 @@ else
     {
         public long DistribuidorId { get; set; }
         public DateTime? Vigencia { get; set; }
+        public string? Entrega { get; set; }
         public string Fabricacion { get; set; } = "México";
         public Cotizacion Header { get; set; } = new();
         public List<LineaUI> Lineas { get; set; } = new();
@@ -427,8 +444,25 @@ else
         }
         StateHasChanged();
     }
-    private void OnColorChanged(LineaUI l) { RegenerarDescripcion(l); StateHasChanged(); }
-    private void OnTipoChanged(LineaUI l) { l.ColorNombre = ""; RegenerarDescripcion(l); StateHasChanged(); }
+    private void OnColorChanged(LineaUI l) { ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
+    private void OnTipoChanged(LineaUI l) { l.ColorNombre = ""; ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
+
+    // Cubiertas de exterior (grupo G4): la medida máxima es 120 cm. Se limita y se avisa.
+    private const decimal MaxG4Cm = 120m;
+    private string? MaxMedida(LineaUI l)
+    {
+        var p = ProdDe(l);
+        return (p is not null && EsFamilia(l, "CUBIERTAS") && GrupoEfectivo(l, p) == "G4") ? "120" : null;
+    }
+    private void ClampG4(LineaUI l)
+    {
+        var p = ProdDe(l);
+        if (p is null || !EsFamilia(l, "CUBIERTAS") || GrupoEfectivo(l, p) != "G4") { l.Aviso = null; return; }
+        bool ajustado = false;
+        if (l.LargoCm > MaxG4Cm) { l.LargoCm = MaxG4Cm; ajustado = true; }
+        if (!p.MedidaUnica && l.AnchoCm > MaxG4Cm) { l.AnchoCm = MaxG4Cm; ajustado = true; }
+        l.Aviso = ajustado ? "En exterior (G4) la medida máxima es 120 cm; se ajustó a 120." : null;
+    }
     private void OnDistribuidorChanged()
     {
         var d = DistribActual;
@@ -530,7 +564,7 @@ else
 
             // Estado completo del configurador (para reabrir/editar tal cual)
             cot.Lineas = new();
-            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
+            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
             var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
 
             bool eraEdicion = editandoId is not null;
@@ -561,7 +595,7 @@ else
                 IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, Comentarios = cot.Comentarios,
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
-                AppJson = appJson, Fabricacion = fabricacion,
+                AppJson = appJson, Fabricacion = fabricacion, Entrega = entrega,
             };
 
             // Siempre inserta: una edición se guarda como VARIANTE nueva (el original queda intacto).
@@ -623,7 +657,7 @@ else
         bool hayFlete = lineas.Any(l => ProdDe(l)?.CodigoSap.StartsWith("FLETE") == true);
         var dto = new
         {
-            folio = cot.Folio, vigencia = vigencia?.ToString("dd/MM/yyyy") ?? "",
+            folio = cot.Folio, vigencia = vigencia?.ToString("dd/MM/yyyy") ?? "", entrega = entrega,
             razonSocial = cot.RazonSocial, proyecto = cot.Proyecto, titulo = cot.Titulo, cliente = cot.Cliente,
             atencionA = cot.AtencionA, telefono = cot.Telefono, ciudad = cot.Ciudad, cotizadoPor = cot.CotizadoPor,
             comentarios = cot.Comentarios, descuentoPct = cot.DescuentoPct.ToString("0.#"),
@@ -666,5 +700,7 @@ else
         public string TipoStr { get => Exterior ? "Exterior" : "Interior"; set => Exterior = value == "Exterior"; }
         public string Descripcion { get; set; } = "";
         public Dictionary<long, int> ExtrasCant { get; set; } = new();  // extraId -> cantidad
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? Aviso { get; set; }   // p.ej. límite de medida en G4 (no se persiste)
     }
 }
