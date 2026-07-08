@@ -153,7 +153,11 @@ else
             var p = new Profile { Id = u.Id, Nombre = u.Nombre, Email = u.Email, Rol = "Distribuidor", DistribuidorId = u.DistribuidorId, Activo = true };
             await Supa.From<Profile>().Update(p);
             u.Activo = true;
-            okU = true; msgU = $"{u.Email} autorizado y asignado a su empresa.";
+            var cerr = await Auth.ConfirmarUsuario(u.Id);   // confirma el correo (sin SQL) para que pueda entrar
+            okU = true;
+            msgU = cerr is null
+                ? $"{u.Email} autorizado y confirmado. Ya puede entrar."
+                : $"{u.Email} autorizado, pero no se pudo confirmar el correo automáticamente: {cerr}";
         }
         catch (Exception ex) { okU = false; msgU = "No se pudo guardar: " + ex.Message; }
     }

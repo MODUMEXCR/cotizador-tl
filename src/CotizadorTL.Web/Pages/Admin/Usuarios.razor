@@ -121,6 +121,7 @@ else
         {
             var p = new Profile { Id = u.Id, Nombre = u.Nombre, Email = u.Email, Rol = u.Rol, DistribuidorId = u.DistribuidorId, Activo = u.Activo };
             await Supa.From<Profile>().Update(p);
+            if (u.Activo) await Auth.ConfirmarUsuario(u.Id);   // asegura que el correo quede confirmado
             ok = true; msg = $"Usuario {u.Email} actualizado.";
             if (u.Rol == "Distribuidor") usuarios.Remove(u); // ya no es administrativo
         }

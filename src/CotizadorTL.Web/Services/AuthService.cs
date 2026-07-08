@@ -136,6 +136,33 @@ public class AuthService
         }
     }
 
+    /// <summary>Confirma el correo de un usuario existente vía la Edge Function "confirmar-usuario"
+    /// (usa la service_role del servidor). Evita tener que correr SQL por cada usuario.
+    /// Devuelve null si todo bien, o un mensaje de error.</summary>
+    public async Task<string?> ConfirmarUsuario(string userId)
+    {
+        if (!PuedeVerTodo) return "No tienes permiso para confirmar usuarios.";
+        var token = _supa.Auth.CurrentSession?.AccessToken;
+        if (string.IsNullOrEmpty(token)) return "Tu sesión expiró. Vuelve a entrar.";
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/confirmar-usuario");
+            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
+            req.Headers.TryAddWithoutValidation("apikey", _anon);
+            var payload = System.Text.Json.JsonSerializer.Serialize(new { userId });
+            req.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+
+            var resp = await _http.SendAsync(req);
+            if (resp.IsSuccessStatusCode) return null;
+            var body = await resp.Content.ReadAsStringAsync();
+            return ExtraerError(body) ?? $"No se pudo confirmar el correo (código {(int)resp.StatusCode}).";
+        }
+        catch (Exception ex)
+        {
+            return "No se pudo confirmar el correo: " + ex.Message;
+        }
+    }
+
     private static string? ExtraerError(string body)
     {
         try
