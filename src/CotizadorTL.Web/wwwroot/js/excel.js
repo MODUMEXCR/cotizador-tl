@@ -127,10 +127,12 @@
     },
 
     // Exporta la LISTA de cotizaciones (Mis Proyectos) a una tabla de Excel.
-    generarLista: async function (filas) {
+    generarLista: async function () {
       const ExcelJS = window.ExcelJS;
       if (!ExcelJS) throw new Error("ExcelJS no cargó.");
-      filas = filas || [];
+      // Tolerante al interop: puede llegar como un solo arreglo o como filas sueltas.
+      let filas = Array.from(arguments);
+      if (filas.length === 1 && Array.isArray(filas[0])) filas = filas[0];
 
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet("Cotizaciones", { views: [{ showGridLines: false }] });
