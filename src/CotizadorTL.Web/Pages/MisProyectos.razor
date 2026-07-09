@@ -68,12 +68,19 @@ else
                             <td>@c.Proyecto</td>
                             <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
                             <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-                                <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => GuardarEstado(c, e.Value?.ToString())">
-                                    <option value="borrador">Borrador</option>
-                                    <option value="enviada">Enviada</option>
-                                    <option value="aceptada">Aprobada</option>
-                                    <option value="rechazada">Rechazada</option>
-                                </select>
+                                @if (Auth.EsAdmin)
+                                {
+                                    <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => GuardarEstado(c, e.Value?.ToString())">
+                                        <option value="borrador">Borrador</option>
+                                        <option value="enviada">Enviada</option>
+                                        <option value="aceptada">Aprobada</option>
+                                        <option value="rechazada">Rechazada</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <span class="estado">@EstadoLabel(c.Estado)</span>
+                                }
                             </td>
                             <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
                                 @if (Auth.PuedeVerTodo)
@@ -161,6 +168,7 @@ else
     private async Task GuardarEstado(PCotizacion c, string? code)
     {
         mensaje = null;
+        if (!Auth.EsAdmin) return;   // solo Administradores cambian el estado
         try
         {
             c.Estado = string.IsNullOrEmpty(code) ? "borrador" : code;
