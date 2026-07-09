@@ -196,7 +196,7 @@ else
                 moneda = c.Moneda,
             }).ToArray();
             if (filas.Length == 0) { mensaje = "No hay cotizaciones que exportar con esos filtros."; return; }
-            await JS.InvokeVoidAsync("cotizadorExcel.generarLista", filas);
+            await JS.InvokeVoidAsync("cotizadorExcel.generarLista", (object)filas);
         }
         catch (Exception ex) { mensaje = "No se pudo generar el Excel de la lista: " + ex.Message; }
     }
