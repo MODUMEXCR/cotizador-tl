@@ -34,7 +34,17 @@ else
                     </select>
                 </label>
             }
+            <label>Estado
+                <select @bind="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="borrador">Borrador</option>
+                    <option value="enviada">Enviada</option>
+                    <option value="aceptada">Aprobada</option>
+                    <option value="rechazada">Rechazada</option>
+                </select>
+            </label>
             <button class="btn-add" @onclick="LimpiarFiltros">Limpiar</button>
+            <button class="btn-add" style="background:var(--tl-verde-h)" @onclick="DescargarLista">Descargar lista (Excel)</button>
         </div>
 
         <div class="tabla-wrap">
@@ -57,7 +67,14 @@ else
                             <td>@c.Cliente</td>
                             <td>@c.Proyecto</td>
                             <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
-                            <td><span class="estado">@c.Estado</span></td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => GuardarEstado(c, e.Value?.ToString())">
+                                    <option value="borrador">Borrador</option>
+                                    <option value="enviada">Enviada</option>
+                                    <option value="aceptada">Aprobada</option>
+                                    <option value="rechazada">Rechazada</option>
+                                </select>
+                            </td>
                             <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
                                 @if (Auth.PuedeVerTodo)
                                 {
@@ -97,7 +114,16 @@ else
     private List<PCotizacion> todas = new();
     private DateTime? desde, hasta;
     private long filtroDistribuidor;
+    private string filtroEstado = "";
     private string? mensaje;
+
+    private static string EstadoLabel(string? code) => (code ?? "borrador") switch
+    {
+        "enviada" => "Enviada",
+        "aceptada" => "Aprobada",
+        "rechazada" => "Rechazada",
+        _ => "Borrador",
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,9 +138,10 @@ else
     private IEnumerable<PCotizacion> Filtradas => todas.Where(c =>
         (desde is null || c.Fecha.ToLocalTime().Date >= desde.Value.Date) &&
         (hasta is null || c.Fecha.ToLocalTime().Date <= hasta.Value.Date) &&
-        (filtroDistribuidor == 0 || c.DistribuidorId == filtroDistribuidor));
+        (filtroDistribuidor == 0 || c.DistribuidorId == filtroDistribuidor) &&
+        (filtroEstado == "" || (string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado) == filtroEstado));
 
-    private void LimpiarFiltros() { desde = hasta = null; filtroDistribuidor = 0; }
+    private void LimpiarFiltros() { desde = hasta = null; filtroDistribuidor = 0; filtroEstado = ""; }
 
     private void Abrir(PCotizacion c) => Nav.NavigateTo($"cotizar/{c.CotizacionId}");
 
@@ -129,6 +156,41 @@ else
             StateHasChanged();
         }
         catch (Exception ex) { mensaje = "No se pudo guardar el lugar de fabricación: " + ex.Message; }
+    }
+
+    private async Task GuardarEstado(PCotizacion c, string? code)
+    {
+        mensaje = null;
+        try
+        {
+            c.Estado = string.IsNullOrEmpty(code) ? "borrador" : code;
+            if (c.Fecha.Year < 2000) c.Fecha = DateTime.UtcNow;
+            await Supa.From<PCotizacion>().Update(c);
+            StateHasChanged();
+        }
+        catch (Exception ex) { mensaje = "No se pudo guardar el estado: " + ex.Message; }
+    }
+
+    private async Task DescargarLista()
+    {
+        mensaje = null;
+        try
+        {
+            var filas = Filtradas.Select(c => new
+            {
+                folio = c.Folio,
+                fecha = c.Fecha.ToLocalTime().ToString("dd/MM/yyyy"),
+                distribuidor = NombreDist(c.DistribuidorId),
+                cliente = c.Cliente, proyecto = c.Proyecto,
+                granTotal = (double)c.GranTotal,
+                estado = EstadoLabel(c.Estado),
+                fabricacion = c.Fabricacion ?? "",
+                moneda = c.Moneda,
+            }).ToArray();
+            if (filas.Length == 0) { mensaje = "No hay cotizaciones que exportar con esos filtros."; return; }
+            await JS.InvokeVoidAsync("cotizadorExcel.generarLista", filas);
+        }
+        catch (Exception ex) { mensaje = "No se pudo generar el Excel de la lista: " + ex.Message; }
     }
 
     private async Task Eliminar(PCotizacion c)

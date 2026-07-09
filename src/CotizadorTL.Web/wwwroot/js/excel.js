@@ -125,5 +125,60 @@
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     },
+
+    // Exporta la LISTA de cotizaciones (Mis Proyectos) a una tabla de Excel.
+    generarLista: async function (filas) {
+      const ExcelJS = window.ExcelJS;
+      if (!ExcelJS) throw new Error("ExcelJS no cargó.");
+      filas = filas || [];
+
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Cotizaciones", { views: [{ showGridLines: false }] });
+      ws.columns = [{ width: 12 }, { width: 12 }, { width: 26 }, { width: 26 }, { width: 26 }, { width: 16 }, { width: 12 }, { width: 14 }];
+
+      const th = (cell) => { cell.fill = solid(VERDE); cell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } }; cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; cell.border = BORDER; };
+      const td = (cell, v, al) => { cell.value = v; cell.font = { size: 9, color: { argb: TXT } }; cell.alignment = { horizontal: al || "left", vertical: "middle", wrapText: true }; cell.border = BORDER; };
+
+      ws.getRow(1).height = 24; ws.getRow(2).height = 26;
+      try {
+        const dataUrl = (window.cotizadorLogos && window.cotizadorLogos.tl) || "";
+        if (dataUrl) {
+          const raw = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+          const id = wb.addImage({ base64: raw, extension: "png" });
+          ws.addImage(id, { tl: { col: 0, row: 0 }, ext: { width: 126, height: 56 } });
+        }
+      } catch (e) { /* sin logo */ }
+
+      ws.mergeCells(4, 1, 4, 8);
+      const t = ws.getCell(4, 1);
+      t.value = "LISTADO DE COTIZACIONES"; t.font = { bold: true, size: 14, color: { argb: VERDEOSCURO } };
+      t.alignment = { horizontal: "center", vertical: "middle" }; ws.getRow(4).height = 22;
+
+      const H = ["Expediente", "Fecha", "Distribuidor", "Cliente", "Proyecto", "Gran total", "Estado", "Fabricación"];
+      const head = 6;
+      H.forEach((h, i) => { const c = ws.getCell(head, i + 1); c.value = h; th(c); });
+      ws.getRow(head).height = 22;
+
+      let r = head + 1;
+      filas.forEach((f) => {
+        td(ws.getCell(r, 1), f.folio || "");
+        td(ws.getCell(r, 2), f.fecha || "", "center");
+        td(ws.getCell(r, 3), f.distribuidor || "");
+        td(ws.getCell(r, 4), f.cliente || "");
+        td(ws.getCell(r, 5), f.proyecto || "");
+        const g = ws.getCell(r, 6); td(g, Number(f.granTotal || 0), "right"); g.numFmt = '"$"#,##0.00';
+        td(ws.getCell(r, 7), f.estado || "", "center");
+        td(ws.getCell(r, 8), f.fabricacion || "", "center");
+        r++;
+      });
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "Cotizaciones.xlsx";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    },
   };
 })();
