@@ -44,7 +44,10 @@ else
                 </select>
             </label>
             <button class="btn-add" @onclick="LimpiarFiltros">Limpiar</button>
-            <button class="btn-add" style="background:var(--tl-verde-h)" @onclick="DescargarLista">Descargar lista (Excel)</button>
+            @if (Auth.EsAdmin)
+            {
+                <button class="btn-add" style="background:var(--tl-verde-h)" @onclick="DescargarLista">Descargar lista (Excel)</button>
+            }
         </div>
 
         <div class="tabla-wrap">
@@ -182,6 +185,7 @@ else
     private async Task DescargarLista()
     {
         mensaje = null;
+        if (!Auth.EsAdmin) return;   // solo Administradores exportan la lista
         try
         {
             var filas = Filtradas.Select(c => new
