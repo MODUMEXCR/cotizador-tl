@@ -9,38 +9,32 @@ namespace CotizadorTL.Web.Services;
 public class AuthService
 {
     private readonly Supabase.Client _supa;
-    private readonly HttpClient _http;
-    private readonly string _url;
     private readonly string _anon;
 
-    public AuthService(Supabase.Client supa, HttpClient http, Microsoft.Extensions.Configuration.IConfiguration cfg)
+    public AuthService(Supabase.Client supa, Microsoft.Extensions.Configuration.IConfiguration cfg)
     {
         _supa = supa;
-        _http = http;
-        _url  = (cfg["Supabase:Url"] ?? "").TrimEnd('/');
         _anon = cfg["Supabase:AnonKey"] ?? "";
     }
 
-    /// <summary>Llama una Edge Function por POST. Devuelve (ok, cuerpo, mensajeError).
-    /// En Blazor WASM el HttpClient a veces lanza "Unsupported method" DESPUÉS de que el servidor ya
-    /// procesó la petición; por eso se captura y quien llama decide (verificando en la BD).</summary>
-    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, object payload)
+    /// <summary>Llama una Edge Function usando el cliente de Supabase (mismo transporte que Postgrest/Auth,
+    /// que sí funciona en Blazor WASM; el HttpClient crudo lanzaba "Unsupported method"). Devuelve (ok, cuerpo, error).</summary>
+    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, Dictionary<string, object> body)
     {
         try
         {
-            var req = new HttpRequestMessage(HttpMethod.Post, $"{_url}/functions/v1/{nombre}");
-            req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {_supa.Auth.CurrentSession?.AccessToken}");
-            req.Headers.TryAddWithoutValidation("apikey", _anon);
-            req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-
-            var resp = await _http.SendAsync(req);
-            var body = await resp.Content.ReadAsStringAsync();
-            if (resp.IsSuccessStatusCode) return (true, body, null);
-            return (false, body, ExtraerError(body) ?? $"código {(int)resp.StatusCode}");
+            var token = _supa.Auth.CurrentSession?.AccessToken;
+            var options = new Supabase.Functions.Client.InvokeFunctionOptions
+            {
+                Headers = new Dictionary<string, string> { ["apikey"] = _anon },
+                Body = body,
+            };
+            var res = await _supa.Functions.Invoke(nombre, token, options);
+            return (true, res ?? "", null);
         }
         catch (Exception ex)
         {
-            return (false, "", ex.Message);
+            return (false, "", ExtraerError(ex.Message) ?? ex.Message);
         }
     }
 
@@ -136,7 +130,10 @@ public class AuthService
     public async Task<string?> CrearUsuario(string nombre, string email, string password, string rol)
     {
         if (!EsSuper) return "Solo un Super Admin puede crear usuarios.";
-        var (ok, _, error) = await LlamarFuncion("crear-usuario", new { nombre, email, password, rol });
+        var (ok, _, error) = await LlamarFuncion("crear-usuario", new Dictionary<string, object>
+        {
+            ["nombre"] = nombre, ["email"] = email, ["password"] = password, ["rol"] = rol,
+        });
         if (ok) return null;
         // La respuesta HTTP pudo fallar en el navegador aunque la función SÍ creó al usuario: la BD manda.
         if (await UsuarioListoPara(email, rol)) return null;
@@ -161,7 +158,7 @@ public class AuthService
     public async Task<string?> ConfirmarUsuario(string userId)
     {
         if (!PuedeVerTodo) return "No tienes permiso para confirmar usuarios.";
-        var (ok, _, error) = await LlamarFuncion("confirmar-usuario", new { userId });
+        var (ok, _, error) = await LlamarFuncion("confirmar-usuario", new Dictionary<string, object> { ["userId"] = userId });
         if (ok) return null;
         // "Unsupported method" es un fallo de la capa HTTP de WASM que ocurre DESPUÉS de que el servidor
         // ya procesó: la confirmación en realidad se aplicó, así que lo tratamos como éxito.
