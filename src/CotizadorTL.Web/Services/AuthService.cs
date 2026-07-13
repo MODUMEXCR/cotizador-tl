@@ -96,10 +96,12 @@ public class AuthService
         // Vía Edge Function con service_role: crea la cuenta YA CONFIRMADA (no envía correo → sin límite de
         // intentos) y queda INACTIVA hasta que un Admin/Super la autorice. Se llama con la anon key (usuario
         // no logueado). Devuelve null si todo bien.
+        // Sin token: la llamada anónima manda la anon key SOLO en el header apikey (si va también en
+        // Authorization, el gateway responde "Conflicting API keys").
         var (ok, _, error) = await LlamarFuncion("registrar-distribuidor", new Dictionary<string, object>
         {
             ["nombre"] = nombre, ["email"] = email, ["password"] = password,
-        }, _anon);
+        });
         if (ok) return null;
 
         var e = (error ?? "").ToLowerInvariant();
