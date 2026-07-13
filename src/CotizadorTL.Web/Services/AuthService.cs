@@ -19,11 +19,11 @@ public class AuthService
 
     /// <summary>Llama una Edge Function usando el cliente de Supabase (mismo transporte que Postgrest/Auth,
     /// que sí funciona en Blazor WASM; el HttpClient crudo lanzaba "Unsupported method"). Devuelve (ok, cuerpo, error).</summary>
-    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, Dictionary<string, object> body)
+    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, Dictionary<string, object> body, string? tokenOverride = null)
     {
         try
         {
-            var token = _supa.Auth.CurrentSession?.AccessToken;
+            var token = tokenOverride ?? _supa.Auth.CurrentSession?.AccessToken;
             var options = new Supabase.Functions.Client.InvokeFunctionOptions
             {
                 Headers = new Dictionary<string, string> { ["apikey"] = _anon },
@@ -93,35 +93,23 @@ public class AuthService
     /// Devuelve null si todo bien, o un mensaje de error.</summary>
     public async Task<string?> Registrar(string nombre, string email, string password)
     {
-        try
+        // Vía Edge Function con service_role: crea la cuenta YA CONFIRMADA (no envía correo → sin límite de
+        // intentos) y queda INACTIVA hasta que un Admin/Super la autorice. Se llama con la anon key (usuario
+        // no logueado). Devuelve null si todo bien.
+        var (ok, _, error) = await LlamarFuncion("registrar-distribuidor", new Dictionary<string, object>
         {
-            var opciones = new Supabase.Gotrue.SignUpOptions
-            {
-                Data = new Dictionary<string, object> { ["nombre"] = nombre }
-            };
-            await _supa.Auth.SignUp(email, password, opciones);
-            // No lo dejamos entrar: queda pendiente de aprobación.
-            await _supa.Auth.SignOut();
-            Perfil = null;
-            Cambio?.Invoke();
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[registro] " + ex);   // detalle en la consola del navegador (F12) para diagnóstico
-            var e = (ex.Message ?? "").ToLowerInvariant();
-            if (e.Contains("already") || e.Contains("registered") || e.Contains("exists") || e.Contains("422"))
-                return "Ese correo ya tiene una cuenta. Si fue rechazada, pide a un administrador que la reactive.";
-            if (e.Contains("rate") || e.Contains("429") || e.Contains("too many"))
-                return "Demasiados intentos de registro. Espera unos minutos e inténtalo de nuevo.";
-            if (e.Contains("signup") || e.Contains("sign up") || e.Contains("not allowed") || e.Contains("disabled"))
-                return "El registro de cuentas está deshabilitado. Contacta con un administrador.";
-            if (e.Contains("password") || e.Contains("weak") || e.Contains("least") || e.Contains("6 char"))
-                return "La contraseña es muy corta (mínimo 6 caracteres).";
-            if (e.Contains("invalid") && e.Contains("email"))
-                return "El correo no es válido.";
-            return "No se pudo crear la cuenta. Revisa el correo o inténtalo más tarde.";
-        }
+            ["nombre"] = nombre, ["email"] = email, ["password"] = password,
+        }, _anon);
+        if (ok) return null;
+
+        var e = (error ?? "").ToLowerInvariant();
+        if (e.Contains("already") || e.Contains("registered") || e.Contains("exists"))
+            return "Ese correo ya tiene una cuenta. Si fue rechazada, pide a un administrador que la reactive.";
+        if (e.Contains("password") || e.Contains("least") || e.Contains("6 char"))
+            return "La contraseña es muy corta (mínimo 6 caracteres).";
+        if (e.Contains("invalid") && e.Contains("email"))
+            return "El correo no es válido.";
+        return "No se pudo crear la cuenta: " + (error ?? "inténtalo más tarde.");
     }
 
     /// <summary>El Super Admin crea una cuenta y le asigna el rol de una vez (Administrador/Vendedor/Super Admin).
