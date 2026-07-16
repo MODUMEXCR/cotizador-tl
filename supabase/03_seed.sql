@@ -475,3 +475,7 @@ insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
   ('Ámbar Wood','G1','banca','LATAM',false),
   ('Nogal Grafito','G1','banca','LATAM',false),
   ('Inox Satín','G1','banca','LATAM',false);
+
+-- Los datos de origen venían con la región intercambiada: se corrige aquí (MXN <-> LATAM).
+update public.color
+set region = case region when 'MXN' then 'LATAM' when 'LATAM' then 'MXN' else region end;
