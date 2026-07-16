@@ -140,13 +140,13 @@ for c in G1: COLORES.append((c,"G1","banca","MXN",False))
 # ---- Colores LATAM (aplican a regiones LATAM y Costa Rica) ----
 LAT_INT = ["Blanco","Gris","Grafito Nocturno","Negro","Ámbar Wood","Nogal Grafito","Inox Satín"]  # G1
 LAT_EXT = ["Roble Lineal","Italian Walnut","Atenas","Tiziano","Industrial Concrete"]               # G4
-LAT_LOCKER = ["Negro","Gris Metalizado","Blanco","Alumina","Grafito Nocturno","Walnut Heights","Skyline Walnut"]
+LAT_LOCKER = ["Negro","Inox Satín","Blanco","Gris","Grafito Nocturno","Ámbar Wood","Nogal Grafito"]  # nombres CR
 for c in LAT_INT: COLORES.append((c,"G1","cubierta_int","LATAM",False))
 for c in LAT_EXT: COLORES.append((c,"G4","cubierta_ext","LATAM",False))
 for c in ["Dark Steel","Vanilla"]: COLORES.append((c,"G4","cubierta_ext","LATAM",True))
 for c in LAT_LOCKER: COLORES.append((c,"G1","locker_frente","LATAM",False))
-# Interior lockers Costa Rica/LATAM: solo Alúmina
-COLORES.append(("Alúmina","INT","locker_interior","LATAM",False))
+# Interior lockers Costa Rica/LATAM: solo Gris (en CR "Alúmina" se llama "Gris")
+COLORES.append(("Gris","INT","locker_interior","LATAM",False))
 for c in LAT_INT: COLORES.append((c,"G1","banca","LATAM",False))
 
 # ===================== EMITIR SQL =====================

@@ -69,8 +69,6 @@ else
             </div>
             <div class="campos">
                 <label>Descuento adicional % (admin)<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@(!Auth.EsAdmin)" /></label>
-                <label>Gastos indirectos<input type="number" step="0.01" @bind="cot.GastosIndirectos" @bind:after="StateHasChanged" /></label>
-                <label>Gastos de envío<input type="number" step="0.01" @bind="cot.GastosEnvio" @bind:after="StateHasChanged" /></label>
                 <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" disabled="@(!Auth.EsAdmin)" /></label>
                 <label>Anticipo %<input type="number" value="60" disabled /></label>
             </div>
@@ -173,7 +171,7 @@ else
                             {
                                 <label>Color interior
                                     <select @bind="l.ColorInterior" @bind:after="StateHasChanged">
-                                        <option value="">Alúmina (estándar)</option>
+                                        <option value="">@(ColorRegion == "MXN" ? "Alúmina" : "Gris") (estándar)</option>
                                         @foreach (var c in ColoresInterior())
                                         { <option value="@c.Nombre">@c.Nombre (+10%)</option> }
                                     </select>
@@ -260,6 +258,10 @@ else
         </section>
         <section class="card totales">
             <h2>Totales <span class="muted" style="font-size:.8rem">(@MonedaActual@(RegionActual=="LATAM" ? $" · ÷{Catalogo.DivisorUsd:0.##}" : ""))</span></h2>
+            <div class="campos" style="margin-bottom:.8rem">
+                <label>Gastos indirectos<input type="number" step="0.01" @bind="cot.GastosIndirectos" @bind:after="StateHasChanged" /></label>
+                <label>Gastos de envío<input type="number" step="0.01" @bind="cot.GastosEnvio" @bind:after="StateHasChanged" /></label>
+            </div>
             @{ var t = MotorPrecios.Calcular(ArmarCotizacion()); }
             <table class="tot">
                 <tr><td>Subtotal público</td><td class="num">@Money(t.Subtotal)</td></tr>
@@ -545,10 +547,10 @@ else
         RegenerarDescripcion(l); StateHasChanged();
     }
 
-    // Colores interior del locker (sin la Alúmina estándar, filtrados por región)
+    // Colores interior del locker con +10% (excluye el estándar: Alúmina en MX / Gris en CR)
     private IEnumerable<PColor> ColoresInterior() =>
         Catalogo.Colores.Where(c => c.Ambito == "locker_interior" && c.Region == ColorRegion
-                                    && c.Nombre != "Alúmina" && c.Nombre != "Alumina");
+                                    && c.Nombre != "Alúmina" && c.Nombre != "Alumina" && c.Nombre != "Gris");
 
     // Color que va al PDF/descripción (especial escrito a mano, o el del catálogo)
     private string? ColorFinal(LineaUI l) =>
