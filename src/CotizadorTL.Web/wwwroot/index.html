@@ -7,10 +7,11 @@
     <title>Cotizador Thin Laminates</title>
     <base href="/" />
     <link rel="preload" id="webassembly" />
-    <link rel="stylesheet" href="css/app.css?v=52" />
+    <link rel="stylesheet" href="css/app.css?v=53" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="CotizadorTL.Web.styles.css?v=52" rel="stylesheet" />
+    <link href="CotizadorTL.Web.styles.css?v=53" rel="stylesheet" />
     <script type="importmap"></script>
+    <script>window.__APP_VER = "53";</script>
 </head>
 
 <body>
@@ -41,6 +42,30 @@
     <script>
       (function () {
         var KEY = "tl_reintento_arranque";
+
+        // Chequeo de versión: si el index.html en caché es viejo, version.txt (sin caché) no coincide
+        // con la versión embebida -> recarga saltándose la caché (con guarda por versión, sin ciclos).
+        try {
+          fetch("version.txt?_=" + Date.now(), { cache: "no-store" })
+            .then(function (r) { return r.ok ? r.text() : null; })
+            .then(function (remoto) {
+              if (!remoto) return;
+              remoto = remoto.trim();
+              var local = window.__APP_VER || "";
+              if (remoto && local && remoto !== local) {
+                if (sessionStorage.getItem("tl_ver_reload") !== remoto) {
+                  sessionStorage.setItem("tl_ver_reload", remoto);
+                  var u = location.href.split("#")[0];
+                  u += (u.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now();
+                  location.replace(u);
+                }
+              } else {
+                sessionStorage.removeItem("tl_ver_reload");
+              }
+            })
+            .catch(function () { });
+        } catch (e) { }
+
         setTimeout(function () {
           var spinner = document.querySelector("#app .loading-progress");
           var eu = document.getElementById("blazor-error-ui");
