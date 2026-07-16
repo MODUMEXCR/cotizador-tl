@@ -145,8 +145,8 @@ for c in LAT_INT: COLORES.append((c,"G1","cubierta_int","LATAM",False))
 for c in LAT_EXT: COLORES.append((c,"G4","cubierta_ext","LATAM",False))
 for c in ["Dark Steel","Vanilla"]: COLORES.append((c,"G4","cubierta_ext","LATAM",True))
 for c in LAT_LOCKER: COLORES.append((c,"G1","locker_frente","LATAM",False))
-# Interior lockers Costa Rica/LATAM: solo Gris (en CR "Alúmina" se llama "Gris")
-COLORES.append(("Gris","INT","locker_interior","LATAM",False))
+# Interior lockers Costa Rica/LATAM: Gris (estándar) + Negro + Blanco (sin recargo)
+for c in ["Gris","Negro","Blanco"]: COLORES.append((c,"INT","locker_interior","LATAM",False))
 for c in LAT_INT: COLORES.append((c,"G1","banca","LATAM",False))
 
 # ===================== EMITIR SQL =====================

@@ -468,6 +468,8 @@ insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
   ('Ámbar Wood','G1','locker_frente','LATAM',false),
   ('Nogal Grafito','G1','locker_frente','LATAM',false),
   ('Gris','INT','locker_interior','LATAM',false),
+  ('Negro','INT','locker_interior','LATAM',false),
+  ('Blanco','INT','locker_interior','LATAM',false),
   ('Blanco','G1','banca','LATAM',false),
   ('Gris','G1','banca','LATAM',false),
   ('Grafito Nocturno','G1','banca','LATAM',false),

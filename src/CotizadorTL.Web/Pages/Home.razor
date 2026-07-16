@@ -173,7 +173,7 @@ else
                                     <select @bind="l.ColorInterior" @bind:after="StateHasChanged">
                                         <option value="">@(ColorRegion == "MXN" ? "Alúmina" : "Gris") (estándar)</option>
                                         @foreach (var c in ColoresInterior())
-                                        { <option value="@c.Nombre">@c.Nombre (+10%)</option> }
+                                        { <option value="@c.Nombre">@c.Nombre</option> }
                                     </select>
                                 </label>
                             }
@@ -454,7 +454,7 @@ else
         if (EsFamilia(l, "CUBIERTAS") && l.ColorEspecial) precio *= 1.20m;
         // Grabado láser en cubiertas/bancas: $120 por pieza grabada (sin descuento de línea; se suma al unitario)
         if ((EsFamilia(l, "CUBIERTAS") || EsFamilia(l, "BANCAS")) && l.Grabado) precio += 120m * Math.Max(1, l.GrabadoCant);
-        if (EsFamilia(l, "LOCKERS") && !p.EsExtra && !string.IsNullOrEmpty(l.ColorInterior)) precio *= 1.10m; // interior distinto a alúmina
+        // (El color interior de locker ya NO agrega recargo: Blanco/Negro van sin +10%.)
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra)
             foreach (var kv in l.ExtrasCant)
                 if (Catalogo.Buscar(kv.Key) is Producto ex) precio += PrecioExtra(ex, TierDe(p)) * kv.Value;
