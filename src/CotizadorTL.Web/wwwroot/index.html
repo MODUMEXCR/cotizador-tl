@@ -7,9 +7,9 @@
     <title>Cotizador Thin Laminates</title>
     <base href="/" />
     <link rel="preload" id="webassembly" />
-    <link rel="stylesheet" href="css/app.css?v=51" />
+    <link rel="stylesheet" href="css/app.css?v=52" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="CotizadorTL.Web.styles.css?v=51" rel="stylesheet" />
+    <link href="CotizadorTL.Web.styles.css?v=52" rel="stylesheet" />
     <script type="importmap"></script>
 </head>
 
@@ -35,6 +35,31 @@
     <script src="lib/exceljs/exceljs.min.js"></script>
     <script src="js/excel.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+
+    <!-- Auto-recuperación: si tras un deploy el navegador tiene el index.html viejo en caché, el WASM no arranca
+         (se queda el spinner o sale el error). Recarga UNA vez saltándose la caché; con guarda para no ciclar. -->
+    <script>
+      (function () {
+        var KEY = "tl_reintento_arranque";
+        setTimeout(function () {
+          var spinner = document.querySelector("#app .loading-progress");
+          var eu = document.getElementById("blazor-error-ui");
+          var errorVisible = eu && getComputedStyle(eu).display !== "none";
+          var noArranco = !!spinner || errorVisible;
+          if (noArranco && !sessionStorage.getItem(KEY)) {
+            sessionStorage.setItem(KEY, "1");
+            var u = location.href.split("#")[0];
+            u += (u.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now();
+            location.replace(u);   // fuerza re-descarga del index.html (nueva clave de caché)
+          } else if (!noArranco) {
+            sessionStorage.removeItem(KEY);                 // arrancó bien: limpia la guarda
+            if (location.href.indexOf("cb=") >= 0) {         // y quita el ?cb= de la barra
+              try { history.replaceState(null, "", location.href.replace(/[?&]cb=\d+/, "").replace(/[?&]$/, "")); } catch (e) { }
+            }
+          }
+        }, 15000);
+      })();
+    </script>
 </body>
 
 </html>
