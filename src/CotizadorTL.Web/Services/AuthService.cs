@@ -1,4 +1,5 @@
 using CotizadorTL.Web.Models;
+using Microsoft.JSInterop;
 
 namespace CotizadorTL.Web.Services;
 
@@ -9,32 +10,44 @@ namespace CotizadorTL.Web.Services;
 public class AuthService
 {
     private readonly Supabase.Client _supa;
+    private readonly Microsoft.JSInterop.IJSRuntime _js;
+    private readonly string _url;
     private readonly string _anon;
 
-    public AuthService(Supabase.Client supa, Microsoft.Extensions.Configuration.IConfiguration cfg)
+    public AuthService(Supabase.Client supa, Microsoft.Extensions.Configuration.IConfiguration cfg, Microsoft.JSInterop.IJSRuntime js)
     {
         _supa = supa;
+        _js = js;
+        _url  = (cfg["Supabase:Url"] ?? "").TrimEnd('/');
         _anon = cfg["Supabase:AnonKey"] ?? "";
     }
 
-    /// <summary>Llama una Edge Function usando el cliente de Supabase (mismo transporte que Postgrest/Auth,
-    /// que sí funciona en Blazor WASM; el HttpClient crudo lanzaba "Unsupported method"). Devuelve (ok, cuerpo, error).</summary>
-    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, Dictionary<string, object> body, string? tokenOverride = null)
+    /// <summary>Llama una Edge Function con fetch nativo (JS interop), controlando los headers exactos.
+    /// Evita el "Unsupported method" del HttpClient de WASM y el "Conflicting API keys" (la sb_ key va SOLO en
+    /// apikey; Authorization solo lleva el JWT del usuario cuando conAuth=true). Devuelve (ok, cuerpo, error).</summary>
+    private async Task<(bool ok, string body, string? error)> LlamarFuncion(string nombre, Dictionary<string, object> body, bool conAuth = true)
     {
         try
         {
-            var token = tokenOverride ?? _supa.Auth.CurrentSession?.AccessToken;
-            var options = new Supabase.Functions.Client.InvokeFunctionOptions
-            {
-                Headers = new Dictionary<string, string> { ["apikey"] = _anon },
-                Body = body,
-            };
-            var res = await _supa.Functions.Invoke(nombre, token, options);
-            return (true, res ?? "", null);
+            var url = $"{_url}/functions/v1/{nombre}";
+            var bearer = conAuth ? _supa.Auth.CurrentSession?.AccessToken : null;
+            var bodyJson = System.Text.Json.JsonSerializer.Serialize(body);
+            var resJson = await _js.InvokeAsync<string>("supaFn.invoke", url, _anon, bearer, bodyJson);
+
+            using var doc = System.Text.Json.JsonDocument.Parse(resJson);
+            var root = doc.RootElement;
+            var ok = root.TryGetProperty("ok", out var okEl) && okEl.GetBoolean();
+            var respBody = root.TryGetProperty("body", out var bEl) ? (bEl.GetString() ?? "") : "";
+            if (ok) return (true, respBody, null);
+
+            var err = ExtraerError(respBody);
+            if (err is null && root.TryGetProperty("err", out var eEl)) err = eEl.GetString();
+            if (err is null && root.TryGetProperty("status", out var sEl)) err = $"código {sEl.GetInt32()}";
+            return (false, respBody, err);
         }
         catch (Exception ex)
         {
-            return (false, "", ExtraerError(ex.Message) ?? ex.Message);
+            return (false, "", ex.Message);
         }
     }
 
@@ -96,12 +109,11 @@ public class AuthService
         // Vía Edge Function con service_role: crea la cuenta YA CONFIRMADA (no envía correo → sin límite de
         // intentos) y queda INACTIVA hasta que un Admin/Super la autorice. Se llama con la anon key (usuario
         // no logueado). Devuelve null si todo bien.
-        // Sin token: la llamada anónima manda la anon key SOLO en el header apikey (si va también en
-        // Authorization, el gateway responde "Conflicting API keys").
+        // Anónimo: la anon key va SOLO en apikey, sin Authorization (evita "Conflicting API keys").
         var (ok, _, error) = await LlamarFuncion("registrar-distribuidor", new Dictionary<string, object>
         {
             ["nombre"] = nombre, ["email"] = email, ["password"] = password,
-        });
+        }, conAuth: false);
         if (ok) return null;
 
         var e = (error ?? "").ToLowerInvariant();
