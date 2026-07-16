@@ -260,6 +260,8 @@ else
                 <tr><td>Subtotal público</td><td class="num">@Money(t.Subtotal)</td></tr>
                 <tr><td>Descuentos</td><td class="num desc">-@Money(t.DescuentoMonto)</td></tr>
                 <tr><td>Subtotal con descuento</td><td class="num">@Money(t.SubtotalDesc)</td></tr>
+                @if (t.GastosIndirectos > 0) { <tr><td>Gastos indirectos</td><td class="num">@Money(t.GastosIndirectos)</td></tr> }
+                @if (t.GastosEnvio > 0) { <tr><td>Gastos de envío</td><td class="num">@Money(t.GastosEnvio)</td></tr> }
                 <tr><td>IVA (@cot.IvaPct.ToString("0.#")%)</td><td class="num">@Money(t.IvaMonto)</td></tr>
                 <tr class="gran"><td>GRAN TOTAL</td><td class="num">@Money(t.GranTotal)</td></tr>
                 <tr><td>Anticipo (@cot.AnticipoPct.ToString("0.#")%)</td><td class="num">@Money(t.Anticipo)</td></tr>
