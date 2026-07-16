@@ -5,7 +5,14 @@
 --   Costa Rica/LATAM (region 'LATAM') = Lista B: Ámbar Wood, Nogal Grafito, Inox Satín, Gris...
 -- Sirve para llenar el color de locker (locker_frente) que salía vacío. Correr UNA vez.
 -- No afecta cotizaciones (la línea guarda el color por nombre).
+-- Incluye los nombres de Costa Rica en locker (Inox Satín, Gris, Ámbar Wood, Nogal Grafito; interior = Gris).
+-- Este archivo es el ÚNICO que necesitas para dejar los colores bien (reemplaza a 21 y 23).
 -- =====================================================================
+-- Asegura columnas por si la base viene de una versión vieja (evita "column region does not exist")
+alter table public.color add column if not exists region text not null default 'MXN';
+alter table public.color add column if not exists tiempo_especial boolean not null default false;
+alter table public.color add column if not exists activo boolean not null default true;
+
 delete from public.color;
 
 insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
