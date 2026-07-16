@@ -1,21 +1,24 @@
 -- =====================================================================
--- Cotizador Thin Laminates — 19 · Colores por región (DETERMINISTA)
--- Deja la asignación correcta sin importar el estado actual:
---   Fabricación México (region 'MXN')      -> Lista B (Ámbar Wood, Nogal Grafito, Inox Satín, Gris...)
---   Fabricación Costa Rica (region 'LATAM')-> Lista A (Walnut, Skyline, Calcutta, White Marble, Alúmina...)
--- Reemplaza a 18_fix_color_region.sql. Correr UNA vez. (No afecta cotizaciones: la línea guarda el color por nombre.)
+-- Cotizador Thin Laminates — 20 · Colores completos y CORRECTOS
+-- Reinserta TODOS los colores con el mapeo ORIGINAL (tal como los pasó Dayanna):
+--   México (region 'MXN')        = Lista A: Gris Metalizado, Alúmina, Walnut Heights, Skyline Walnut, Calcutta, White Marble...
+--   Costa Rica/LATAM (region 'LATAM') = Lista B: Ámbar Wood, Nogal Grafito, Inox Satín, Gris...
+-- Sirve para llenar el color de locker (locker_frente) que salía vacío. Correr UNA vez.
+-- No afecta cotizaciones (la línea guarda el color por nombre).
 -- =====================================================================
 delete from public.color;
 
 insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
-  -- ===== MÉXICO (region 'MXN') = Lista B =====
-  ('Blanco','G1','cubierta_int','MXN',false),
-  ('Gris','G1','cubierta_int','MXN',false),
-  ('Grafito Nocturno','G1','cubierta_int','MXN',false),
+  -- ===== MÉXICO (region 'MXN') = Lista A =====
   ('Negro','G1','cubierta_int','MXN',false),
-  ('Ámbar Wood','G1','cubierta_int','MXN',false),
-  ('Nogal Grafito','G1','cubierta_int','MXN',false),
-  ('Inox Satín','G1','cubierta_int','MXN',false),
+  ('Gris Metalizado','G1','cubierta_int','MXN',false),
+  ('Blanco','G1','cubierta_int','MXN',false),
+  ('Alúmina','G1','cubierta_int','MXN',false),
+  ('Grafito Nocturno','G1','cubierta_int','MXN',false),
+  ('Walnut Heights','G1','cubierta_int','MXN',false),
+  ('Skyline Walnut','G1','cubierta_int','MXN',false),
+  ('Calcutta Marble','G2','cubierta_int','MXN',false),
+  ('White Marble','G3','cubierta_int','MXN',false),
   ('Roble Lineal','G4','cubierta_ext','MXN',false),
   ('Italian Walnut','G4','cubierta_ext','MXN',false),
   ('Atenas','G4','cubierta_ext','MXN',false),
@@ -31,25 +34,21 @@ insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
   ('Walnut Heights','G1','locker_frente','MXN',false),
   ('Skyline Walnut','G1','locker_frente','MXN',false),
   ('Alúmina','INT','locker_interior','MXN',false),
-  ('Negro','INT','locker_interior','MXN',false),
-  ('Blanco','INT','locker_interior','MXN',false),
-  ('Blanco','G1','banca','MXN',false),
-  ('Gris','G1','banca','MXN',false),
-  ('Grafito Nocturno','G1','banca','MXN',false),
   ('Negro','G1','banca','MXN',false),
-  ('Ámbar Wood','G1','banca','MXN',false),
-  ('Nogal Grafito','G1','banca','MXN',false),
-  ('Inox Satín','G1','banca','MXN',false),
-  -- ===== COSTA RICA / LATAM (region 'LATAM') = Lista A =====
-  ('Negro','G1','cubierta_int','LATAM',false),
-  ('Gris Metalizado','G1','cubierta_int','LATAM',false),
+  ('Gris Metalizado','G1','banca','MXN',false),
+  ('Blanco','G1','banca','MXN',false),
+  ('Alúmina','G1','banca','MXN',false),
+  ('Grafito Nocturno','G1','banca','MXN',false),
+  ('Walnut Heights','G1','banca','MXN',false),
+  ('Skyline Walnut','G1','banca','MXN',false),
+  -- ===== COSTA RICA / LATAM (region 'LATAM') = Lista B =====
   ('Blanco','G1','cubierta_int','LATAM',false),
-  ('Alúmina','G1','cubierta_int','LATAM',false),
+  ('Gris','G1','cubierta_int','LATAM',false),
   ('Grafito Nocturno','G1','cubierta_int','LATAM',false),
-  ('Walnut Heights','G1','cubierta_int','LATAM',false),
-  ('Skyline Walnut','G1','cubierta_int','LATAM',false),
-  ('Calcutta Marble','G2','cubierta_int','LATAM',false),
-  ('White Marble','G3','cubierta_int','LATAM',false),
+  ('Negro','G1','cubierta_int','LATAM',false),
+  ('Ámbar Wood','G1','cubierta_int','LATAM',false),
+  ('Nogal Grafito','G1','cubierta_int','LATAM',false),
+  ('Inox Satín','G1','cubierta_int','LATAM',false),
   ('Roble Lineal','G4','cubierta_ext','LATAM',false),
   ('Italian Walnut','G4','cubierta_ext','LATAM',false),
   ('Atenas','G4','cubierta_ext','LATAM',false),
@@ -60,15 +59,17 @@ insert into public.color (nombre,grupo,ambito,region,tiempo_especial) values
   ('Negro','G1','locker_frente','LATAM',false),
   ('Gris Metalizado','G1','locker_frente','LATAM',false),
   ('Blanco','G1','locker_frente','LATAM',false),
-  ('Alúmina','G1','locker_frente','LATAM',false),
+  ('Alumina','G1','locker_frente','LATAM',false),
   ('Grafito Nocturno','G1','locker_frente','LATAM',false),
   ('Walnut Heights','G1','locker_frente','LATAM',false),
   ('Skyline Walnut','G1','locker_frente','LATAM',false),
-  ('Alúmina','INT','locker_interior','LATAM',false),
-  ('Negro','G1','banca','LATAM',false),
-  ('Gris Metalizado','G1','banca','LATAM',false),
+  ('Alumina','INT','locker_interior','LATAM',false),
+  ('Negro','INT','locker_interior','LATAM',false),
+  ('Blanco','INT','locker_interior','LATAM',false),
   ('Blanco','G1','banca','LATAM',false),
-  ('Alúmina','G1','banca','LATAM',false),
+  ('Gris','G1','banca','LATAM',false),
   ('Grafito Nocturno','G1','banca','LATAM',false),
-  ('Walnut Heights','G1','banca','LATAM',false),
-  ('Skyline Walnut','G1','banca','LATAM',false);
+  ('Negro','G1','banca','LATAM',false),
+  ('Ámbar Wood','G1','banca','LATAM',false),
+  ('Nogal Grafito','G1','banca','LATAM',false),
+  ('Inox Satín','G1','banca','LATAM',false);
