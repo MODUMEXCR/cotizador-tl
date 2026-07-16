@@ -8,7 +8,11 @@
 -- Incluye los nombres de Costa Rica en locker (Inox Satín, Gris, Ámbar Wood, Nogal Grafito; interior = Gris).
 -- Este archivo es el ÚNICO que necesitas para dejar los colores bien (reemplaza a 21 y 23).
 -- =====================================================================
--- Asegura columnas por si la base viene de una versión vieja (evita "column region does not exist")
+-- Asegura TODAS las columnas por si la base viene de una versión vieja
+-- (evita "column region/grupo/ambito ... does not exist")
+alter table public.color add column if not exists nombre text;
+alter table public.color add column if not exists grupo text;
+alter table public.color add column if not exists ambito text;
 alter table public.color add column if not exists region text not null default 'MXN';
 alter table public.color add column if not exists tiempo_especial boolean not null default false;
 alter table public.color add column if not exists activo boolean not null default true;
