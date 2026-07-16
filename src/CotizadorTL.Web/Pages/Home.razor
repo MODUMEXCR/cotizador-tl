@@ -52,7 +52,7 @@ else
                 <label>Cotizado por<input value="@cot.CotizadoPor" disabled /></label>
                 @if (Auth.PuedeVerTodo)
                 {
-                    <label>Lugar de fabricación (define la paleta de colores)
+                    <label>Lugar de fabricación
                         <select @bind="fabricacion" @bind:after="OnFabricacionChanged">
                             <option value="México">México (colores MXN)</option>
                             <option value="Costa Rica">Costa Rica (colores LATAM)</option>
