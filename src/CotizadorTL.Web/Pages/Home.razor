@@ -75,7 +75,6 @@ else
                 <label>Anticipo %<input type="number" value="60" disabled /></label>
             </div>
             <label>Comentarios o instrucciones especiales<textarea @bind="cot.Comentarios" rows="2"></textarea></label>
-            <label>Datos bancarios del distribuidor (salen en el PDF)<textarea @bind="cot.DatosBancarios" rows="3" placeholder="Nombre&#10;Banco&#10;Cuenta&#10;CLABE"></textarea></label>
         </section>
 
         <!-- RENGLONES (configurador) -->
@@ -252,7 +251,13 @@ else
             @if (lineas.Count == 0) { <p class="muted">Sin renglones. Agrega el primero.</p> }
         </section>
 
-        <!-- TOTALES -->
+        <!-- CIERRE: datos bancarios (izquierda) + totales (derecha) -->
+        <div class="cot-cierre">
+        <section class="card datos-banco">
+            <h2>Datos bancarios del distribuidor</h2>
+            <p class="muted small">Texto libre; sale en el PDF.</p>
+            <textarea @bind="cot.DatosBancarios" rows="6" placeholder="Nombre, Banco, Cuenta, CLABE"></textarea>
+        </section>
         <section class="card totales">
             <h2>Totales <span class="muted" style="font-size:.8rem">(@MonedaActual@(RegionActual=="LATAM" ? $" · ÷{Catalogo.DivisorUsd:0.##}" : ""))</span></h2>
             @{ var t = MotorPrecios.Calcular(ArmarCotizacion()); }
@@ -272,6 +277,7 @@ else
             <button class="btn-pdf" @onclick="() => DescargarPdf(false)">Descargar PDF Cliente</button>
             <p class="muted small">El PDF Distribuidor lleva descuentos. El PDF Cliente va a precio público.</p>
         </section>
+        </div>
     </div>
 }
 

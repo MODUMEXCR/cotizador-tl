@@ -102,6 +102,11 @@ td.num, .num { text-align: right; white-space: nowrap; font-variant-numeric: tab
 .muted { color: var(--tl-gris-txt); } .center { text-align: center; } .small { font-size: .85rem; }
 
 .totales { max-width: 420px; align-self: flex-end; }
+/* Cierre: datos bancarios (izquierda) + totales (derecha) en una fila */
+.cot-cierre { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+.cot-cierre .datos-banco { flex: 1 1 300px; }
+.cot-cierre .datos-banco textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 8rem; }
+.cot-cierre .totales { flex: 0 0 420px; max-width: 420px; align-self: flex-start; margin-left: auto; }
 table.tot { width: 100%; border-collapse: collapse; }
 table.tot td { padding: .3rem .2rem; }
 table.tot .desc { color: #b03030; }
