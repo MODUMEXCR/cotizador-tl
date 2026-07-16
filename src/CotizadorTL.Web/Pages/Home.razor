@@ -69,10 +69,13 @@ else
             </div>
             <div class="campos">
                 <label>Descuento adicional % (admin)<input type="number" step="0.01" @bind="cot.DescuentoPct" disabled="@(!Auth.EsAdmin)" /></label>
+                <label>Gastos indirectos<input type="number" step="0.01" @bind="cot.GastosIndirectos" @bind:after="StateHasChanged" /></label>
+                <label>Gastos de envío<input type="number" step="0.01" @bind="cot.GastosEnvio" @bind:after="StateHasChanged" /></label>
                 <label>IVA %<input type="number" step="0.01" @bind="cot.IvaPct" disabled="@(!Auth.EsAdmin)" /></label>
                 <label>Anticipo %<input type="number" value="60" disabled /></label>
             </div>
             <label>Comentarios o instrucciones especiales<textarea @bind="cot.Comentarios" rows="2"></textarea></label>
+            <label>Datos bancarios del distribuidor (salen en el PDF)<textarea @bind="cot.DatosBancarios" rows="3" placeholder="Nombre&#10;Banco&#10;Cuenta&#10;CLABE"></textarea></label>
         </section>
 
         <!-- RENGLONES (configurador) -->
@@ -335,6 +338,7 @@ else
             cot.Cliente = c.Cliente; cot.AtencionA = c.AtencionA; cot.Telefono = c.Telefono; cot.Ciudad = c.Ciudad;
             cot.CotizadoPor = c.CotizadoPor; cot.Comentarios = c.Comentarios;
             cot.DescuentoPct = c.DescuentoPct; cot.IvaPct = c.IvaPct; cot.AnticipoPct = c.AnticipoPct;
+            cot.GastosIndirectos = c.GastosIndirectos; cot.GastosEnvio = c.GastosEnvio; cot.DatosBancarios = c.DatosBancarios;
             vigencia = c.Vigencia; distribuidorId = c.DistribuidorId ?? 0; fabricacion = c.Fabricacion ?? "México";
             if (!string.IsNullOrWhiteSpace(c.Entrega)) entrega = c.Entrega!;
             if (!string.IsNullOrWhiteSpace(c.Moneda)) monedaSel = c.Moneda!;
@@ -644,6 +648,7 @@ else
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
                 AppJson = appJson, Fabricacion = fabricacion, Entrega = entrega,
+                GastosIndirectos = cot.GastosIndirectos, GastosEnvio = cot.GastosEnvio, DatosBancarios = cot.DatosBancarios,
             };
 
             // Siempre inserta: una edición se guarda como VARIANTE nueva (el original queda intacto).
@@ -699,6 +704,7 @@ else
         else
         {
             var sin = new Cotizacion { IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, DescuentoPct = 0m,
+                GastosIndirectos = cot.GastosIndirectos, GastosEnvio = cot.GastosEnvio,
                 Lineas = cot.Lineas.Select(l => new LineaCotizacion { Cantidad = l.Cantidad, PrecioUnitario = l.PrecioUnitario, AplicaDescuento = false }).ToList() };
             t = MotorPrecios.Calcular(sin);
         }
@@ -711,9 +717,11 @@ else
             atencionA = cot.AtencionA, telefono = cot.Telefono, ciudad = cot.Ciudad, cotizadoPor = cot.CotizadoPor,
             comentarios = cot.Comentarios, descuentoPct = cot.DescuentoPct.ToString("0.#"),
             ivaPct = cot.IvaPct.ToString("0.#"), anticipoPct = (double)cot.AnticipoPct,
+            datosBancarios = cot.DatosBancarios,
             moneda = MonedaActual, mostrarDescuento = conDescuento, tipoPdf = conDescuento ? "DISTRIBUIDOR" : "CLIENTE",
             incluyeInstalacion = hayInstalacion, incluyeFlete = hayFlete,
             totales = new { subtotal = (double)t.Subtotal, descuentoMonto = (double)t.DescuentoMonto, subtotalDesc = (double)t.SubtotalDesc,
+                gastosIndirectos = (double)t.GastosIndirectos, gastosEnvio = (double)t.GastosEnvio,
                 ivaMonto = (double)t.IvaMonto, granTotal = (double)t.GranTotal, anticipo = (double)t.Anticipo, saldo = (double)t.Saldo },
             lineas = lineas.Where(l => l.ProductoId is not null).Select(l => new
             {

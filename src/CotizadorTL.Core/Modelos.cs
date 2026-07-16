@@ -77,8 +77,14 @@ public sealed class Cotizacion
     public decimal TipoCambio { get; set; } = 1m;
     /// <summary>DESCUENTO DISTRIBUIDOR % (global).</summary>
     public decimal DescuentoPct { get; set; }
+    /// <summary>Gastos indirectos: monto que se suma ANTES del IVA (no recibe descuento).</summary>
+    public decimal GastosIndirectos { get; set; }
+    /// <summary>Gastos de envío: monto que se suma ANTES del IVA (no recibe descuento).</summary>
+    public decimal GastosEnvio { get; set; }
     public decimal IvaPct { get; set; } = 16m;
     public decimal AnticipoPct { get; set; } = 60m;
+    /// <summary>Datos bancarios del distribuidor (texto libre, se muestra en el PDF).</summary>
+    public string? DatosBancarios { get; set; }
     public List<LineaCotizacion> Lineas { get; set; } = new();
 }
 
@@ -90,4 +96,6 @@ public sealed record Totales(
     decimal IvaMonto,          // IVA
     decimal GranTotal,         // GRAN TOTAL
     decimal Anticipo,          // ANTICIPO %
-    decimal Saldo);            // SALDO
+    decimal Saldo,             // SALDO
+    decimal GastosIndirectos = 0m,  // se suman antes del IVA
+    decimal GastosEnvio = 0m);

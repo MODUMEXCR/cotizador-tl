@@ -100,6 +100,23 @@ public class MotorPreciosTests
         Assert.Equal(1440m, t.SubtotalDesc);
     }
 
+    // ---- Gastos indirectos y de envío se suman ANTES del IVA ----
+    [Fact]
+    public void Gastos_SeSumanAntesDelIva()
+    {
+        var c = new Cotizacion { IvaPct = 16m, GastosIndirectos = 100m, GastosEnvio = 50m };
+        c.Lineas.Add(Linea(1, 1000m));   // subtotal con descuento = 1000
+
+        var t = MotorPrecios.Calcular(c);
+
+        // base gravable = 1000 + 100 + 50 = 1150 ; IVA 16% = 184 ; gran total = 1334
+        Assert.Equal(1000m, t.SubtotalDesc);
+        Assert.Equal(100m,  t.GastosIndirectos);
+        Assert.Equal(50m,   t.GastosEnvio);
+        Assert.Equal(184m,  t.IvaMonto);
+        Assert.Equal(1334m, t.GranTotal);
+    }
+
     // ---- Producto en USD se convierte a MXN con el tipo de cambio ----
     [Fact]
     public void Producto_USD_SeConvierteAMxn()

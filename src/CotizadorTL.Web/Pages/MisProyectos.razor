@@ -237,11 +237,13 @@ else
                 cliente = c.Cliente, atencionA = c.AtencionA, telefono = c.Telefono,
                 ciudad = c.Ciudad, cotizadoPor = c.CotizadoPor, comentarios = c.Comentarios,
                 descuentoPct = c.DescuentoPct.ToString("0.#"), ivaPct = c.IvaPct.ToString("0.#"),
-                anticipoPct = (double)c.AnticipoPct,
+                anticipoPct = (double)c.AnticipoPct, datosBancarios = c.DatosBancarios,
                 totales = new
                 {
                     subtotal = (double)c.Subtotal, descuentoMonto = (double)c.DescuentoMonto,
-                    subtotalDesc = (double)c.SubtotalDesc, ivaMonto = (double)c.IvaMonto,
+                    subtotalDesc = (double)c.SubtotalDesc,
+                    gastosIndirectos = (double)c.GastosIndirectos, gastosEnvio = (double)c.GastosEnvio,
+                    ivaMonto = (double)c.IvaMonto,
                     granTotal = (double)c.GranTotal, anticipo = (double)c.AnticipoMonto, saldo = (double)c.SaldoMonto,
                 },
                 lineas = ls.Select(l => new

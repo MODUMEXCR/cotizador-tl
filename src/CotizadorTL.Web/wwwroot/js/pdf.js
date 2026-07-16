@@ -141,6 +141,8 @@
         rowT("DESCUENTO DISTRIBUIDOR", tot.descuentoMonto, { color: ROJO });
         rowT("SUBTOTAL CON DESCUENTO", tot.subtotalDesc);
       }
+      if (Number(tot.gastosIndirectos) > 0) rowT("GASTOS INDIRECTOS", tot.gastosIndirectos);
+      if (Number(tot.gastosEnvio) > 0) rowT("GASTOS DE ENVÍO", tot.gastosEnvio);
       rowT("IVA " + txt(d.ivaPct) + "%", tot.ivaMonto, { color: ROJO });
       doc.setDrawColor(...OSCURO); doc.line(x0, fy - 10, W - M, fy - 10);
       rowT("GRAN TOTAL", tot.granTotal, { bold: true });
@@ -162,6 +164,20 @@
         headStyles: { fillColor: [235, 235, 235], textColor: OSCURO, halign: "center", fontStyle: "bold" },
         columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "right" } },
       });
+
+      // ---------- Datos bancarios (izquierda, con verde de marca) ----------
+      if (d.datosBancarios && String(d.datosBancarios).trim()) {
+        const filasBanco = String(d.datosBancarios).split(/\r?\n/).map((x) => x.trim()).filter((x) => x).map((x) => [x]);
+        doc.autoTable({
+          startY: doc.lastAutoTable.finalY + 10,
+          margin: { left: M },
+          tableWidth: 240,
+          head: [["DATOS BANCARIOS"]],
+          body: filasBanco,
+          styles: { fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
+          headStyles: { fillColor: VERDE, textColor: [255, 255, 255], halign: "center", fontStyle: "bold" },
+        });
+      }
 
       // ---------- Comentarios ----------
       let by = Math.max(fy, doc.lastAutoTable.finalY) + 18;

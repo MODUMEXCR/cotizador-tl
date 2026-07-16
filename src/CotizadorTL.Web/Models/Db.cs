@@ -120,6 +120,9 @@ public class PCotizacion : BaseModel
     [Column("app_json")]       public string? AppJson { get; set; }
     [Column("fabricacion")]    public string? Fabricacion { get; set; }
     [Column("entrega")]        public string? Entrega { get; set; }
+    [Column("gastos_indirectos")] public decimal GastosIndirectos { get; set; }
+    [Column("gastos_envio")]      public decimal GastosEnvio { get; set; }
+    [Column("datos_bancarios")]   public string? DatosBancarios { get; set; }
 }
 
 [Table("cotizacion_linea")]

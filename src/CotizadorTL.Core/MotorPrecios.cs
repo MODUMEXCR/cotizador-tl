@@ -62,8 +62,10 @@ public static class MotorPrecios
             subtotalDesc += NetoLinea(l, c.DescuentoPct);
         }
         decimal descuentoMonto = subtotal - subtotalDesc;
-        decimal ivaMonto  = subtotalDesc * (c.IvaPct / 100m);
-        decimal granTotal = subtotalDesc + ivaMonto;
+        // Gastos indirectos y de envío se suman ANTES del IVA (no reciben descuento).
+        decimal baseGravable = subtotalDesc + c.GastosIndirectos + c.GastosEnvio;
+        decimal ivaMonto  = baseGravable * (c.IvaPct / 100m);
+        decimal granTotal = baseGravable + ivaMonto;
         decimal anticipo  = granTotal * (c.AnticipoPct / 100m);
         decimal saldo     = granTotal - anticipo;
 
@@ -74,6 +76,8 @@ public static class MotorPrecios
             IvaMonto:       R(ivaMonto),
             GranTotal:      R(granTotal),
             Anticipo:       R(anticipo),
-            Saldo:          R(saldo));
+            Saldo:          R(saldo),
+            GastosIndirectos: R(c.GastosIndirectos),
+            GastosEnvio:      R(c.GastosEnvio));
     }
 }
