@@ -52,10 +52,10 @@ else
                 <label>Cotizado por<input value="@cot.CotizadoPor" disabled /></label>
                 @if (Auth.PuedeVerTodo)
                 {
-                    <label>Lugar de fabricación
-                        <select @bind="fabricacion">
-                            <option value="México">México</option>
-                            <option value="Costa Rica">Costa Rica</option>
+                    <label>Lugar de fabricación (define la paleta de colores)
+                        <select @bind="fabricacion" @bind:after="OnFabricacionChanged">
+                            <option value="México">México (colores MXN)</option>
+                            <option value="Costa Rica">Costa Rica (colores LATAM)</option>
                         </select>
                     </label>
                 }
@@ -284,7 +284,8 @@ else
         "Costa Rica" => (1m / Divisor) * (Catalogo.MultiplicadorCrc <= 0 ? 490m : Catalogo.MultiplicadorCrc),
         _ => 1m
     };
-    private string ColorRegion => RegionActual == "México" ? "MXN" : "LATAM";
+    // Los colores dependen del LUGAR DE FABRICACIÓN: México → paleta MXN; Costa Rica → paleta LATAM.
+    private string ColorRegion => fabricacion == "México" ? "MXN" : "LATAM";
 
     [Parameter] public long? CotId { get; set; }
     private long? editandoId;
@@ -461,6 +462,13 @@ else
     private void OnColorChanged(LineaUI l) { ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
     private void OnTipoChanged(LineaUI l) { l.ColorNombre = ""; ClampG4(l); RegenerarDescripcion(l); StateHasChanged(); }
 
+    // Al cambiar el lugar de fabricación cambia la paleta de colores: se limpian los colores elegidos.
+    private void OnFabricacionChanged()
+    {
+        foreach (var l in lineas) { l.ColorNombre = ""; l.ColorInterior = ""; RegenerarDescripcion(l); }
+        StateHasChanged();
+    }
+
     // Cubiertas REDONDAS de exterior (grupo G4): el diámetro máximo es 120 cm. Se limita y se avisa.
     private const decimal MaxG4Cm = 120m;
     private bool EsRedondaG4(LineaUI l)
@@ -483,6 +491,7 @@ else
         {
             cot.DescuentoPct = 0m;   // "descuento adicional" global (solo admin); base va por familia en cada renglón
             cot.IvaPct = RegionActual switch { "México" => 16m, "Costa Rica" => 13m, _ => 0m }; // default por región (editable)
+            fabricacion = RegionActual == "México" ? "México" : "Costa Rica"; // default: colores según fabricación
             if (string.IsNullOrWhiteSpace(cot.RazonSocial)) cot.RazonSocial = d.Nombre;
             // Aplica el descuento por familia a cada renglón; y el cambio de región invalida colores
             foreach (var l in lineas)
