@@ -58,6 +58,13 @@ else
                             <option value="Costa Rica">Costa Rica (colores LATAM)</option>
                         </select>
                     </label>
+                    <label>Moneda
+                        <select @bind="monedaSel" @bind:after="OnMonedaChanged">
+                            <option value="MXN">Pesos MXN</option>
+                            <option value="USD">Dólares LATAM (USD)</option>
+                            <option value="CRC">Colones CRC</option>
+                        </select>
+                    </label>
                 }
             </div>
             <div class="campos">
@@ -271,19 +278,22 @@ else
     private string entrega = "1 semana";
     private long distribuidorId;
     private string fabricacion = "México";
+    private string monedaSel = "MXN";   // MXN | USD | CRC — la elige Admin/Vendedor a mano (indep. del distribuidor)
     private readonly List<LineaUI> lineas = new();
 
     private PDistribuidor? DistribActual => Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == distribuidorId);
     private string nombreDistribuidorActual => DistribActual?.Nombre ?? "(sin asignar)";
     private string RegionActual => DistribActual?.Region ?? "México";
-    private string MonedaActual => RegionActual switch { "LATAM" => "USD", "Costa Rica" => "CRC", _ => "MXN" };
+    private string MonedaActual => monedaSel;
     private decimal Divisor => Catalogo.DivisorUsd <= 0 ? 17m : Catalogo.DivisorUsd;
-    private decimal Factor => RegionActual switch
+    private decimal Factor => monedaSel switch
     {
-        "LATAM" => 1m / Divisor,
-        "Costa Rica" => (1m / Divisor) * (Catalogo.MultiplicadorCrc <= 0 ? 490m : Catalogo.MultiplicadorCrc),
-        _ => 1m
+        "USD" => 1m / Divisor,
+        "CRC" => (1m / Divisor) * (Catalogo.MultiplicadorCrc <= 0 ? 490m : Catalogo.MultiplicadorCrc),
+        _ => 1m   // MXN
     };
+    private static string MonedaDeRegion(string region) => region switch { "LATAM" => "USD", "Costa Rica" => "CRC", _ => "MXN" };
+    private static decimal IvaDeMoneda(string m) => m switch { "MXN" => 16m, "CRC" => 13m, _ => 0m };
     // Los colores dependen del LUGAR DE FABRICACIÓN: México → paleta MXN; Costa Rica → paleta LATAM.
     private string ColorRegion => fabricacion == "México" ? "MXN" : "LATAM";
 
@@ -296,7 +306,7 @@ else
     {
         var folioPrev = cot.Folio; var lineasPrev = cot.Lineas;
         cot.Folio = ""; cot.Lineas = new();
-        var est = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
+        var est = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, MonedaSel = monedaSel, Header = cot, Lineas = lineas };
         var json = System.Text.Json.JsonSerializer.Serialize(est);
         cot.Folio = folioPrev; cot.Lineas = lineasPrev;
         return json;
@@ -327,6 +337,7 @@ else
             cot.DescuentoPct = c.DescuentoPct; cot.IvaPct = c.IvaPct; cot.AnticipoPct = c.AnticipoPct;
             vigencia = c.Vigencia; distribuidorId = c.DistribuidorId ?? 0; fabricacion = c.Fabricacion ?? "México";
             if (!string.IsNullOrWhiteSpace(c.Entrega)) entrega = c.Entrega!;
+            if (!string.IsNullOrWhiteSpace(c.Moneda)) monedaSel = c.Moneda!;
 
             if (!string.IsNullOrWhiteSpace(c.AppJson))
             {
@@ -335,6 +346,7 @@ else
                 {
                     distribuidorId = est.DistribuidorId; vigencia = est.Vigencia; fabricacion = est.Fabricacion ?? "México";
                     if (!string.IsNullOrWhiteSpace(est.Entrega)) entrega = est.Entrega!;
+                    if (!string.IsNullOrWhiteSpace(est.MonedaSel)) monedaSel = est.MonedaSel!;
                     cot = est.Header ?? cot; cot.Lineas = new();
                     cot.Folio = c.Folio;   // el folio autoritativo es el de la fila (el del estado va vacío)
                     lineas.Clear(); lineas.AddRange(est.Lineas);
@@ -369,6 +381,7 @@ else
         public DateTime? Vigencia { get; set; }
         public string? Entrega { get; set; }
         public string Fabricacion { get; set; } = "México";
+        public string? MonedaSel { get; set; }
         public Cotizacion Header { get; set; } = new();
         public List<LineaUI> Lineas { get; set; } = new();
     }
@@ -469,6 +482,9 @@ else
         StateHasChanged();
     }
 
+    // Admin/Vendedor cambia la moneda a mano: ajusta el IVA default (editable) y recalcula.
+    private void OnMonedaChanged() { cot.IvaPct = IvaDeMoneda(monedaSel); StateHasChanged(); }
+
     // Cubiertas REDONDAS de exterior (grupo G4): el diámetro máximo es 120 cm. Se limita y se avisa.
     private const decimal MaxG4Cm = 120m;
     private bool EsRedondaG4(LineaUI l)
@@ -490,7 +506,8 @@ else
         if (d is not null)
         {
             cot.DescuentoPct = 0m;   // "descuento adicional" global (solo admin); base va por familia en cada renglón
-            cot.IvaPct = RegionActual switch { "México" => 16m, "Costa Rica" => 13m, _ => 0m }; // default por región (editable)
+            if (!Auth.PuedeVerTodo) monedaSel = MonedaDeRegion(RegionActual); // distribuidor: moneda fija por su región
+            cot.IvaPct = IvaDeMoneda(monedaSel);   // IVA default según la moneda (editable)
             fabricacion = RegionActual == "México" ? "México" : "Costa Rica"; // default: colores según fabricación
             if (string.IsNullOrWhiteSpace(cot.RazonSocial)) cot.RazonSocial = d.Nombre;
             // Aplica el descuento por familia a cada renglón; y el cambio de región invalida colores
@@ -586,7 +603,7 @@ else
 
             // Estado completo del configurador (para reabrir/editar tal cual)
             cot.Lineas = new();
-            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, Header = cot, Lineas = lineas };
+            var estado = new EstadoCot { DistribuidorId = distribuidorId, Vigencia = vigencia, Entrega = entrega, Fabricacion = fabricacion, MonedaSel = monedaSel, Header = cot, Lineas = lineas };
             var appJson = System.Text.Json.JsonSerializer.Serialize(estado);
 
             bool eraEdicion = editandoId is not null;
@@ -622,7 +639,7 @@ else
                 Cliente = cot.Cliente, AtencionA = cot.AtencionA, Telefono = cot.Telefono, Ciudad = cot.Ciudad,
                 CotizadoPor = cot.CotizadoPor, DistribuidorId = distribuidorId, CreadoPor = Auth.Perfil?.Id,
                 Estado = "borrador", Moneda = MonedaActual,
-                TipoCambio = RegionActual == "LATAM" ? Catalogo.DivisorUsd : 1m, DescuentoPct = cot.DescuentoPct,
+                TipoCambio = monedaSel == "MXN" ? 1m : Catalogo.DivisorUsd, DescuentoPct = cot.DescuentoPct,
                 IvaPct = cot.IvaPct, AnticipoPct = cot.AnticipoPct, Comentarios = cot.Comentarios,
                 Subtotal = t.Subtotal, DescuentoMonto = t.DescuentoMonto, SubtotalDesc = t.SubtotalDesc,
                 IvaMonto = t.IvaMonto, GranTotal = t.GranTotal, AnticipoMonto = t.Anticipo, SaldoMonto = t.Saldo,
