@@ -143,7 +143,14 @@ table.proyectos td { padding: .5rem .5rem; border-bottom: 1px solid #f0f1f3; }
 .kpi-val { font-size: 1.35rem; font-weight: 700; color: var(--tl-oscuro); font-variant-numeric: tabular-nums; }
 .kpi-sub { font-size: .78rem; color: #999; }
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-.paneles-fab { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; margin-bottom: 1rem; align-items: start; }
+.paneles-fab { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1rem; align-items: start; }
+.paneles-fab > .card { min-width: 0; overflow: hidden; }
+/* KPIs compactos dentro de cada panel para que quepan México y Costa Rica lado a lado */
+.paneles-fab .kpis { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: .5rem; margin: .4rem 0; }
+.paneles-fab .kpi { padding: .5rem .6rem; }
+.paneles-fab .kpi-val { font-size: .98rem; overflow-wrap: anywhere; }
+.paneles-fab .kpi-lbl { font-size: .66rem; }
+.paneles-fab .kpi-sub { font-size: .68rem; }
 .charts .sub, .card .sub { font-size: 1rem; margin: 0 0 .6rem; color: var(--tl-oscuro); }
 table.rank { width: 100%; border-collapse: collapse; font-size: .9rem; }
 table.rank td { padding: .25rem .3rem; vertical-align: middle; }
