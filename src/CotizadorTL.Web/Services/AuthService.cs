@@ -168,6 +168,29 @@ public class AuthService
         return error ?? "No se pudo confirmar el correo.";
     }
 
+    /// <summary>Super Admin: actualiza nombre/correo/contraseña de un usuario (correo/contraseña vía Edge Function
+    /// con service_role). password/email vacíos = no se cambian. Devuelve null si todo bien.</summary>
+    public async Task<string?> ActualizarUsuario(string userId, string nombre, string? email, string? password)
+    {
+        if (!EsSuper) return "Solo un Super Admin puede editar usuarios.";
+        var body = new Dictionary<string, object> { ["action"] = "actualizar", ["userId"] = userId, ["nombre"] = nombre };
+        if (!string.IsNullOrWhiteSpace(email)) body["email"] = email!.Trim();
+        if (!string.IsNullOrWhiteSpace(password)) body["password"] = password!;
+        var (ok, _, error) = await LlamarFuncion("admin-usuario", body);
+        return ok ? null : (error ?? "No se pudo actualizar el usuario.");
+    }
+
+    /// <summary>Super Admin: elimina la cuenta por completo (login incluido) vía Edge Function. Devuelve null si OK.</summary>
+    public async Task<string?> EliminarUsuario(string userId)
+    {
+        if (!EsSuper) return "Solo un Super Admin puede eliminar usuarios.";
+        var (ok, _, error) = await LlamarFuncion("admin-usuario", new Dictionary<string, object>
+        {
+            ["action"] = "eliminar", ["userId"] = userId,
+        });
+        return ok ? null : (error ?? "No se pudo eliminar el usuario.");
+    }
+
     private static string? ExtraerError(string body)
     {
         try

@@ -2,6 +2,7 @@
 @inject AuthService Auth
 @inject Supabase.Client Supa
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <PageTitle>Usuarios</PageTitle>
 
@@ -60,8 +61,27 @@ else
                                 </select>
                             </td>
                             <td><input type="checkbox" @bind="u.Activo" /></td>
-                            <td><button class="btn-mini xls" @onclick="() => Guardar(u)">Guardar</button></td>
+                            <td class="acciones">
+                                <button class="btn-mini xls" @onclick="() => Guardar(u)">Guardar</button>
+                                <button class="btn-mini" style="background:var(--tl-verde-h)" @onclick="() => AbrirEditar(u)">Editar</button>
+                            </td>
                         </tr>
+                        @if (editId == u.Id)
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    <div class="filtros" style="background:var(--tl-gris);padding:.7rem;border-radius:8px">
+                                        <label>Nombre<input @bind="eNombre" /></label>
+                                        <label>Correo<input type="email" @bind="eEmail" /></label>
+                                        <label>Nueva contraseña<input type="password" @bind="ePass" placeholder="vacío = no cambiar" /></label>
+                                        <button class="btn-add" disabled="@guardandoEdit" @onclick="() => GuardarEdicion(u)">@(guardandoEdit ? "Guardando…" : "Guardar cambios")</button>
+                                        <button class="btn-add" style="background:#c0392b" disabled="@guardandoEdit" @onclick="() => Eliminar(u)">Eliminar</button>
+                                        <button class="btn-pdf" style="width:auto" @onclick="CancelarEdicion">Cancelar</button>
+                                    </div>
+                                    @if (msgEdit is not null) { <div class="aviso @(okEdit ? "ok" : "err")">@msgEdit</div> }
+                                </td>
+                            </tr>
+                        }
                     }
                     @if (usuarios.Count == 0)
                     { <tr><td colspan="5" class="muted center">Sin administradores.</td></tr> }
@@ -80,6 +100,11 @@ else
     // Alta de usuario
     private string nNombre = "", nEmail = "", nPass = "", nRol = "Administrador";
     private bool creando; private string? msgCrear; private bool okCrear;
+
+    // Edición de usuario (nombre/correo/contraseña/eliminar)
+    private string? editId;
+    private string eNombre = "", eEmail = "", ePass = "";
+    private bool guardandoEdit; private string? msgEdit; private bool okEdit;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,6 +151,48 @@ else
             if (u.Rol == "Distribuidor") usuarios.Remove(u); // ya no es administrativo
         }
         catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
+    }
+
+    private void AbrirEditar(UsuarioVM u)
+    {
+        editId = u.Id; eNombre = u.Nombre; eEmail = u.Email ?? ""; ePass = ""; msgEdit = null;
+    }
+    private void CancelarEdicion() { editId = null; msgEdit = null; }
+
+    private async Task GuardarEdicion(UsuarioVM u)
+    {
+        msgEdit = null;
+        if (string.IsNullOrWhiteSpace(eNombre)) { okEdit = false; msgEdit = "El nombre es obligatorio."; return; }
+        if (!string.IsNullOrWhiteSpace(ePass) && ePass.Length < 6) { okEdit = false; msgEdit = "La contraseña debe tener al menos 6 caracteres."; return; }
+        guardandoEdit = true;
+        try
+        {
+            bool cambioCorreo = !string.Equals((eEmail ?? "").Trim(), u.Email ?? "", StringComparison.OrdinalIgnoreCase);
+            var err = await Auth.ActualizarUsuario(u.Id, eNombre.Trim(),
+                cambioCorreo ? eEmail.Trim() : null,
+                string.IsNullOrWhiteSpace(ePass) ? null : ePass);
+            if (err is not null) { okEdit = false; msgEdit = err; return; }
+            u.Nombre = eNombre.Trim(); if (cambioCorreo) u.Email = eEmail.Trim();
+            ePass = ""; okEdit = true; msgEdit = "Usuario actualizado.";
+        }
+        catch (Exception ex) { okEdit = false; msgEdit = "No se pudo actualizar: " + ex.Message; }
+        finally { guardandoEdit = false; }
+    }
+
+    private async Task Eliminar(UsuarioVM u)
+    {
+        msgEdit = null;
+        if (u.Id == Auth.Perfil?.Id) { okEdit = false; msgEdit = "No puedes eliminar tu propia cuenta."; return; }
+        if (!await JS.InvokeAsync<bool>("confirm", $"¿Eliminar la cuenta {u.Email}? Se borra su acceso por completo y no se puede deshacer.")) return;
+        guardandoEdit = true;
+        try
+        {
+            var err = await Auth.EliminarUsuario(u.Id);
+            if (err is not null) { okEdit = false; msgEdit = err; return; }
+            usuarios.Remove(u); editId = null;
+        }
+        catch (Exception ex) { okEdit = false; msgEdit = "No se pudo eliminar: " + ex.Message; }
+        finally { guardandoEdit = false; }
     }
 
     private sealed class UsuarioVM
