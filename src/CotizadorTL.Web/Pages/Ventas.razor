@@ -60,80 +60,82 @@ else
     <div class="cot-grid">
     @{ var f = Filtradas.ToList(); }
 
-    <!-- ===== KPIs ===== -->
-    <div class="kpis">
-        <div class="kpi"><span class="kpi-lbl">Cotizado</span><span class="kpi-val">@M(f.Sum(c => c.GranTotal))</span><span class="kpi-sub">@f.Count cotizaciones</span></div>
-        <div class="kpi verde"><span class="kpi-lbl">Ganadas</span><span class="kpi-val">@M(MontoEstado(f, "aceptada"))</span><span class="kpi-sub">@CuentaEstado(f, "aceptada") aprobadas</span></div>
-        <div class="kpi rojo"><span class="kpi-lbl">Perdidas</span><span class="kpi-val">@M(MontoEstado(f, "rechazada"))</span><span class="kpi-sub">@CuentaEstado(f, "rechazada") rechazadas</span></div>
-        <div class="kpi lima"><span class="kpi-lbl">En proceso</span><span class="kpi-val">@M(MontoEstado(f, "borrador") + MontoEstado(f, "enviada"))</span><span class="kpi-sub">@(CuentaEstado(f, "borrador") + CuentaEstado(f, "enviada")) abiertas</span></div>
-        <div class="kpi"><span class="kpi-lbl">Tasa de cierre</span><span class="kpi-val">@TasaCierre(f).ToString("0.#")%</span><span class="kpi-sub">ganadas ÷ (gan+perd)</span></div>
-    </div>
+    <!-- ===== Dashboard dividido por lugar de fabricación ===== -->
+    <div class="paneles-fab">
+        @foreach (var pan in Paneles(f))
+        {
+            var s2 = pan.Datos;
+            <section class="card">
+                <h2 class="sub">@pan.Titulo <span class="muted" style="font-size:.85rem">· @s2.Count cotiz.</span></h2>
 
-    <!-- ===== Gráficos ===== -->
-    <div class="charts">
-        <section class="card">
-            <h2 class="sub">Cotizado vs ganado por mes</h2>
-            @{ var bars = BarrasMes(f); }
-            @if (bars.Count == 0) { <p class="muted small">Sin datos.</p> }
-            else
-            {
-                <svg viewBox="0 0 @(bars.Count * 60 + 10) 145" style="width:100%;max-width:100%;height:170px">
-                    @foreach (var b in bars)
-                    {
-                        <rect x="@b.X" y="@b.YC" width="18" height="@b.HC" fill="#c9d6b0"></rect>
-                        <rect x="@b.XG" y="@b.YG" width="18" height="@b.HG" fill="#6f9d18"></rect>
-                    }
-                </svg>
-                <div class="mes-labels">
-                    @foreach (var b in bars) { <span>@b.Etiqueta</span> }
+                <div class="kpis">
+                    <div class="kpi"><span class="kpi-lbl">Cotizado</span><span class="kpi-val">@M(s2.Sum(c => c.GranTotal))</span><span class="kpi-sub">@s2.Count cotizaciones</span></div>
+                    <div class="kpi verde"><span class="kpi-lbl">Ganadas</span><span class="kpi-val">@M(MontoEstado(s2, "aceptada"))</span><span class="kpi-sub">@CuentaEstado(s2, "aceptada") aprobadas</span></div>
+                    <div class="kpi rojo"><span class="kpi-lbl">Perdidas</span><span class="kpi-val">@M(MontoEstado(s2, "rechazada"))</span><span class="kpi-sub">@CuentaEstado(s2, "rechazada") rechazadas</span></div>
+                    <div class="kpi lima"><span class="kpi-lbl">En proceso</span><span class="kpi-val">@M(MontoEstado(s2, "borrador") + MontoEstado(s2, "enviada"))</span><span class="kpi-sub">@(CuentaEstado(s2, "borrador") + CuentaEstado(s2, "enviada")) abiertas</span></div>
+                    <div class="kpi"><span class="kpi-lbl">Tasa de cierre</span><span class="kpi-val">@TasaCierre(s2).ToString("0.#")%</span><span class="kpi-sub">gan ÷ (gan+perd)</span></div>
                 </div>
-                <p class="muted small"><span style="color:#c9d6b0">■</span> Cotizado &nbsp; <span style="color:#6f9d18">■</span> Ganado</p>
-            }
-        </section>
 
-        <section class="card">
-            <h2 class="sub">Por estado</h2>
-            @{ var don = Donut(f); var totEst = don.Sum(s => s.Monto); }
-            @if (totEst <= 0) { <p class="muted small">Sin datos.</p> }
-            else
-            {
-                <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
-                    <svg viewBox="0 0 42 42" style="width:130px;height:130px">
-                        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"></circle>
-                        @foreach (var s in don.Where(s => s.Monto > 0))
+                <h3 class="sub" style="font-size:.9rem;margin:.7rem 0 .3rem">Cotizado vs ganado por mes</h3>
+                @{ var bars = BarrasMes(s2); }
+                @if (bars.Count == 0) { <p class="muted small">Sin datos.</p> }
+                else
+                {
+                    <svg viewBox="0 0 @(bars.Count * 60 + 10) 145" style="width:100%;max-width:100%;height:160px">
+                        @foreach (var b in bars)
                         {
-                            <circle cx="21" cy="21" r="15.9" fill="none" stroke="@s.Color" stroke-width="6" stroke-dasharray="@s.Dash" stroke-dashoffset="@s.Offset"></circle>
+                            <rect x="@b.X" y="@b.YC" width="18" height="@b.HC" fill="#c9d6b0"></rect>
+                            <rect x="@b.XG" y="@b.YG" width="18" height="@b.HG" fill="#6f9d18"></rect>
                         }
                     </svg>
-                    <div style="font-size:.9rem">
-                        @foreach (var s in don)
-                        {
-                            <div><span style="color:@s.Color">■</span> @s.Label: <b>@M(s.Monto)</b> (@s.Cuenta)</div>
-                        }
-                    </div>
-                </div>
-            }
-        </section>
+                    <div class="mes-labels">@foreach (var b in bars) { <span>@b.Etiqueta</span> }</div>
+                    <p class="muted small"><span style="color:#c9d6b0">■</span> Cotizado &nbsp; <span style="color:#6f9d18">■</span> Ganado</p>
+                }
 
-        <section class="card">
-            <h2 class="sub">Ranking de vendedores (ganado)</h2>
-            @{ var rank = RankingVendedores(f); var maxR = rank.Count == 0 ? 1m : rank.Max(r => r.Monto); }
-            @if (rank.Count == 0) { <p class="muted small">Sin ventas ganadas.</p> }
-            else
-            {
-                <table class="rank">
-                    @foreach (var r in rank)
-                    {
-                        <tr>
-                            <td class="rnom">@r.Nombre</td>
-                            <td class="rbar"><div style="width:@(Pct(r.Monto, maxR))%;background:var(--tl-verde)"></div></td>
-                            <td class="num">@M(r.Monto)</td>
-                        </tr>
-                    }
-                </table>
-            }
-        </section>
+                <h3 class="sub" style="font-size:.9rem;margin:.7rem 0 .3rem">Por estado</h3>
+                @{ var don = Donut(s2); var totEst = don.Sum(x => x.Monto); }
+                @if (totEst <= 0) { <p class="muted small">Sin datos.</p> }
+                else
+                {
+                    <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                        <svg viewBox="0 0 42 42" style="width:120px;height:120px">
+                            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"></circle>
+                            @foreach (var s in don.Where(x => x.Monto > 0))
+                            {
+                                <circle cx="21" cy="21" r="15.9" fill="none" stroke="@s.Color" stroke-width="6" stroke-dasharray="@s.Dash" stroke-dashoffset="@s.Offset"></circle>
+                            }
+                        </svg>
+                        <div style="font-size:.85rem">
+                            @foreach (var s in don)
+                            {
+                                <div><span style="color:@s.Color">■</span> @s.Label: <b>@M(s.Monto)</b> (@s.Cuenta)</div>
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
+        }
     </div>
+
+    <!-- ===== Ranking de vendedores (global) ===== -->
+    <section class="card">
+        <h2 class="sub">Ranking de vendedores (ganado, ambas fabricaciones)</h2>
+        @{ var rank = RankingVendedores(f); var maxR = rank.Count == 0 ? 1m : rank.Max(r => r.Monto); }
+        @if (rank.Count == 0) { <p class="muted small">Sin ventas ganadas.</p> }
+        else
+        {
+            <table class="rank">
+                @foreach (var r in rank)
+                {
+                    <tr>
+                        <td class="rnom">@r.Nombre</td>
+                        <td class="rbar"><div style="width:@(Pct(r.Monto, maxR))%;background:var(--tl-verde)"></div></td>
+                        <td class="num">@M(r.Monto)</td>
+                    </tr>
+                }
+            </table>
+        }
+    </section>
 
     <!-- ===== Seguimiento (CRM) ===== -->
     <section class="card">
@@ -142,7 +144,7 @@ else
         <div class="tabla-wrap">
             <table class="proyectos">
                 <thead>
-                    <tr><th>Exp.</th><th>Fecha</th><th>Cliente</th><th>Distribuidor</th><th>Vendedor</th><th class="num">Monto</th><th>Estado</th><th>Próx. acción</th><th>Seguimiento / motivo</th><th></th></tr>
+                    <tr><th>Exp.</th><th>Fecha</th><th>Cliente</th><th>Distribuidor</th><th>Fabricación</th><th>Vendedor</th><th class="num">Monto</th><th>Estado</th><th>Próx. acción</th><th>Seguimiento / motivo</th><th></th></tr>
                 </thead>
                 <tbody>
                     @foreach (var c in f.OrderByDescending(x => x.Fecha))
@@ -152,6 +154,7 @@ else
                             <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yy")</td>
                             <td>@c.Cliente</td>
                             <td>@NombreDist(c.DistribuidorId)</td>
+                            <td>@(string.IsNullOrEmpty(c.Fabricacion) ? "México" : c.Fabricacion)</td>
                             <td>@NombreVendedor(c)</td>
                             <td class="num">@M(c.GranTotal)</td>
                             <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
@@ -177,7 +180,7 @@ else
                             </td>
                         </tr>
                     }
-                    @if (f.Count == 0) { <tr><td colspan="10" class="muted center">No hay cotizaciones con esos filtros.</td></tr> }
+                    @if (f.Count == 0) { <tr><td colspan="11" class="muted center">No hay cotizaciones con esos filtros.</td></tr> }
                 </tbody>
             </table>
         </div>
@@ -252,6 +255,13 @@ else
         new("Enviada",   "#a6ce29", MontoEstado(f, "enviada"),   CuentaEstado(f, "enviada")),
         new("Aprobada",  "#6f9d18", MontoEstado(f, "aceptada"),  CuentaEstado(f, "aceptada")),
         new("Rechazada", "#c0392b", MontoEstado(f, "rechazada"), CuentaEstado(f, "rechazada")),
+    };
+
+    // Divide en dos paneles por lugar de fabricación (los sin fabricación cuentan como México, el default).
+    private List<(string Titulo, List<PCotizacion> Datos)> Paneles(List<PCotizacion> f) => new()
+    {
+        ("México", f.Where(c => (c.Fabricacion ?? "México") != "Costa Rica").ToList()),
+        ("Costa Rica", f.Where(c => c.Fabricacion == "Costa Rica").ToList()),
     };
 
     private void Abrir(PCotizacion c) => Nav.NavigateTo($"cotizar/{c.CotizacionId}");
