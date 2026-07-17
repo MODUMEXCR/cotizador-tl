@@ -113,77 +113,79 @@ else
                         </div>
                     </div>
                 }
+
+                <h3 class="sub" style="font-size:.9rem;margin:.7rem 0 .3rem">Ranking de vendedores (ganado)</h3>
+                @{ var rank = RankingVendedores(s2); var maxR = rank.Count == 0 ? 1m : rank.Max(r => r.Monto); }
+                @if (rank.Count == 0) { <p class="muted small">Sin ventas ganadas.</p> }
+                else
+                {
+                    <table class="rank">
+                        @foreach (var r in rank)
+                        {
+                            <tr>
+                                <td class="rnom">@r.Nombre</td>
+                                <td class="rbar"><div style="width:@(Pct(r.Monto, maxR))%;background:var(--tl-verde)"></div></td>
+                                <td class="num">@M(r.Monto)</td>
+                            </tr>
+                        }
+                    </table>
+                }
             </section>
         }
     </div>
 
-    <!-- ===== Ranking de vendedores (global) ===== -->
-    <section class="card">
-        <h2 class="sub">Ranking de vendedores (ganado, ambas fabricaciones)</h2>
-        @{ var rank = RankingVendedores(f); var maxR = rank.Count == 0 ? 1m : rank.Max(r => r.Monto); }
-        @if (rank.Count == 0) { <p class="muted small">Sin ventas ganadas.</p> }
-        else
-        {
-            <table class="rank">
-                @foreach (var r in rank)
-                {
-                    <tr>
-                        <td class="rnom">@r.Nombre</td>
-                        <td class="rbar"><div style="width:@(Pct(r.Monto, maxR))%;background:var(--tl-verde)"></div></td>
-                        <td class="num">@M(r.Monto)</td>
-                    </tr>
-                }
-            </table>
-        }
-    </section>
-
-    <!-- ===== Seguimiento (CRM) ===== -->
-    <section class="card">
-        <h2 class="sub">Seguimiento</h2>
-        <p class="muted small">Doble clic abre la cotización. El <b>estado</b> lo cambian solo Administradores; la <b>próxima acción</b>, <b>seguimiento</b> y <b>motivo</b> los edita cualquier vendedor.</p>
-        <div class="tabla-wrap">
-            <table class="proyectos">
-                <thead>
-                    <tr><th>Exp.</th><th>Fecha</th><th>Cliente</th><th>Distribuidor</th><th>Fabricación</th><th>Vendedor</th><th class="num">Monto</th><th>Estado</th><th>Próx. acción</th><th>Seguimiento / motivo</th><th></th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var c in f.OrderByDescending(x => x.Fecha))
-                    {
-                        <tr @ondblclick="() => Abrir(c)" style="cursor:pointer">
-                            <td><b>@c.Folio</b></td>
-                            <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yy")</td>
-                            <td>@c.Cliente</td>
-                            <td>@NombreDist(c.DistribuidorId)</td>
-                            <td>@(string.IsNullOrEmpty(c.Fabricacion) ? "México" : c.Fabricacion)</td>
-                            <td>@NombreVendedor(c)</td>
-                            <td class="num">@M(c.GranTotal)</td>
-                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-                                @if (Auth.EsAdmin)
-                                {
-                                    <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => c.Estado = e.Value?.ToString() ?? c.Estado">
-                                        <option value="borrador">Borrador</option>
-                                        <option value="enviada">Enviada</option>
-                                        <option value="aceptada">Aprobada</option>
-                                        <option value="rechazada">Rechazada</option>
-                                    </select>
-                                }
-                                else { <span class="estado">@EstadoLabel(c.Estado)</span> }
-                            </td>
-                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-                                <input type="date" value="@(c.ProximaAccion?.ToString("yyyy-MM-dd"))" @onchange="e => SetFecha(c, e.Value?.ToString())" style="width:8.5rem" />
-                            </td>
-                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-                                <input @bind="c.Seguimiento" placeholder="notas / motivo" style="width:14rem" />
-                            </td>
-                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
-                                <button class="btn-mini xls" @onclick="() => GuardarCrm(c)">Guardar</button>
-                            </td>
-                        </tr>
-                    }
-                    @if (f.Count == 0) { <tr><td colspan="11" class="muted center">No hay cotizaciones con esos filtros.</td></tr> }
-                </tbody>
-            </table>
-        </div>
+    <!-- ===== Seguimiento (CRM) dividido por fabricación ===== -->
+    <p class="muted small">Doble clic abre la cotización. El <b>estado</b> lo cambian solo Administradores; la <b>próxima acción</b> y el <b>seguimiento/motivo</b> los edita cualquier vendedor.</p>
+    @foreach (var pan in Paneles(f))
+    {
+        var s3 = pan.Datos;
+        <section class="card">
+            <h2 class="sub">Seguimiento · @pan.Titulo <span class="muted" style="font-size:.85rem">(@s3.Count)</span></h2>
+            <div class="tabla-wrap">
+                <table class="proyectos">
+                    <thead>
+                        <tr><th>Exp.</th><th>Fecha</th><th>Cliente</th><th>Distribuidor</th><th>Vendedor</th><th class="num">Monto</th><th>Estado</th><th>Próx. acción</th><th>Seguimiento / motivo</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in s3.OrderByDescending(x => x.Fecha))
+                        {
+                            <tr @ondblclick="() => Abrir(c)" style="cursor:pointer">
+                                <td><b>@c.Folio</b></td>
+                                <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yy")</td>
+                                <td>@c.Cliente</td>
+                                <td>@NombreDist(c.DistribuidorId)</td>
+                                <td>@NombreVendedor(c)</td>
+                                <td class="num">@M(c.GranTotal)</td>
+                                <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                    @if (Auth.EsAdmin)
+                                    {
+                                        <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => c.Estado = e.Value?.ToString() ?? c.Estado">
+                                            <option value="borrador">Borrador</option>
+                                            <option value="enviada">Enviada</option>
+                                            <option value="aceptada">Aprobada</option>
+                                            <option value="rechazada">Rechazada</option>
+                                        </select>
+                                    }
+                                    else { <span class="estado">@EstadoLabel(c.Estado)</span> }
+                                </td>
+                                <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                    <input type="date" value="@(c.ProximaAccion?.ToString("yyyy-MM-dd"))" @onchange="e => SetFecha(c, e.Value?.ToString())" style="width:8.5rem" />
+                                </td>
+                                <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                    <input @bind="c.Seguimiento" placeholder="notas / motivo" style="width:14rem" />
+                                </td>
+                                <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                    <button class="btn-mini xls" @onclick="() => GuardarCrm(c)">Guardar</button>
+                                </td>
+                            </tr>
+                        }
+                        @if (s3.Count == 0) { <tr><td colspan="10" class="muted center">Sin cotizaciones aquí.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+    <section class="card" style="@(msg is null ? "display:none" : "")">
         @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
     </section>
     </div>
