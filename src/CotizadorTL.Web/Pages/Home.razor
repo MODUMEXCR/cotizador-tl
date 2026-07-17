@@ -455,9 +455,16 @@ else
         // Grabado láser en cubiertas/bancas: $120 por pieza grabada (sin descuento de línea; se suma al unitario)
         if ((EsFamilia(l, "CUBIERTAS") || EsFamilia(l, "BANCAS")) && l.Grabado) precio += 120m * Math.Max(1, l.GrabadoCant);
         // (El color interior de locker ya NO agrega recargo: Blanco/Negro van sin +10%.)
+        // Extras de locker: la cantidad es el TOTAL de la cotización (NO se multiplica por la cantidad de lockers).
+        // Se amortiza en el unitario (÷ cantidad) para que unitario × cantidad = base×cantidad + extras (una sola vez).
         if (EsFamilia(l, "LOCKERS") && !p.EsExtra)
+        {
+            decimal extrasTotal = 0m;
             foreach (var kv in l.ExtrasCant)
-                if (Catalogo.Buscar(kv.Key) is Producto ex) precio += PrecioExtra(ex, TierDe(p)) * kv.Value;
+                if (Catalogo.Buscar(kv.Key) is Producto ex) extrasTotal += PrecioExtra(ex, TierDe(p)) * kv.Value;
+            decimal qty = l.Cantidad > 0 ? l.Cantidad : 1m;
+            precio += extrasTotal / qty;
+        }
         return precio * Factor;   // LATAM: ÷ divisor (USD); MXN: ×1
     }
 
