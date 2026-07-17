@@ -24,15 +24,17 @@
                "CONDICIONES DE PAGO: 60% DE ANTICIPO, 40% DE SALDO EL CUAL DEBE SER LIQUIDADO ANTES DE LA ENTREGA DEL PRODUCTO.";
   const CONTACTO = "TEL: 33 3003 3200 EXT 201   CEL: 33 1044 0220 / 33 1446 2754 / 33 1942 1893";
 
-  // Símbolo de moneda. jsPDF (fuente estándar) NO dibuja ₡ (U+20A1); para Colones usamos ¢, que sí se dibuja.
+  // Símbolo de moneda: Colones → ₡ (se dibuja gracias a la fuente Roboto embebida); Pesos/Dólares → $
   let SIMBOLO = "$";
   const money = (n) => SIMBOLO + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const txt = (v) => (v === null || v === undefined) ? "" : String(v);
 
   function construir(d) {
-      SIMBOLO = (d.moneda === "CRC") ? "¢" : "$";
+      SIMBOLO = (d.moneda === "CRC") ? "₡" : "$";
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "letter" });
+      // Fuente Roboto embebida (trae el símbolo ₡ y acentos que la fuente estándar no tiene)
+      if (window.cotizadorFuentes) window.cotizadorFuentes.registrar(doc);
       const W = doc.internal.pageSize.getWidth();
       const M = 40;
       let y = 40;
@@ -48,28 +50,28 @@
 
       // ID COTIZACIÓN + folio grande verde (debajo del logo Modumex)
       const folioY = y + mxH + 16;
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "normal"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
       doc.text("ID COTIZACIÓN:", W - M, folioY, { align: "right" });
-      doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(...VERDE);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(24); doc.setTextColor(...VERDE);
       doc.text(txt(d.folio), W - M, folioY + 24, { align: "right" });
 
       // Dirección (izquierda, debajo del logo TL)
-      doc.setFont("helvetica", "italic"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "normal"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
       let yy = y + tlH + 12;
       DIR.forEach((l) => { doc.text(l, M, yy); yy += 10; });
 
       // Razón social / nombre comercial (centro)
       if (d.razonSocial) {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(...OSCURO);
+        doc.setFont("Roboto", "bold"); doc.setFontSize(10); doc.setTextColor(...OSCURO);
         doc.text(txt(d.razonSocial).toUpperCase(), W / 2, y + tlH + 4, { align: "center" });
       }
 
       // ---------- Datos (PROYECTO/CLIENTE...) ----------
       y = Math.max(yy, folioY + 30) + 6;
       const label = (k, v, x, yp) => {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...VERDE);
+        doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(...VERDE);
         doc.text(k, x, yp);
-        doc.setFont("helvetica", "normal"); doc.setTextColor(...OSCURO);
+        doc.setFont("Roboto", "normal"); doc.setTextColor(...OSCURO);
         doc.text(txt(v), x + 58, yp);
       };
       label("PROYECTO:", d.proyecto, M, y);
@@ -78,20 +80,20 @@
       label("TELÉFONO:", d.telefono, M, y + 36);
       label("CIUDAD:", d.ciudad, M, y + 48);
       // derecha
-      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
       doc.text("VIGENCIA DE COTIZACIÓN:", W - M, y, { align: "right" });
-      doc.setFont("helvetica", "normal"); doc.setTextColor(...OSCURO);
+      doc.setFont("Roboto", "normal"); doc.setTextColor(...OSCURO);
       doc.text(txt(d.vigencia), W - M, y + 12, { align: "right" });
-      doc.setFont("helvetica", "bold"); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "bold"); doc.setTextColor(...GRIS);
       doc.text("COTIZADO POR:", W - M, y + 28, { align: "right" });
-      doc.setFont("helvetica", "normal"); doc.setTextColor(...OSCURO);
+      doc.setFont("Roboto", "normal"); doc.setTextColor(...OSCURO);
       doc.text(txt(d.cotizadoPor), W - M, y + 40, { align: "right" });
 
       // ---------- Barra de título ----------
       y = y + 64;
       doc.setFillColor(...OSCURO);
       doc.rect(M, y, W - 2 * M, 18, "F");
-      doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
       doc.text(txt(d.titulo || "COTIZACIÓN").toUpperCase(), W / 2, y + 12.5, { align: "center" });
       y += 24;
 
@@ -110,7 +112,7 @@
         margin: { left: M, right: M },
         head: [["CANTIDAD", "CÓDIGO SAP", "DESCRIPCIÓN", "COLOR", "PRECIO UNITARIO PÚBLICO", "PRECIO TOTAL PÚBLICO"]],
         body: body,
-        styles: { fontSize: 7.5, cellPadding: 4, valign: "middle", textColor: OSCURO, lineColor: [210, 210, 210], lineWidth: 0.5 },
+        styles: { font: "Roboto", fontSize: 7.5, cellPadding: 4, valign: "middle", textColor: OSCURO, lineColor: [210, 210, 210], lineWidth: 0.5 },
         headStyles: { fillColor: VERDE, textColor: [255, 255, 255], fontSize: 7.5, halign: "center" },
         columnStyles: {
           0: { halign: "center", cellWidth: 48 },
@@ -125,7 +127,7 @@
       let fy = doc.lastAutoTable.finalY + 14;
 
       // Moneda (USD para LATAM)
-      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
       doc.text("PRECIOS EN " + txt(d.moneda || "MXN") + (d.tipoPdf ? "  ·  " + d.tipoPdf : ""), M, fy - 2);
 
       // ---------- Totales (derecha) ----------
@@ -133,7 +135,7 @@
       const ancho = 250, x0 = W - M - ancho;
       const rowT = (k, v, opts) => {
         opts = opts || {};
-        doc.setFont("helvetica", opts.bold ? "bold" : "normal"); doc.setFontSize(8.5);
+        doc.setFont("Roboto", opts.bold ? "bold" : "normal"); doc.setFontSize(8.5);
         doc.setTextColor(...(opts.color || OSCURO));
         doc.text(k, x0, fy);
         doc.text(money(v), W - M, fy, { align: "right" });
@@ -163,7 +165,7 @@
           ["SALDO " + (100 - anticipoPct) + "%", money(tot.saldo)],
           ["GRAN TOTAL", money(tot.granTotal)],
         ],
-        styles: { fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
+        styles: { font: "Roboto", fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
         headStyles: { fillColor: [235, 235, 235], textColor: OSCURO, halign: "center", fontStyle: "bold" },
         columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "right" } },
       });
@@ -177,7 +179,7 @@
           tableWidth: 240,
           head: [["DATOS BANCARIOS"]],
           body: filasBanco,
-          styles: { fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
+          styles: { font: "Roboto", fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
           headStyles: { fillColor: VERDE, textColor: [255, 255, 255], halign: "center", fontStyle: "bold" },
         });
       }
@@ -185,9 +187,9 @@
       // ---------- Comentarios ----------
       let by = Math.max(fy, doc.lastAutoTable.finalY) + 18;
       if (d.comentarios) {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...ROJO);
+        doc.setFont("Roboto", "bold"); doc.setFontSize(8); doc.setTextColor(...ROJO);
         doc.text("Comentarios o instrucciones especiales:", M, by);
-        doc.setFont("helvetica", "normal"); doc.setTextColor(...OSCURO);
+        doc.setFont("Roboto", "normal"); doc.setTextColor(...OSCURO);
         const wrapped = doc.splitTextToSize(txt(d.comentarios), W - 2 * M - 220);
         doc.text(wrapped, M + 218, by);
         by += 18;
@@ -198,20 +200,20 @@
       const bh = 12 * banner.length + 10;
       doc.setFillColor(...VERDE);
       doc.rect(M, by, W - 2 * M, bh, "F");
-      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
       let yb = by + 14;
       banner.forEach((l) => { doc.text(l, W / 2, yb, { align: "center" }); yb += 12; });
       by += bh + 16;
 
       // ---------- Pie ----------
-      doc.setFont("helvetica", "italic"); doc.setFontSize(6.5); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "normal"); doc.setFontSize(6.5); doc.setTextColor(...GRIS);
       doc.splitTextToSize(NOTA, W - 2 * M).forEach((l, i) => doc.text(l, W / 2, by + i * 9, { align: "center" }));
       by += 9 * 2 + 14;
-      doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...OSCURO);
+      doc.setFont("Roboto", "bold"); doc.setFontSize(8); doc.setTextColor(...OSCURO);
       doc.text("THIN LAMINATES", W / 2, by, { align: "center" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...GRIS);
+      doc.setFont("Roboto", "normal"); doc.setFontSize(7); doc.setTextColor(...GRIS);
       doc.text(CONTACTO, W / 2, by + 11, { align: "center" });
-      doc.setTextColor(...VERDE); doc.setFont("helvetica", "bold");
+      doc.setTextColor(...VERDE); doc.setFont("Roboto", "bold");
       doc.text("WWW.MODUMEX.COM", W / 2, by + 22, { align: "center" });
 
       return doc;
