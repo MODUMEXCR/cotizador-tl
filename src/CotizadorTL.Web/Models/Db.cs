@@ -123,6 +123,9 @@ public class PCotizacion : BaseModel
     [Column("gastos_indirectos")] public decimal GastosIndirectos { get; set; }
     [Column("gastos_envio")]      public decimal GastosEnvio { get; set; }
     [Column("datos_bancarios")]   public string? DatosBancarios { get; set; }
+    [Column("proxima_accion")]    public DateTime? ProximaAccion { get; set; }
+    [Column("seguimiento")]       public string? Seguimiento { get; set; }
+    [Column("motivo_rechazo")]    public string? MotivoRechazo { get; set; }
 }
 
 [Table("cotizacion_linea")]

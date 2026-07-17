@@ -133,6 +133,25 @@ table.proyectos td { padding: .5rem .5rem; border-bottom: 1px solid #f0f1f3; }
 .btn-mini.pdf { background: #c0392b; } .btn-mini.xls { background: var(--tl-verde); }
 .btn-mini:hover { opacity: .9; }
 
+/* ---------- Ventas / CRM ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .8rem; margin: 1rem 0; }
+.kpi { background: #fff; border: 1px solid var(--tl-borde); border-left: 4px solid var(--tl-gris-txt); border-radius: 10px; padding: .8rem 1rem; display: flex; flex-direction: column; gap: .15rem; }
+.kpi.verde { border-left-color: var(--tl-verde); }
+.kpi.rojo { border-left-color: #c0392b; }
+.kpi.lima { border-left-color: var(--tl-lima); }
+.kpi-lbl { font-size: .8rem; color: var(--tl-gris-txt); text-transform: uppercase; letter-spacing: .02em; }
+.kpi-val { font-size: 1.35rem; font-weight: 700; color: var(--tl-oscuro); font-variant-numeric: tabular-nums; }
+.kpi-sub { font-size: .78rem; color: #999; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.charts .sub, .card .sub { font-size: 1rem; margin: 0 0 .6rem; color: var(--tl-oscuro); }
+table.rank { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.rank td { padding: .25rem .3rem; vertical-align: middle; }
+table.rank .rnom { white-space: nowrap; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; }
+table.rank .rbar { width: 100%; }
+table.rank .rbar div { height: 14px; border-radius: 3px; min-width: 2px; }
+.mes-labels { display: flex; }
+.mes-labels span { flex: 0 0 60px; text-align: center; font-size: .72rem; color: #777; }
+
 /* Foco con acento lima de la marca */
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tl-verde) !important;
     box-shadow: 0 0 0 2px rgba(166,206,41,.35); }

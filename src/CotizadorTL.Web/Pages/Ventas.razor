@@ -1,0 +1,326 @@
+@page "/ventas"
+@inject AuthService Auth
+@inject CatalogoService Catalogo
+@inject Supabase.Client Supa
+@inject NavigationManager Nav
+
+<PageTitle>Ventas · CRM</PageTitle>
+
+@if (!Auth.PuedeVerTodo)
+{
+    <p>No tienes acceso a esta sección.</p>
+}
+else if (cargando)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <h1>Ventas <span class="muted" style="font-size:1rem">· CRM</span></h1>
+    <p class="lead">Panel de ventas: lo cotizado, lo que se ganó y lo que no, con seguimiento por cotización.</p>
+
+    <section class="card">
+        <div class="filtros">
+            <label>Moneda
+                <select @bind="monedaSel">
+                    <option value="MXN">Pesos MXN</option>
+                    <option value="USD">Dólares USD</option>
+                    <option value="CRC">Colones CRC</option>
+                </select>
+            </label>
+            <label>Desde<input type="date" @bind="desde" /></label>
+            <label>Hasta<input type="date" @bind="hasta" /></label>
+            <label>Vendedor
+                <select @bind="filtroVendedor">
+                    <option value="">Todos</option>
+                    @foreach (var v in Vendedores)
+                    { <option value="@v.Key">@v.Value</option> }
+                </select>
+            </label>
+            <label>Distribuidor
+                <select @bind="filtroDistribuidor">
+                    <option value="0">Todos</option>
+                    @foreach (var d in Catalogo.Distribuidores)
+                    { <option value="@d.DistribuidorId">@d.Nombre</option> }
+                </select>
+            </label>
+            <label>Estado
+                <select @bind="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="borrador">Borrador</option>
+                    <option value="enviada">Enviada</option>
+                    <option value="aceptada">Aprobada</option>
+                    <option value="rechazada">Rechazada</option>
+                </select>
+            </label>
+            <button class="btn-add" @onclick="Limpiar">Limpiar</button>
+        </div>
+    </section>
+
+    <div class="cot-grid">
+    @{ var f = Filtradas.ToList(); }
+
+    <!-- ===== KPIs ===== -->
+    <div class="kpis">
+        <div class="kpi"><span class="kpi-lbl">Cotizado</span><span class="kpi-val">@M(f.Sum(c => c.GranTotal))</span><span class="kpi-sub">@f.Count cotizaciones</span></div>
+        <div class="kpi verde"><span class="kpi-lbl">Ganadas</span><span class="kpi-val">@M(MontoEstado(f, "aceptada"))</span><span class="kpi-sub">@CuentaEstado(f, "aceptada") aprobadas</span></div>
+        <div class="kpi rojo"><span class="kpi-lbl">Perdidas</span><span class="kpi-val">@M(MontoEstado(f, "rechazada"))</span><span class="kpi-sub">@CuentaEstado(f, "rechazada") rechazadas</span></div>
+        <div class="kpi lima"><span class="kpi-lbl">En proceso</span><span class="kpi-val">@M(MontoEstado(f, "borrador") + MontoEstado(f, "enviada"))</span><span class="kpi-sub">@(CuentaEstado(f, "borrador") + CuentaEstado(f, "enviada")) abiertas</span></div>
+        <div class="kpi"><span class="kpi-lbl">Tasa de cierre</span><span class="kpi-val">@TasaCierre(f).ToString("0.#")%</span><span class="kpi-sub">ganadas ÷ (gan+perd)</span></div>
+    </div>
+
+    <!-- ===== Gráficos ===== -->
+    <div class="charts">
+        <section class="card">
+            <h2 class="sub">Cotizado vs ganado por mes</h2>
+            @{ var bars = BarrasMes(f); }
+            @if (bars.Count == 0) { <p class="muted small">Sin datos.</p> }
+            else
+            {
+                <svg viewBox="0 0 @(bars.Count * 60 + 10) 145" style="width:100%;max-width:100%;height:170px">
+                    @foreach (var b in bars)
+                    {
+                        <rect x="@b.X" y="@b.YC" width="18" height="@b.HC" fill="#c9d6b0"></rect>
+                        <rect x="@b.XG" y="@b.YG" width="18" height="@b.HG" fill="#6f9d18"></rect>
+                    }
+                </svg>
+                <div class="mes-labels">
+                    @foreach (var b in bars) { <span>@b.Etiqueta</span> }
+                </div>
+                <p class="muted small"><span style="color:#c9d6b0">■</span> Cotizado &nbsp; <span style="color:#6f9d18">■</span> Ganado</p>
+            }
+        </section>
+
+        <section class="card">
+            <h2 class="sub">Por estado</h2>
+            @{ var don = Donut(f); var totEst = don.Sum(s => s.Monto); }
+            @if (totEst <= 0) { <p class="muted small">Sin datos.</p> }
+            else
+            {
+                <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                    <svg viewBox="0 0 42 42" style="width:130px;height:130px">
+                        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"></circle>
+                        @foreach (var s in don.Where(s => s.Monto > 0))
+                        {
+                            <circle cx="21" cy="21" r="15.9" fill="none" stroke="@s.Color" stroke-width="6" stroke-dasharray="@s.Dash" stroke-dashoffset="@s.Offset"></circle>
+                        }
+                    </svg>
+                    <div style="font-size:.9rem">
+                        @foreach (var s in don)
+                        {
+                            <div><span style="color:@s.Color">■</span> @s.Label: <b>@M(s.Monto)</b> (@s.Cuenta)</div>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <h2 class="sub">Ranking de vendedores (ganado)</h2>
+            @{ var rank = RankingVendedores(f); var maxR = rank.Count == 0 ? 1m : rank.Max(r => r.Monto); }
+            @if (rank.Count == 0) { <p class="muted small">Sin ventas ganadas.</p> }
+            else
+            {
+                <table class="rank">
+                    @foreach (var r in rank)
+                    {
+                        <tr>
+                            <td class="rnom">@r.Nombre</td>
+                            <td class="rbar"><div style="width:@(Pct(r.Monto, maxR))%;background:var(--tl-verde)"></div></td>
+                            <td class="num">@M(r.Monto)</td>
+                        </tr>
+                    }
+                </table>
+            }
+        </section>
+    </div>
+
+    <!-- ===== Seguimiento (CRM) ===== -->
+    <section class="card">
+        <h2 class="sub">Seguimiento</h2>
+        <p class="muted small">Doble clic abre la cotización. El <b>estado</b> lo cambian solo Administradores; la <b>próxima acción</b>, <b>seguimiento</b> y <b>motivo</b> los edita cualquier vendedor.</p>
+        <div class="tabla-wrap">
+            <table class="proyectos">
+                <thead>
+                    <tr><th>Exp.</th><th>Fecha</th><th>Cliente</th><th>Distribuidor</th><th>Vendedor</th><th class="num">Monto</th><th>Estado</th><th>Próx. acción</th><th>Seguimiento / motivo</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in f.OrderByDescending(x => x.Fecha))
+                    {
+                        <tr @ondblclick="() => Abrir(c)" style="cursor:pointer">
+                            <td><b>@c.Folio</b></td>
+                            <td>@c.Fecha.ToLocalTime().ToString("dd/MM/yy")</td>
+                            <td>@c.Cliente</td>
+                            <td>@NombreDist(c.DistribuidorId)</td>
+                            <td>@NombreVendedor(c)</td>
+                            <td class="num">@M(c.GranTotal)</td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                @if (Auth.EsAdmin)
+                                {
+                                    <select value="@(string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado)" @onchange="e => c.Estado = e.Value?.ToString() ?? c.Estado">
+                                        <option value="borrador">Borrador</option>
+                                        <option value="enviada">Enviada</option>
+                                        <option value="aceptada">Aprobada</option>
+                                        <option value="rechazada">Rechazada</option>
+                                    </select>
+                                }
+                                else { <span class="estado">@EstadoLabel(c.Estado)</span> }
+                            </td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                <input type="date" value="@(c.ProximaAccion?.ToString("yyyy-MM-dd"))" @onchange="e => SetFecha(c, e.Value?.ToString())" style="width:8.5rem" />
+                            </td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                <input @bind="c.Seguimiento" placeholder="notas / motivo" style="width:14rem" />
+                            </td>
+                            <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+                                <button class="btn-mini xls" @onclick="() => GuardarCrm(c)">Guardar</button>
+                            </td>
+                        </tr>
+                    }
+                    @if (f.Count == 0) { <tr><td colspan="10" class="muted center">No hay cotizaciones con esos filtros.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        @if (msg is not null) { <div class="aviso @(ok ? "ok" : "err")">@msg</div> }
+    </section>
+    </div>
+}
+
+@code {
+    private bool cargando = true;
+    private List<PCotizacion> todas = new();
+    private readonly Dictionary<string, string> nombresVend = new();  // uuid -> nombre
+    private string monedaSel = "MXN";
+    private DateTime? desde, hasta;
+    private string filtroVendedor = "", filtroEstado = "";
+    private long filtroDistribuidor;
+    private string? msg; private bool ok;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.PuedeVerTodo) { Nav.NavigateTo(""); return; }
+        await Catalogo.CargarAsync();
+        var resp = await Supa.From<PCotizacion>().Order("fecha", Supabase.Postgrest.Constants.Ordering.Descending).Get();
+        todas = resp.Models;
+        var perfiles = await Supa.From<Profile>().Get();
+        foreach (var p in perfiles.Models) nombresVend[p.Id] = p.Nombre;
+        cargando = false;
+    }
+
+    private IEnumerable<PCotizacion> Filtradas => todas.Where(c =>
+        (c.Moneda ?? "MXN") == monedaSel &&
+        (desde is null || c.Fecha.ToLocalTime().Date >= desde.Value.Date) &&
+        (hasta is null || c.Fecha.ToLocalTime().Date <= hasta.Value.Date) &&
+        (filtroDistribuidor == 0 || c.DistribuidorId == filtroDistribuidor) &&
+        (string.IsNullOrEmpty(filtroVendedor) || (c.CreadoPor ?? "") == filtroVendedor) &&
+        (filtroEstado == "" || (string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado) == filtroEstado));
+
+    private void Limpiar() { desde = hasta = null; filtroVendedor = ""; filtroDistribuidor = 0; filtroEstado = ""; }
+
+    private IEnumerable<KeyValuePair<string, string>> Vendedores =>
+        todas.Where(c => !string.IsNullOrEmpty(c.CreadoPor))
+             .Select(c => c.CreadoPor!).Distinct()
+             .Select(id => new KeyValuePair<string, string>(id, nombresVend.GetValueOrDefault(id, "—")))
+             .OrderBy(kv => kv.Value);
+
+    private string NombreVendedor(PCotizacion c) =>
+        (!string.IsNullOrEmpty(c.CreadoPor) && nombresVend.TryGetValue(c.CreadoPor, out var n)) ? n : (c.CotizadoPor ?? "—");
+    private string NombreDist(long? id) => Catalogo.Distribuidores.FirstOrDefault(d => d.DistribuidorId == id)?.Nombre ?? "—";
+
+    private static string EstadoLabel(string? code) => (code ?? "borrador") switch
+    { "enviada" => "Enviada", "aceptada" => "Aprobada", "rechazada" => "Rechazada", _ => "Borrador" };
+
+    // ---- dinero según moneda ----
+    private string Sym => monedaSel == "CRC" ? "₡" : "$";
+    private string M(decimal v) => Sym + v.ToString("#,##0.00");
+
+    private static decimal MontoEstado(List<PCotizacion> f, string estado) =>
+        f.Where(c => (string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado) == estado).Sum(c => c.GranTotal);
+    private static int CuentaEstado(List<PCotizacion> f, string estado) =>
+        f.Count(c => (string.IsNullOrEmpty(c.Estado) ? "borrador" : c.Estado) == estado);
+    private static decimal TasaCierre(List<PCotizacion> f)
+    {
+        decimal gan = MontoEstado(f, "aceptada"); decimal perd = MontoEstado(f, "rechazada");
+        int cg = CuentaEstado(f, "aceptada"); int cp = CuentaEstado(f, "rechazada");
+        return (cg + cp) == 0 ? 0 : (decimal)cg / (cg + cp) * 100;
+    }
+
+    private record Segmento(string Label, string Color, decimal Monto, int Cuenta);
+    private List<Segmento> PorEstado(List<PCotizacion> f) => new()
+    {
+        new("Borrador",  "#bfbfbf", MontoEstado(f, "borrador"),  CuentaEstado(f, "borrador")),
+        new("Enviada",   "#a6ce29", MontoEstado(f, "enviada"),   CuentaEstado(f, "enviada")),
+        new("Aprobada",  "#6f9d18", MontoEstado(f, "aceptada"),  CuentaEstado(f, "aceptada")),
+        new("Rechazada", "#c0392b", MontoEstado(f, "rechazada"), CuentaEstado(f, "rechazada")),
+    };
+
+    private void Abrir(PCotizacion c) => Nav.NavigateTo($"cotizar/{c.CotizacionId}");
+    private static string F(double d) => d.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    private static string Pct(decimal v, decimal max) => (max == 0 ? 0 : (double)(v / max) * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private record BarRender(string X, string XG, string XT, string Etiqueta, string YC, string HC, string YG, string HG);
+    private List<BarRender> BarrasMes(List<PCotizacion> f)
+    {
+        var meses = PorMes(f);
+        decimal max = meses.Count == 0 ? 1m : meses.Max(m => Math.Max(m.Cotizado, m.Ganado));
+        var res = new List<BarRender>();
+        for (int i = 0; i < meses.Count; i++)
+        {
+            var m = meses[i]; double x = i * 60 + 10;
+            double hC = max == 0 ? 0 : (double)(m.Cotizado / max) * 130;
+            double hG = max == 0 ? 0 : (double)(m.Ganado / max) * 130;
+            res.Add(new BarRender(F(x), F(x + 20), F(x + 19), m.Etiqueta, F(140 - hC), F(hC), F(140 - hG), F(hG)));
+        }
+        return res;
+    }
+
+    private record DonutSeg(string Label, string Color, decimal Monto, int Cuenta, string Dash, string Offset);
+    private List<DonutSeg> Donut(List<PCotizacion> f)
+    {
+        var segs = PorEstado(f);
+        decimal tot = segs.Sum(s => s.Monto);
+        var res = new List<DonutSeg>();
+        double acc = 0;
+        foreach (var s in segs)
+        {
+            double len = tot == 0 ? 0 : (double)(s.Monto / tot) * 100;
+            res.Add(new DonutSeg(s.Label, s.Color, s.Monto, s.Cuenta, $"{F(len)} {F(100 - len)}", F(25 - acc)));
+            acc += len;
+        }
+        return res;
+    }
+
+    private record MesDato(string Etiqueta, decimal Cotizado, decimal Ganado);
+    private List<MesDato> PorMes(List<PCotizacion> f)
+    {
+        return f.GroupBy(c => c.Fecha.ToLocalTime().ToString("yyyy-MM")).OrderBy(gr => gr.Key).TakeLast(12)
+            .Select(gr => new MesDato(
+                DateTime.ParseExact(gr.Key, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture).ToString("MMM/yy", new System.Globalization.CultureInfo("es")),
+                gr.Sum(x => x.GranTotal),
+                gr.Where(x => (string.IsNullOrEmpty(x.Estado) ? "" : x.Estado) == "aceptada").Sum(x => x.GranTotal)))
+            .ToList();
+    }
+
+    private record RankDato(string Nombre, decimal Monto);
+    private List<RankDato> RankingVendedores(List<PCotizacion> f) =>
+        f.Where(c => (string.IsNullOrEmpty(c.Estado) ? "" : c.Estado) == "aceptada")
+         .GroupBy(c => NombreVendedor(c))
+         .Select(gr => new RankDato(gr.Key, gr.Sum(x => x.GranTotal)))
+         .OrderByDescending(r => r.Monto).Take(8).ToList();
+
+    private void SetFecha(PCotizacion c, string? val) =>
+        c.ProximaAccion = DateTime.TryParse(val, out var d) ? d : null;
+
+    private async Task GuardarCrm(PCotizacion c)
+    {
+        msg = null;
+        if (!Auth.EsAdmin) { /* vendedor: no toca estado, pero sí seguimiento */ }
+        try
+        {
+            if (c.Fecha.Year < 2000) c.Fecha = DateTime.UtcNow;
+            await Supa.From<PCotizacion>().Update(c);
+            ok = true; msg = $"Cotización {c.Folio} actualizada.";
+        }
+        catch (Exception ex) { ok = false; msg = "No se pudo guardar: " + ex.Message; }
+    }
+}
