@@ -8,15 +8,18 @@
 }
 else
 {
-    <div class="page">
+    <div class="page @(sidebarColapsado ? "sidebar-collapsed" : "")">
         <div class="sidebar">
             <NavMenu />
         </div>
 
         <main>
             <div class="top-row px-4">
-                <span class="usuario">@Auth.Perfil?.Nombre · <b>@Auth.Rol</b></span>
-                <button class="logout" @onclick="Salir">Salir</button>
+                <button class="nav-toggle" @onclick="ToggleSidebar" title="Mostrar u ocultar el menú">☰</button>
+                <span class="topbar-der">
+                    <span class="usuario">@Auth.Perfil?.Nombre · <b>@Auth.Rol</b></span>
+                    <button class="logout" @onclick="Salir">Salir</button>
+                </span>
             </div>
 
             <article class="content px-4">
@@ -27,6 +30,9 @@ else
 }
 
 @code {
+    private bool sidebarColapsado;
+    private void ToggleSidebar() => sidebarColapsado = !sidebarColapsado;
+
     protected override void OnInitialized() => Auth.Cambio += OnCambio;
     private void OnCambio() => InvokeAsync(StateHasChanged);
     private async Task Salir() => await Auth.CerrarSesion();

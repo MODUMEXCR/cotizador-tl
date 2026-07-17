@@ -15,10 +15,37 @@ main {
 .top-row {
     background-color: #fff;
     border-bottom: 2px solid var(--tl-lima);
-    justify-content: flex-end;
+    justify-content: space-between;
     height: 3.5rem;
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+    .top-row .topbar-der {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+.nav-toggle {
+    background: var(--tl-gris);
+    border: 1px solid var(--tl-borde);
+    border-radius: 6px;
+    padding: .25rem .7rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--tl-oscuro);
+}
+
+    .nav-toggle:hover {
+        background: #ececec;
+    }
+
+/* Menú plegado: se oculta el lateral y el contenido ocupa todo el ancho */
+.page.sidebar-collapsed .sidebar {
+    display: none;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
