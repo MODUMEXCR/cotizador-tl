@@ -69,7 +69,7 @@ else
                             @if (Auth.PuedeVerTodo) { <td>@NombreDist(c.DistribuidorId)</td> }
                             <td>@c.Cliente</td>
                             <td>@c.Proyecto</td>
-                            <td class="num">@($"${c.GranTotal:#,##0.00}")</td>
+                            <td class="num">@((c.Moneda == "CRC" ? "₡" : "$") + c.GranTotal.ToString("#,##0.00"))</td>
                             <td @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
                                 @if (Auth.EsAdmin)
                                 {

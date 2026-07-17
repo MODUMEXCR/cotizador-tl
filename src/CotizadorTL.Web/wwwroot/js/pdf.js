@@ -24,10 +24,13 @@
                "CONDICIONES DE PAGO: 60% DE ANTICIPO, 40% DE SALDO EL CUAL DEBE SER LIQUIDADO ANTES DE LA ENTREGA DEL PRODUCTO.";
   const CONTACTO = "TEL: 33 3003 3200 EXT 201   CEL: 33 1044 0220 / 33 1446 2754 / 33 1942 1893";
 
-  const money = (n) => "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Símbolo de moneda. jsPDF (fuente estándar) NO dibuja ₡ (U+20A1); para Colones usamos ¢, que sí se dibuja.
+  let SIMBOLO = "$";
+  const money = (n) => SIMBOLO + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const txt = (v) => (v === null || v === undefined) ? "" : String(v);
 
   function construir(d) {
+      SIMBOLO = (d.moneda === "CRC") ? "¢" : "$";
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "letter" });
       const W = doc.internal.pageSize.getWidth();

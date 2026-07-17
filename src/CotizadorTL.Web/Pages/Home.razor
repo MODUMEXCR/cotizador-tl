@@ -702,7 +702,8 @@ else
             if (!usadas.Contains(c.ToString())) return $"{baseF}-{c}";
         return $"{baseF}-{DateTime.Now:HHmmss}";
     }
-    private static string Money(decimal v) => "$" + v.ToString("#,##0.00");
+    // Símbolo por moneda: Colones → ₡ ; Pesos/Dólares → $
+    private string Money(decimal v) => (MonedaActual == "CRC" ? "₡" : "$") + v.ToString("#,##0.00");
 
     // conDescuento=true -> PDF DISTRIBUIDOR (con descuentos, se guarda/va al Excel); false -> PDF CLIENTE (precio público)
     private async Task DescargarPdf(bool conDescuento = true)
