@@ -170,30 +170,37 @@
         columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "right" } },
       });
 
+      const cajaEstilo = { font: "Roboto", fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 };
+      const cajaHead = { fillColor: VERDE, textColor: [255, 255, 255], halign: "center", fontStyle: "bold" };
+
+      // ---------- Comentarios (izquierda) ----------
+      if (d.comentarios && String(d.comentarios).trim()) {
+        doc.autoTable({
+          startY: doc.lastAutoTable.finalY + 10,
+          margin: { left: M },
+          tableWidth: 320,
+          head: [["COMENTARIOS O INSTRUCCIONES ESPECIALES"]],
+          body: [[String(d.comentarios).trim()]],
+          styles: cajaEstilo,
+          headStyles: cajaHead,
+        });
+      }
+
       // ---------- Datos bancarios (izquierda, con verde de marca) ----------
       if (d.datosBancarios && String(d.datosBancarios).trim()) {
         const filasBanco = String(d.datosBancarios).split(/\r?\n/).map((x) => x.trim()).filter((x) => x).map((x) => [x]);
         doc.autoTable({
           startY: doc.lastAutoTable.finalY + 10,
           margin: { left: M },
-          tableWidth: 240,
+          tableWidth: 320,
           head: [["DATOS BANCARIOS"]],
           body: filasBanco,
-          styles: { font: "Roboto", fontSize: 8, cellPadding: 3, lineColor: [200, 200, 200], lineWidth: 0.5 },
-          headStyles: { fillColor: VERDE, textColor: [255, 255, 255], halign: "center", fontStyle: "bold" },
+          styles: cajaEstilo,
+          headStyles: cajaHead,
         });
       }
 
-      // ---------- Comentarios ----------
       let by = Math.max(fy, doc.lastAutoTable.finalY) + 18;
-      if (d.comentarios) {
-        doc.setFont("Roboto", "bold"); doc.setFontSize(8); doc.setTextColor(...ROJO);
-        doc.text("Comentarios o instrucciones especiales:", M, by);
-        doc.setFont("Roboto", "normal"); doc.setTextColor(...OSCURO);
-        const wrapped = doc.splitTextToSize(txt(d.comentarios), W - 2 * M - 220);
-        doc.text(wrapped, M + 218, by);
-        by += 18;
-      }
 
       // ---------- Banner verde ----------
       const banner = bannerLineas(d);
