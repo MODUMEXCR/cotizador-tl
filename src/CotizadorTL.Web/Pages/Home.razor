@@ -406,7 +406,8 @@ else
     private IEnumerable<Producto> ProductosPrincipales(string? fam) =>
         Catalogo.PorFamilia(fam ?? "").Where(p => !p.EsExtra);
     private IEnumerable<Producto> Extras() =>
-        Catalogo.PorFamilia("LOCKERS").Where(p => p.EsExtra).OrderBy(p => p.Orden);
+        Catalogo.PorFamilia("LOCKERS").Where(p => p.EsExtra
+            && !p.Nombre.Contains("Filler", StringComparison.OrdinalIgnoreCase)).OrderBy(p => p.Orden);
 
     private IEnumerable<PColor> ColoresDe(LineaUI l)
     {

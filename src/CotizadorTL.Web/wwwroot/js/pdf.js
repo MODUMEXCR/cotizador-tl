@@ -124,7 +124,20 @@
         },
       });
 
+      const H = doc.internal.pageSize.getHeight();
+
+      // Alto estimado del bloque que sigue a la tabla (totales + condiciones de pago).
+      // Si no cabe en lo que resta de la página, saltamos a una nueva para no cortarlo.
+      const _t = d.totales || {};
+      let filasTot = 3; // subtotal + iva + gran total
+      if (d.mostrarDescuento) filasTot += 2;
+      if (Number(_t.gastosIndirectos) > 0) filasTot += 1;
+      if (Number(_t.gastosEnvio) > 0) filasTot += 1;
+      const altoBloque = Math.max(filasTot * 15 + 20, 90) + 20;
+
       let fy = doc.lastAutoTable.finalY + 14;
+      if (fy + altoBloque > H - 40) { doc.addPage(); fy = 40; }
+      const topBloque = fy;
 
       // Moneda (USD para LATAM)
       doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
@@ -154,7 +167,7 @@
 
       // ---------- Condiciones de pago (izquierda) ----------
       const anticipoPct = Number(d.anticipoPct || 60);
-      const cy0 = doc.lastAutoTable.finalY + 14;
+      const cy0 = topBloque;
       doc.autoTable({
         startY: cy0,
         margin: { left: M },
@@ -200,11 +213,13 @@
         });
       }
 
-      let by = Math.max(fy, doc.lastAutoTable.finalY) + 18;
-
       // ---------- Banner verde ----------
       const banner = bannerLineas(d);
       const bh = 12 * banner.length + 10;
+      let by = Math.max(fy, doc.lastAutoTable.finalY) + 18;
+      // El banner y el pie se dibujan con coordenadas manuales (no paginan solos):
+      // si no caben en lo que resta de la hoja, saltamos a una página nueva.
+      if (by + bh + 90 > H - 20) { doc.addPage(); by = 40; }
       doc.setFillColor(...VERDE);
       doc.rect(M, by, W - 2 * M, bh, "F");
       doc.setFont("Roboto", "bold"); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
